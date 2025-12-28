@@ -1,0 +1,18 @@
+#map { 
+    height: 600px; 
+    margin: 20px 0;
+  }
+  
+  .upload-box {
+    margin: 20px 0;
+    padding: 10px;
+    border: 2px dashed #ccc;
+  }
+  
+  button {
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }

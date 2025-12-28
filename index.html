@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Principles of Macroeconomics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .banner-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 25%; /* This sets the aspect ratio of the container */
+    min-height: 120px; /* Minimum height on small screens */
+    max-height: 400px; /* Maximum height on large screens */
+    overflow: hidden;
+  }
+
+  .banner-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  /* Mobile-first responsive text sizes */
+  .course-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  .course-subtitle {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Medium screens */
+  @media (min-width: 640px) {
+    .course-title {
+      font-size: 2rem;
+    }
+    .course-subtitle {
+      font-size: 1.25rem;
+    }
+  }
+
+  /* Large screens */
+  @media (min-width: 1024px) {
+    .course-title {
+      font-size: 2.5rem;
+    }
+    .course-subtitle {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+</head>
+<body class="bg-gray-50">
+<!-- Header -->
+<header>
+  <div class="banner-container">
+    <img src="./images/banner1.png" alt="Macroeconomics Course Banner" class="banner-image">
+    <div class="banner-overlay">
+      <div class="text-center text-white px-4">
+        <h2 class="course-title">Principles of Macroeconomics</h2>
+        <p class="course-subtitle">Winter 2026 • ECON 2</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto py-8 px-4">
+        <h2 class="text-2xl font-semibold mb-4">Welcome to the Course</h2>
+        <p class="mb-4">This website contains resources and activities for your Principles of Macroeconomics course.</p>
+
+        <!-- Navigation Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+
+            <!-- Discussion Activities Card -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-medium mb-2">Discussion Activities</h3>
+                <p class="text-gray-600 mb-4">Weekly discussion section materials and interactive activities.</p>
+                <a href="activities/index.html" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">View Activities</a>
+            </div>
+
+            <!-- Resources Card -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-medium mb-2">Course Materials</h3>
+                <p class="text-gray-600 mb-4">Access lecture slides, notes, readings, and other resources.</p>
+                <a href="materials.html" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">View Materials</a>
+            </div>
+
+            <!-- Real-Time Data Card -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-medium mb-2">Real-Time Data</h3>
+                <p class="text-gray-600 mb-4">Interactive visualizations of CPI, GDP, and unemployment data.</p>
+                <a href="real-time-data.html" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">View Data</a>
+            </div>
+
+            <!-- FAQ Card -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-medium mb-2">FAQ</h3>
+                <p class="text-gray-600 mb-4">Frequently asked questions and course policies.</p>
+                <a href="faq.html" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">View FAQ</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 border-t mt-12 py-6 px-4">
+        <div class="container mx-auto">
+            <p class="text-gray-600">© 2026 Economics Department</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Investment Odyssey - Leaderboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/header-styles.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="../../styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner17.png" alt="Investment Odyssey Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container mx-auto">
+                    <div class="nav-links">
+                        <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+                        <a href="../index.html" class="nav-link">← Back to Activities</a>
+                        <a href="index.html" class="nav-link">← Back to Game Home</a>
+                    </div>
+                    <h1 class="activity-title">Investment Odyssey: Leaderboard</h1>
+                    <p class="activity-date">Top performers in the Investment Odyssey game</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Links -->
+    <div class="flex mb-8 border-b container mx-auto mt-4">
+        <a href="front-page.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Home</a>
+        <a href="single-player.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Single Player</a>
+        <a href="index.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Class Game</a>
+        <a href="leaderboard.html" class="step-nav font-medium px-4 py-2 border-b-2 border-blue-600 text-blue-600">Leaderboard</a>
+        <a href="ta-dashboard.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">TA Dashboard</a>
+    </div>
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h3>Global Leaderboard</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="leaderboard-container">
+                            <p class="text-center" id="leaderboard-message">No entries yet. Complete all 20 rounds to see your ranking!</p>
+                            <table class="table table-striped" id="leaderboard-table" style="display: none;">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Name</th>
+                                        <th>Date</th>
+                                        <th>Final Value</th>
+                                        <th>Nominal Return <i class="fas fa-info-circle" data-toggle="tooltip" title="Return based on initial $5,000 investment"></i></th>
+                                        <th>Adjusted Return <i class="fas fa-info-circle" data-toggle="tooltip" title="Return accounting for all cash injections received during the game"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboard-body">
+                                    <!-- Leaderboard entries will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h3>Investment Tips</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li><strong>Diversify your portfolio</strong> - Don't put all your eggs in one basket.</li>
+                            <li><strong>Consider asset correlations</strong> - Assets that move together offer less diversification benefit.</li>
+                            <li><strong>Watch for market shocks</strong> - Sudden price changes can create buying opportunities.</li>
+                            <li><strong>Rebalance regularly</strong> - Adjust your portfolio as market conditions change.</li>
+                            <li><strong>Use the "Distribute Cash Evenly" feature</strong> - A quick way to diversify your investments.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/leaderboard.js"></script>
+</body>
+</html>

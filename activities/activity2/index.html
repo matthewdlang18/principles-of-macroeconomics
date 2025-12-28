@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Well-being Index Activity - Principles of Macroeconomics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Chart.js for data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- D3.js for map visualization -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/topojson.v3.min.js"></script>
+<!-- PapaParse for CSV parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<!-- SheetJS for Excel file handling -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- Custom JavaScript -->
+<script src="js/dataLoader.js"></script>
+<script src="js/mapVisualizer.js"></script>
+<script src="js/main.js"></script>
+<script src="js/indexMapVisualizer.js"></script>
+<script src="js/indexDataLoader.js"></script>
+<script src="js/indexTableVisualizer.js"></script>
+<script src="js/indexManager.js"></script>
+<style>
+  .banner-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 25%; /* This sets the aspect ratio of the container */
+    min-height: 150px; /* Slightly taller minimum height to accommodate nav links */
+    max-height: 320px; /* Maximum height on large screens */
+    overflow: hidden;
+    background-color: #1d4ed8; /* bg-blue-700 as fallback */
+  }
+  
+  .banner-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.9; /* Make the image slightly transparent */
+  }
+  
+  .banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.75rem;
+  }
+  
+  .nav-link {
+    color: #bfdbfe; /* text-blue-100 */
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .nav-link:hover {
+    color: white;
+  }
+  
+  .activity-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    line-height: 1.2;
+  }
+  
+  .activity-date {
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    color: #bfdbfe; /* text-blue-100 */
+  }
+  
+  /* Medium screens */
+  @media (min-width: 640px) {
+    .banner-overlay {
+      padding: 1.5rem 2rem;
+    }
+    
+    .nav-links {
+      flex-direction: row;
+      align-items: center;
+    }
+    
+    .nav-link {
+      font-size: 1rem;
+      margin-bottom: 0;
+    }
+    
+    .nav-link:not(:first-child) {
+      margin-left: 1rem;
+    }
+    
+    .activity-title {
+      font-size: 2rem;
+    }
+    
+    .activity-date {
+      font-size: 1rem;
+    }
+  }
+  
+  /* Large screens */
+  @media (min-width: 1024px) {
+    .banner-overlay {
+      padding: 1.5rem 3rem;
+    }
+    
+    .activity-title {
+      font-size: 2.25rem;
+    }
+  }
+
+  /* Choropleth map styling */
+  .country {
+    stroke: #fff;
+    stroke-width: 0.5px;
+  }
+  
+  .country:hover {
+    stroke-width: 2px;
+    cursor: pointer;
+  }
+  
+  .tooltip {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    pointer-events: none;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body class="bg-gray-50">
+<!-- Header -->
+<header>
+  <div class="banner-container">
+    <img src="../../images/banner10.png" alt="Well-being Index Activity Banner" class="banner-image">
+    <div class="banner-overlay">
+      <div class="container mx-auto">
+        <div class="nav-links">
+          <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+          <a href="../index.html" class="nav-link">← Back to Activities</a>
+        </div>
+        <h1 class="activity-title">Discussion Activity 2: Well-being Index</h1>
+        <p class="activity-date">January 20-23, 2026 (Week 3)</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<main class="container mx-auto py-8 px-4">
+    <!-- Step Navigation -->
+    <div class="flex mb-8 border-b">
+        <button id="nav-instructions" class="step-nav font-medium px-4 py-2 border-b-2 border-blue-600 text-blue-600">1. Instructions</button>
+        <button id="nav-explore" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">2. Explore Measures</button>
+        <a href="create_index.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-blue-600">3. Create Index</a>
+    </div>
+
+    <!-- Error Message Container -->
+    <div id="error-message" class="bg-red-100 text-red-700 p-4 rounded-lg mb-6 hidden"></div>
+
+    <!-- Steps Content -->
+    <div id="step-instructions" class="step-content">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold mb-4">Activity Instructions</h2>
+            
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-medium mb-2">Objective</h3>
+                    <p class="mb-4">In this activity, you and/or your group (of 2 to 3) will create your own well-being index to measure economic prosperity beyond traditional Gross Domestic Product (GDP) measures.</p>
+                    <p>While GDP is the most common measure of economic well-being, it fails to capture many important aspects of human welfare. This activity will help you understand the limitations of GDP and explore alternative measures.</p>
+                </div>
+                
+                <div class="p-4 bg-blue-50 rounded-lg mb-4">
+                    <h3 class="text-lg font-medium mb-2">Activity Overview</h3>
+                    <ol class="list-decimal pl-5 space-y-1">
+                        <li>First, work with 0-2 peers to form a group</li>
+                        <li>Explore GDP per Capita and the Human Development Index (HDI)</li>
+                        <li>Create your own well-being index by selecting variables and weights</li>
+                        <li>Compare your index with those created by your classmates and an AI</li>
+                        <li>Reflect on the implications for economic policy and measurement</li>
+                    </ol>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium mb-2">Background</h3>
+                    <p class="mb-3">The limitations of GDP as a measure of well-being include:</p>
+                    <ul class="list-disc pl-5 space-y-1 mb-4">
+                        <li>Ignores income distribution (inequality)</li>
+                        <li>Excludes non-market activities (e.g., household work)</li>
+                        <li>Doesn't account for environmental degradation</li>
+                        <li>Fails to measure social welfare, health, and happiness</li>
+                        <li>Counts all production equally, even harmful activities</li>
+                    </ul>
+                    <p>Alternative measures like the Human Development Index (HDI) incorporate education and health alongside economic factors, but still have limitations. Your task is to design a more comprehensive measure.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium mb-2">Key Questions to Consider</h3>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>What dimensions of human well-being should be included beyond income?</li>
+                        <li>How should different factors be weighted relative to each other?</li>
+                        <li>Which countries might rank differently on your measure compared to GDP?</li>
+                        <li>What policy implications might arise from using your measure?</li>
+                    </ul>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button id="next-explore" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Next: Explore Measures</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="step-explore" class="step-content hidden">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold mb-4">Explore Well-being Measures</h2>
+            
+            <p class="mb-4">Examine how countries rank differently on GDP per Capita versus the Human Development Index (HDI). Notice which countries have significant discrepancies between the two measures.</p>
+            
+            <!-- Map controls -->
+            <div class="flex gap-4 mb-4">
+                <button id="show-gdp" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Show GDP per Capita</button>
+                <button id="show-hdi" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Show HDI</button>
+            </div>
+
+            <!-- Map container with resizable height -->
+            <div id="map-container-wrapper" class="w-full border rounded mb-6 resize-y overflow-hidden relative" style="min-height: 400px; height: 500px; max-height: 800px; resize: both;">
+                <div id="map-container" class="w-full h-full relative"></div>
+                <div class="resize-handle w-full h-4 bg-gray-200 cursor-ns-resize flex items-center justify-center">
+                    <span class="text-xs text-gray-500">Drag to resize</span>
+                </div>
+                <!-- Zoom controls -->
+                <div class="absolute top-4 right-4 bg-white rounded-full shadow-lg flex flex-col overflow-hidden">
+                    <button id="zoom-in" class="px-2 py-1 hover:bg-gray-100 border-b border-gray-200 text-gray-600 text-lg font-medium">+</button>
+                    <button id="zoom-out" class="px-2 py-1 hover:bg-gray-100 text-gray-600 text-lg font-medium">−</button>
+                </div>
+            </div>
+
+            <!-- HDI explanation -->
+            <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                <h3 class="font-medium mb-2">Understanding the Human Development Index (HDI)</h3>
+                <p class="mb-3">The HDI combines three key dimensions of human development:</p>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="bg-white p-3 rounded shadow-sm">
+                        <h4 class="font-medium text-blue-700">Health</h4>
+                        <p class="text-sm text-gray-600">Measured by life expectancy at birth</p>
+                    </div>
+                    <div class="bg-white p-3 rounded shadow-sm">
+                        <h4 class="font-medium text-green-700">Education</h4>
+                        <p class="text-sm text-gray-600">Measured by mean years of schooling and expected years of schooling</p>
+                    </div>
+                    <div class="bg-white p-3 rounded shadow-sm">
+                        <h4 class="font-medium text-purple-700">Standard of Living</h4>
+                        <p class="text-sm text-gray-600">Measured by GNI per capita (PPP $)</p>
+                    </div>
+                </div>
+                <p class="mt-3 text-sm">The final HDI is calculated as the geometric mean of normalized indices for each of these dimensions.</p>
+            </div>
+
+            <!-- Rankings table -->
+            <div class="overflow-x-auto">
+                <table id="rankings-table" class="min-w-full table-auto">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-500" data-sort="name">Country</th>
+                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-500" data-sort="gdpPerCapita">GDP per Capita</th>
+                            <th class="px-4 py-2 text-center text-sm font-medium text-gray-500" data-sort="gdpRank">GDP Rank</th>
+                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-500" data-sort="hdiValue">HDI Value</th>
+                            <th class="px-4 py-2 text-center text-sm font-medium text-gray-500" data-sort="hdiRank">HDI Rank</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="flex justify-between mt-6">
+                <button id="back-to-instructions" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Back to Instructions</button>
+                <a href="create_index.html" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Next: Create Your Index</a>
+            </div>
+        </div>
+    </div>
+    
+    <div id="step-create" class="step-content hidden">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold mb-4">Create Your Well-Being Index</h2>
+            
+            <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                <h3 class="font-medium mb-2">How to Create Your Index:</h3>
+                <ol class="list-decimal pl-5 space-y-1">
+                    <li>Review the variable categories below</li>
+                    <li>Select up to 7 variables that you think best capture human well-being</li>
+                    <li>Assign weights to each variable (weights must sum to 100%)</li>
+                    <li>Name your index and provide a brief justification</li>
+                </ol>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Variable Selection Panel -->
+                <div class="md:col-span-1">
+                    <div class="border rounded-lg p-4">
+                        <h3 class="text-lg font-medium mb-3">Variable Categories</h3>
+                        
+                        <!-- Economic Variables -->
+                        <div class="mb-4">
+                            <button class="w-full text-left px-3 py-2 bg-blue-100 rounded-t-lg font-medium text-blue-800" onclick="toggleCategory('economic')">
+                                Economic Factors
+                                <span id="economic-toggle" class="float-right">▼</span>
+                            </button>
+                            <div id="economic-variables" class="border border-t-0 rounded-b-lg p-3">
+                                <div class="space-y-2">
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="gdp_per_capita" data-category="economic" data-name="GDP per Capita" data-description="Total economic output per person">
+                                        <div class="font-medium">GDP per Capita</div>
+                                        <div class="text-sm text-gray-600">Total economic output per person</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="gini" data-category="economic" data-name="Income Inequality (GINI)" data-description="Measure of income distribution inequality">
+                                        <div class="font-medium">Income Inequality (GINI)</div>
+                                        <div class="text-sm text-gray-600">Measure of income distribution inequality</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="poverty_rate" data-category="economic" data-name="Poverty Rate" data-description="Percentage below poverty line">
+                                        <div class="font-medium">Poverty Rate</div>
+                                        <div class="text-sm text-gray-600">Percentage below poverty line</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="unemployment" data-category="economic" data-name="Unemployment Rate" data-description="Percentage without employment">
+                                        <div class="font-medium">Unemployment Rate</div>
+                                        <div class="text-sm text-gray-600">Percentage without employment</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Health Variables -->
+                        <div class="mb-4">
+                            <button class="w-full text-left px-3 py-2 bg-green-100 rounded-t-lg font-medium text-green-800" onclick="toggleCategory('health')">
+                                Health & Wellness
+                                <span id="health-toggle" class="float-right">▼</span>
+                            </button>
+                            <div id="health-variables" class="border border-t-0 rounded-b-lg p-3">
+                                <div class="space-y-2">
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="life_expectancy" data-category="health" data-name="Life Expectancy" data-description="Average years of life at birth">
+                                        <div class="font-medium">Life Expectancy</div>
+                                        <div class="text-sm text-gray-600">Average years of life at birth</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="infant_mortality" data-category="health" data-name="Infant Mortality Rate" data-description="Deaths per 1,000 live births">
+                                        <div class="font-medium">Infant Mortality Rate</div>
+                                        <div class="text-sm text-gray-600">Deaths per 1,000 live births</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="healthcare_access" data-category="health" data-name="Healthcare Access" data-description="Access to essential health services">
+                                        <div class="font-medium">Healthcare Access</div>
+                                        <div class="text-sm text-gray-600">Access to essential health services</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="mental_health" data-category="health" data-name="Mental Health" data-description="Prevalence of mental well-being">
+                                        <div class="font-medium">Mental Health</div>
+                                        <div class="text-sm text-gray-600">Prevalence of mental well-being</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Education Variables -->
+                        <div class="mb-4">
+                            <button class="w-full text-left px-3 py-2 bg-yellow-100 rounded-t-lg font-medium text-yellow-800" onclick="toggleCategory('education')">
+                                Education & Knowledge
+                                <span id="education-toggle" class="float-right">▼</span>
+                            </button>
+                            <div id="education-variables" class="border border-t-0 rounded-b-lg p-3">
+                                <div class="space-y-2">
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="literacy" data-category="education" data-name="Literacy Rate" data-description="Percentage who can read and write">
+                                        <div class="font-medium">Literacy Rate</div>
+                                        <div class="text-sm text-gray-600">Percentage who can read and write</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="years_education" data-category="education" data-name="Years of Education" data-description="Average years of schooling">
+                                        <div class="font-medium">Years of Education</div>
+                                        <div class="text-sm text-gray-600">Average years of schooling</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="education_quality" data-category="education" data-name="Education Quality" data-description="Quality of education system">
+                                        <div class="font-medium">Education Quality</div>
+                                        <div class="text-sm text-gray-600">Quality of education system</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Environment Variables -->
+                        <div class="mb-4">
+                            <button class="w-full text-left px-3 py-2 bg-teal-100 rounded-t-lg font-medium text-teal-800" onclick="toggleCategory('environment')">
+                                Environment & Sustainability
+                                <span id="environment-toggle" class="float-right">▼</span>
+                            </button>
+                            <div id="environment-variables" class="border border-t-0 rounded-b-lg p-3">
+                                <div class="space-y-2">
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="co2_emissions" data-category="environment" data-name="CO2 Emissions" data-description="Carbon emissions per capita">
+                                        <div class="font-medium">CO2 Emissions</div>
+                                        <div class="text-sm text-gray-600">Carbon emissions per capita</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="renewable_energy" data-category="environment" data-name="Renewable Energy" data-description="Percentage of energy from renewables">
+                                        <div class="font-medium">Renewable Energy</div>
+                                        <div class="text-sm text-gray-600">Percentage of energy from renewables</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="air_quality" data-category="environment" data-name="Air Quality Index" data-description="Measure of air pollution levels">
+                                        <div class="font-medium">Air Quality Index</div>
+                                        <div class="text-sm text-gray-600">Measure of air pollution levels</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="biodiversity" data-category="environment" data-name="Biodiversity Protection" data-description="Conservation efforts and outcomes">
+                                        <div class="font-medium">Biodiversity Protection</div>
+                                        <div class="text-sm text-gray-600">Conservation efforts and outcomes</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Social Variables -->
+                        <div class="mb-4">
+                            <button class="w-full text-left px-3 py-2 bg-purple-100 rounded-t-lg font-medium text-purple-800" onclick="toggleCategory('social')">
+                                Social & Community
+                                <span id="social-toggle" class="float-right">▼</span>
+                            </button>
+                            <div id="social-variables" class="border border-t-0 rounded-b-lg p-3">
+                                <div class="space-y-2">
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="social_support" data-category="social" data-name="Social Support" data-description="Having someone to count on">
+                                        <div class="font-medium">Social Support</div>
+                                        <div class="text-sm text-gray-600">Having someone to count on</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="gender_equality" data-category="social" data-name="Gender Equality" data-description="Women's rights and opportunities">
+                                        <div class="font-medium">Gender Equality</div>
+                                        <div class="text-sm text-gray-600">Women's rights and opportunities</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="safety" data-category="social" data-name="Safety & Security" data-description="Crime rates and perceived safety">
+                                        <div class="font-medium">Safety & Security</div>
+                                        <div class="text-sm text-gray-600">Crime rates and perceived safety</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="community_engagement" data-category="social" data-name="Community Engagement" data-description="Volunteerism and civic participation">
+                                        <div class="font-medium">Community Engagement</div>
+                                        <div class="text-sm text-gray-600">Volunteerism and civic participation</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Governance Variables -->
+                        <div class="mb-4">
+                            <button class="w-full text-left px-3 py-2 bg-red-100 rounded-t-lg font-medium text-red-800" onclick="toggleCategory('governance')">
+                                Governance & Rights
+                                <span id="governance-toggle" class="float-right">▼</span>
+                            </button>
+                            <div id="governance-variables" class="border border-t-0 rounded-b-lg p-3">
+                                <div class="space-y-2">
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="democracy" data-category="governance" data-name="Democratic Participation" data-description="Voting rights and election quality">
+                                        <div class="font-medium">Democratic Participation</div>
+                                        <div class="text-sm text-gray-600">Voting rights and election quality</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="corruption" data-category="governance" data-name="Corruption Index" data-description="Perception of public sector corruption">
+                                        <div class="font-medium">Corruption Index</div>
+                                        <div class="text-sm text-gray-600">Perception of public sector corruption</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="press_freedom" data-category="governance" data-name="Press Freedom" data-description="Independence of media">
+                                        <div class="font-medium">Press Freedom</div>
+                                        <div class="text-sm text-gray-600">Independence of media</div>
+                                    </div>
+                                    <div class="variable-option p-2 hover:bg-gray-100 rounded cursor-pointer" data-id="human_rights" data-category="governance" data-name="Human Rights" data-description="Basic rights protections">
+                                        <div class="font-medium">Human Rights</div>
+                                        <div class="text-sm text-gray-600">Basic rights protections</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Selected Variables Panel -->
+                <div class="md:col-span-2">
+                    <div class="border rounded-lg p-4 mb-6">
+                        <h3 class="text-lg font-medium mb-3">Your Selected Variables</h3>
+                        
+                        <div id="weight-warning" class="hidden text-red-600 mb-4 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                            Weights must sum to 100%. Please adjust your weights.
+                        </div>
+                        
+                        <div id="no-variables-message" class="text-center py-6 bg-gray-50 rounded">
+                            <p class="text-gray-500">Select variables from the left panel to build your index</p>
+                            <p class="text-gray-400 text-sm mt-2">(Click on a variable to add it)</p>
+                        </div>
+                        
+                        <div id="selected-variables-container" class="hidden space-y-4">
+                            <!-- Selected variables will be added here -->
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-medium">Total Weight:</h4>
+                                <div id="total-weight" class="font-medium text-lg">0%</div>
+                            </div>
+                            <div class="w-full bg-gray-200 h-2 rounded-full mt-2">
+                                <div id="weight-progress" class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Index Name and Justification -->
+                    <div class="border rounded-lg p-4 mb-6">
+                        <h3 class="text-lg font-medium mb-3">Name and Justify Your Index</h3>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-2" for="index-name">
+                                Index Name
+                            </label>
+                            <input type="text" id="index-name" class="w-full border rounded px-3 py-2" placeholder="e.g., Sustainable Development Index">
+                            <div class="text-sm text-gray-500 mt-1">Give your index a descriptive name that reflects its focus</div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2" for="index-justification">
+                                Justification (Why these variables? What aspect of well-being does your index measure?)
+                            </label>
+                            <textarea id="index-justification" class="w-full border rounded px-3 py-2 h-24" placeholder="Explain why you selected these variables and weights..."></textarea>
+                            <div class="text-sm text-gray-500 mt-1">Max 250 characters. <span id="char-count">250</span> remaining.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Index Preview -->
+                    <div class="border rounded-lg p-4">
+                        <h3 class="text-lg font-medium mb-3">Index Preview</h3>
+                        
+                        <div class="grid md:grid-cols-2 gap-4 mb-4">
+                            <!-- Map Container -->
+                            <div class="relative">
+                                <div id="index-map-container-wrapper" class="h-96 relative">
+                                    <div id="index-map-container" class="w-full h-full"></div>
+                                    <!-- Zoom Controls -->
+                                    <div class="absolute bottom-4 right-4 flex flex-col gap-2">
+                                        <button id="zoom-in-index" class="bg-white rounded-lg shadow-md p-2 hover:bg-gray-100 focus:outline-none">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                            </svg>
+                                        </button>
+                                        <button id="zoom-out-index" class="bg-white rounded-lg shadow-md p-2 hover:bg-gray-100 focus:outline-none">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Rankings Table -->
+                            <div class="overflow-auto max-h-96">
+                                <table id="index-rankings-table" class="min-w-full">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-4 py-2 border-b text-left" data-sort="name">Country</th>
+                                            <th class="px-4 py-2 border-b text-right" data-sort="indexValue">Index Value</th>
+                                            <th class="px-4 py-2 border-b text-right" data-sort="rank">Rank</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Table rows will be populated by IndexTableVisualizer -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between mt-6">
+                <button id="back-to-explore" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Back to Explore</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Completion Modal -->
+    <div id="completion-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-lg w-full">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold">Activity Completed!</h2>
+                <button id="close-modal-x" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <p class="mb-4">You have successfully completed the Well-being Index Activity.</p>
+            
+            <div class="p-4 bg-green-50 rounded-lg mb-4">
+                <p class="mb-2"><strong>Next Steps:</strong></p>
+                <ol class="list-decimal pl-5 space-y-1">
+                    <li>Submit your index data to the class Google Sheet</li>
+                    <li>Complete your written responses to the reflection questions</li>
+                    <li>Prepare to discuss your index in the next class session</li>
+                </ol>
+            </div>
+            
+            <div class="flex justify-end">
+                <button id="close-modal" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-gray-100 border-t mt-12 py-6 px-4">
+    <div class="container mx-auto">
+        <p class="text-gray-600">© 2026 Economics Department</p>
+    </div>
+</footer>
+
+<!-- JavaScript -->
+<script>
+// Initialize the index manager
+window.indexManager = new IndexManager();
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Step 1: Handle navigation between tabs
+    setupNavigation();
+});
+
+// =============================================
+// NAVIGATION FUNCTIONS
+// =============================================
+
+// Set up navigation between steps
+function setupNavigation() {
+    // Get all navigation buttons and step content sections
+    const navButtons = document.querySelectorAll('.step-nav');
+    const stepContents = document.querySelectorAll('.step-content');
+
+    // Navigation button click handler
+    function handleNavClick(event) {
+        const targetId = event.target.id.replace('nav-', '');
+
+        // Update navigation buttons
+        navButtons.forEach(button => {
+            if (button.id === event.target.id) {
+                button.classList.add('border-blue-600', 'text-blue-600');
+                button.classList.remove('border-transparent', 'text-gray-500');
+            } else {
+                button.classList.remove('border-blue-600', 'text-blue-600');
+                button.classList.add('border-transparent', 'text-gray-500');
+            }
+        });
+
+        // Show the target content, hide others
+        stepContents.forEach(content => {
+            if (content.id === `step-${targetId}`) {
+                content.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
+            }
+        });
+
+        // Initialize charts when showing the compare tab
+        if (targetId === 'compare') {
+            setTimeout(initializeCharts, 100); // Short delay to ensure elements are visible
+        }
+    }
+
+    // Add click listeners to all navigation buttons
+    navButtons.forEach(button => {
+        button.addEventListener('click', handleNavClick);
+    });
+
+    // Set up next/back button handlers
+    document.getElementById('next-explore')?.addEventListener('click', function () {
+        document.getElementById('nav-explore').click();
+    });
+
+    document.getElementById('back-to-instructions')?.addEventListener('click', function () {
+        document.getElementById('nav-instructions').click();
+    });
+
+    document.getElementById('next-to-create')?.addEventListener('click', function () {
+        document.getElementById('nav-create').click();
+    });
+
+    document.getElementById('back-to-explore')?.addEventListener('click', function () {
+        document.getElementById('nav-explore').click();
+    });
+
+    document.getElementById('next-to-compare')?.addEventListener('click', function () {
+        document.getElementById('nav-compare').click();
+        updateSummary();
+    });
+
+    document.getElementById('back-to-create')?.addEventListener('click', function () {
+        document.getElementById('nav-create').click();
+    });
+
+    // Set up completion modal
+    document.getElementById('finish-activity')?.addEventListener('click', function () {
+        document.getElementById('completion-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('close-modal')?.addEventListener('click', function () {
+        document.getElementById('completion-modal').classList.add('hidden');
+    });
+
+    document.getElementById('close-modal-x')?.addEventListener('click', function () {
+        document.getElementById('completion-modal').classList.add('hidden');
+    });
+}
+
+// Function to toggle category visibility
+window.toggleCategory = function(category) {
+    const variables = document.getElementById(`${category}-variables`);
+    const toggle = document.getElementById(`${category}-toggle`);
+    
+    if (variables.style.display === 'none') {
+        variables.style.display = 'block';
+        toggle.textContent = '▼';
+    } else {
+        variables.style.display = 'none';
+        toggle.textContent = '►';
+    }
+};
+
+// Update the summary in the compare tab
+function updateSummary() {
+    // Get the index name and justification
+    const indexName = document.getElementById('index-name')?.value || 'Custom Well-being Index';
+    const justification = document.getElementById('index-justification')?.value || 'No justification provided';
+    
+    // Update the summary section
+    document.getElementById('summary-index-name').textContent = indexName;
+    document.getElementById('summary-justification').textContent = justification;
+    
+    // Get selected variables
+    const selectedVariables = document.querySelectorAll('.selected-variable-item');
+    
+    // Create a list of variables and weights
+    let variablesList = '';
+    selectedVariables.forEach(item => {
+        const name = item.querySelector('.font-medium').textContent;
+        const weight = item.querySelector('.weight-input').value;
+        variablesList += `<div class="flex justify-between"><span>• ${name}</span><span class="font-medium">${weight}%</span></div>`;
+    });
+    
+    // Update the summary variables
+    if (variablesList) {
+        document.getElementById('summary-variables').innerHTML = variablesList;
+    } else {
+        document.getElementById('summary-variables').innerHTML = '<p class="text-gray-400">No variables selected</p>';
+    }
+}
+
+// Initialize charts for the compare page
+function initializeCharts() {
+    // Get the selected variables and their weights
+    const selectedItems = document.querySelectorAll('.selected-variable-item');
+    const categories = {};
+    const labels = [];
+    const data = [];
+    
+    // Group variables by category and collect data
+    selectedItems.forEach(item => {
+        const category = item.dataset.category || 'other';
+        const weight = parseInt(item.querySelector('.weight-input').value);
+        
+        if (!categories[category]) {
+            categories[category] = 0;
+        }
+        
+        categories[category] += weight;
+        
+        labels.push(item.querySelector('.font-medium').textContent);
+        data.push(weight);
+    });
+    
+    // If we have selected variables, update the chart
+    if (labels.length > 0) {
+        // Create summary weight chart
+        new Chart(document.getElementById('summary-weight-chart').getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        '#3b82f6', // blue
+                        '#10b981', // green
+                        '#f59e0b', // yellow
+                        '#14b8a6', // teal
+                        '#8b5cf6', // purple
+                        '#ef4444', // red
+                        '#ec4899', // pink
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // AI weight chart (static for demo)
+    new Chart(document.getElementById('ai-weight-chart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: ['Income Equality', 'Life Expectancy', 'Education Quality', 'Environmental Quality', 'Healthcare Access', 'Democratic Participation', 'Social Support'],
+            datasets: [{
+                data: [15, 20, 15, 15, 15, 10, 10],
+                backgroundColor: [
+                    '#3b82f6', // blue
+                    '#10b981', // green
+                    '#f59e0b', // yellow
+                    '#14b8a6', // teal
+                    '#8b5cf6', // purple
+                    '#ef4444', // red
+                    '#ec4899', // pink
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        font: {
+                            size: 10
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Common variables chart (static for demo)
+    new Chart(document.getElementById('common-variables-chart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['Life Expectancy', 'GDP per Capita', 'Education', 'Healthcare Access', 'Income Inequality'],
+            datasets: [{
+                label: 'Times Selected',
+                data: [18, 15, 12, 10, 8],
+                backgroundColor: '#3b82f6'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 20
+                }
+            }
+        }
+    });
+    
+    // Category weights chart (static for demo)
+    new Chart(document.getElementById('category-weights-chart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['Economic', 'Health', 'Education', 'Environment', 'Social', 'Governance'],
+            datasets: [{
+                label: 'Average Weight (%)',
+                data: [22, 25, 18, 12, 13, 10],
+                backgroundColor: [
+                    '#3b82f6', // blue
+                    '#10b981', // green
+                    '#f59e0b', // yellow
+                    '#14b8a6', // teal
+                    '#8b5cf6', // purple
+                    '#ef4444', // red
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 30
+                }
+            }
+        }
+    });
+}
+
+// =============================================
+// VARIABLE SELECTION FUNCTIONS
+// =============================================
+
+// Set up variable selection functionality
+function setupVariableSelection() {
+    // Initialize index manager if not already done
+    if (!window.indexManager) {
+        window.indexManager = new IndexManager();
+    }
+    
+    // Remove old event listeners
+    const variableOptions = document.querySelectorAll('.variable-option');
+    variableOptions.forEach(option => {
+        const newOption = option.cloneNode(true);
+        option.parentNode.replaceChild(newOption, option);
+    });
+    
+    // Handle variable selection
+    document.querySelectorAll('.variable-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const variableId = this.dataset.id;
+            const category = this.dataset.category;
+            const name = this.dataset.name;
+            const description = this.dataset.description;
+            
+            if (window.indexManager) {
+                if (this.classList.contains('bg-gray-100')) {
+                    window.indexManager.removeVariable(variableId);
+                    this.classList.remove('bg-gray-100');
+                } else {
+                    window.indexManager.addVariable(variableId, category, name, description);
+                }
+            }
+        });
+    });
+    
+    // Handle character count for justification
+    const justificationField = document.getElementById('index-justification');
+    const charCount = document.getElementById('char-count');
+    
+    if (justificationField && charCount) {
+        justificationField.addEventListener('input', function() {
+            const remaining = 250 - this.value.length;
+            charCount.textContent = remaining;
+            
+            if (remaining < 0) {
+                charCount.classList.add('text-red-600');
+            } else {
+                charCount.classList.remove('text-red-600');
+            }
+        });
+    }
+}
+</script>
+</body>
+</html>

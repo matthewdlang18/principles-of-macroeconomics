@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leading Economic Indicators - Principles of Macroeconomics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 60vh;
+            min-height: 400px;
+        }
+        .banner-container {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: ;
+            color: white;
+            padding: 2rem;
+        }
+        .nav-links {
+            margin-bottom: 2rem;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            margin-right: 1.5rem;
+            font-weight: 300;
+        }
+        .nav-link:hover {
+            color: white;
+        }
+        .activity-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+        .activity-date {
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: rgba(255,255,255,0.8);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner13.png" alt="Economic Indicators Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container mx-auto">
+                    <div class="nav-links">
+                        <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+                        <a href="../index.html" class="nav-link">← Back to Activities</a>
+                    </div>
+                    <h1 class="activity-title">Discussion Activity 3: Leading Economic Indicators</h1>
+                    <p class="activity-date">February 10-13, 2026 (Week 6)</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Step Navigation -->
+    <div class="flex mb-8 border-b">
+        <button id="nav-instructions" class="step-nav font-medium px-4 py-2 border-b-2 border-blue-600 text-blue-600">1. Instructions</button>
+        <button id="nav-explore" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">2. Explore Indicators</button>
+        <a href="index-builder.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">3. Build Index</a>
+    </div>
+
+    <!-- Instructions Step -->
+    <div id="step-instructions" class="step-content">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold mb-4">Instructions</h2>
+            <p class="mb-4">In this activity, you will explore leading economic indicators and their relationship to recessions.</p>
+
+            <h3 class="text-xl font-semibold mb-3">Understanding Leading Economic Indicators</h3>
+            <p class="mb-4">Leading economic indicators are statistics that provide early signals of where the economy is heading. They are called "leading" because they tend to shift direction before the economy as a whole changes. In this activity, we'll explore several key leading indicators:</p>
+
+            <ul class="list-disc pl-6 space-y-2 mb-6">
+                <li><strong>10Y-2Y Yield Spread:</strong> The difference between 10-year and 2-year Treasury yields. An inverted yield curve (negative spread) often precedes recessions.</li>
+                <li><strong>ISM New Orders:</strong> A measure of new orders in manufacturing. Values below 50 indicate contraction.</li>
+                <li><strong>Building Permits:</strong> A measure of future construction activity. Declining permits may signal economic slowdown.</li>
+                <li><strong>Consumer Confidence:</strong> Measures consumers' optimism about the economy. Lower confidence often precedes reduced spending.</li>
+                <li><strong>PMI (Purchasing Managers Index):</strong> A composite index of manufacturing activity. Values below 50 indicate contraction.</li>
+                <li><strong>Initial Unemployment Claims:</strong> Weekly new jobless claims. Rising claims often signal labor market weakness.</li>
+                <li><strong>S&P 500:</strong> A broad measure of stock market performance. Stock prices often reflect future economic expectations.</li>
+                <li><strong>CLI (Composite Leading Indicator):</strong> An OECD index combining multiple leading indicators.</li>
+            </ul>
+
+
+            <h3 class="text-xl font-semibold mt-6 mb-3">Video Overview: Leading Economic Indicators</h3>
+            <p class="mb-4">Here is a very recent video (April 30th) discussing the role of building permits in predicting economic downturns:</p>
+
+            <div class="aspect-w-16 aspect-h-9 mb-6">
+                <iframe class="w-full h-96" src="https://www.youtube.com/embed/IujPdS7ucMI" title="Leading Economic Indicators" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <p class="mb-4">Next steps:</p>
+            <ol class="list-decimal pl-6 space-y-2">
+                <li>Explore the individual indicators and their historical patterns in the next tab.</li>
+                <li>Analyze how each indicator behaves before and during recessions.</li>
+                <li>Finally, create your own leading index by combining these indicators.</li>
+            </ol>
+
+            <div class="mt-8">
+                <button onclick="document.getElementById('nav-explore').click()" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Start Exploring →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Explore Step -->
+    <div id="step-explore" class="step-content hidden">
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Controls -->
+                <div class="lg:col-span-1 space-y-6 bg-white p-6 rounded-lg shadow">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Compare Indicator
+                        </label>
+                        <select id="indicator-compare" class="w-full p-2 border rounded">
+                            <option value="all">Compare All Indicators</option>
+                            <option value="10Y2Y_Yield">10Y-2Y Yield Spread</option>
+                            <option value="ISM_Orders">ISM New Orders</option>
+                            <option value="Building_Permits">Building Permits</option>
+                            <option value="Consumer_Confidence">Consumer Confidence</option>
+                            <option value="CLI">Composite Leading Indicator</option>
+                            <option value="SP500">S&P 500</option>
+                            <option value="Initial_Claims">Initial Claims</option>
+                            <option value="PMI">PMI</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Overlay Options
+                        </label>
+                        <div>
+                            <input type="checkbox" id="show-gdp" class="mr-2">
+                            <label for="show-gdp">Show GDP Growth</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="show-unemployment" class="mr-2">
+                            <label for="show-unemployment">Show Unemployment Rate</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="highlight-recessions" class="mr-2" checked>
+                            <label for="highlight-recessions">Highlight Recessions</label>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-medium mb-4">Signal Analysis</h3>
+                        <p class="mb-4">Analyzing signals for <span class="font-medium" id="currentSignalType"></span></p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th class="px-4 py-2 text-left">Date</th>
+                                        <th class="px-4 py-2 text-left">Value</th>
+                                        <th class="px-4 py-2 text-left">Result</th>
+                                        <th class="px-4 py-2 text-left">Lead Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="signalAnalysis"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart and Timeline -->
+                <div class="lg:col-span-2 space-y-8">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="chart-container">
+                            <canvas id="relationshipChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-medium mb-4">Lead Time Analysis</h3>
+                        <div id="leadTimeStats" class="text-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Results -->
+            <div id="analysisResults" class="bg-white rounded-lg shadow-md p-6 mt-6"></div>
+        </main>
+
+        <!-- Add Next Button at the bottom -->
+        <div class="mt-8 text-center">
+            <a href="index-builder.html" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Build Your Index →
+            </a>
+        </div>
+    </div>
+
+    <!-- Analyze Step -->
+    <div id="step-analyze" class="step-content hidden">
+        <!-- Your existing analyze content -->
+    </div>
+
+    <script>
+        // Global variables
+        let globalData = [];
+        let recessions = [];
+        let chart = null;
+        let currentIndicator = '10Y2Y_Yield';
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Load indicator data
+                const response = await fetch('data/LeadingIndicators.csv');
+                const csvText = await response.text();
+                const rows = csvText.split('\n').slice(1); // Skip header row
+
+                // Process main data
+                globalData = rows
+                    .filter(row => row.trim())
+                    .map(row => {
+                        const values = row.split(',');
+                        const date = values[0];
+                        const [month, , year] = date.split('/');
+                        const fullYear = parseInt(year) + (parseInt(year) < 50 ? 2000 : 1900);
+                        const formattedDate = `${fullYear}-${month.padStart(2, '0')}-01`;
+
+                        return {
+                            date: formattedDate,
+                            yield: parseFloat(values[1]),
+                            orders: parseFloat(values[2]),
+                            gdp: parseFloat(values[3]),
+                            permits: parseFloat(values[5]),
+                            confidence: parseFloat(values[6]),
+                            pmi: parseFloat(values[7]),
+                            claims: parseFloat(values[8]),
+                            unemployment: parseFloat(values[9]),
+                            cli: parseFloat(values[10]),
+                            sp500: parseFloat(values[11])
+                        };
+                    })
+                    .filter(d => new Date(d.date) >= new Date('1976-01-01'))
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                // Load recession data
+                const recessResponse = await fetch('data/recessions.csv');
+                const recessText = await recessResponse.text();
+                recessions = recessText
+                    .split('\n')
+                    .filter(row => row.trim())
+                    .map(row => {
+                        const [start, end] = row.split(',').map(d => d.trim());
+                        return { start, end };
+                    })
+                    .filter(r => new Date(r.start) >= new Date('1976-01-01'));
+
+                // Initialize the interface
+                updateLeadTimeStats('all');
+                const data = getIndicatorData(currentIndicator);
+                updateChart(data, recessions);
+
+                // Add event listeners
+                document.getElementById('indicator-compare').addEventListener('change', (e) => {
+                    currentIndicator = e.target.value;
+                    updateLeadTimeStats(currentIndicator);
+                    if (currentIndicator !== 'all') {
+                        const data = getIndicatorData(currentIndicator);
+                        updateChart(data, recessions);
+                        updateAnalysis(currentIndicator);
+                    } else {
+                        document.getElementById('analysisResults').innerHTML = '';
+                        updateLeadTimeStats('all');
+                    }
+                });
+
+                document.getElementById('show-gdp').addEventListener('change', () => {
+                    const data = getIndicatorData(currentIndicator);
+                    updateChart(data, recessions);
+                });
+
+                document.getElementById('show-unemployment').addEventListener('change', () => {
+                    const data = getIndicatorData(currentIndicator);
+                    updateChart(data, recessions);
+                });
+
+                document.getElementById('highlight-recessions').addEventListener('change', () => {
+                    const data = getIndicatorData(currentIndicator);
+                    updateChart(data, recessions);
+                });
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('leadTimeStats').innerHTML =
+                    '<div class="text-red-500">Error loading data. Please try refreshing the page.</div>';
+            }
+        });
+
+        function analyzeLeadTimes(indicator) {
+            if (indicator === 'all') {
+                return null;
+            }
+
+            const data = getIndicatorData(indicator);
+            let leadTimes = [];
+
+            recessions.forEach(recession => {
+                const recessionStart = new Date(recession.start);
+                const lookbackStart = new Date(recessionStart);
+                lookbackStart.setMonth(lookbackStart.getMonth() - 24);
+
+                const relevantData = data.filter(d => {
+                    const date = new Date(d.date);
+                    return date >= lookbackStart && date <= recessionStart;
+                });
+
+                let signal = null;
+                switch(indicator) {
+                    case '10Y2Y_Yield':
+                        signal = relevantData.find(d => d.value <= 0);
+                        break;
+                    case 'ISM_Orders':
+                    case 'PMI':
+                        signal = relevantData.find(d => d.value < 50);
+                        break;
+                    case 'Building_Permits':
+                    case 'Consumer_Confidence':
+                        if (relevantData.length > 0) {
+                            const peak = Math.max(...relevantData.map(d => d.value));
+                            signal = relevantData.find(d => d.value < peak * 0.9);
+                        }
+                        break;
+                    case 'CLI':
+                        signal = relevantData.find(d => d.value < 99);
+                        break;
+                    case 'SP500':
+                        if (relevantData.length > 0) {
+                            const peak = Math.max(...relevantData.map(d => d.value));
+                            signal = relevantData.find(d => d.value < peak * 0.8);
+                        }
+                        break;
+                    case 'Initial_Claims':
+                        if (relevantData.length > 0) {
+                            const baseline = relevantData[0].value;
+                            signal = relevantData.find(d => d.value > baseline * 1.1);
+                        }
+                        break;
+                }
+
+                if (signal) {
+                    const signalDate = new Date(signal.date);
+                    const leadTime = Math.round((recessionStart - signalDate) / (30 * 24 * 60 * 60 * 1000));
+                    leadTimes.push({
+                        recession: recession.start,
+                        leadTime,
+                        signalValue: signal.value
+                    });
+                }
+            });
+
+            return {
+                averageLeadTime: leadTimes.length ?
+                    Math.round(leadTimes.reduce((a, b) => a + b.leadTime, 0) / leadTimes.length) :
+                    'N/A',
+                successRate: `${Math.round((leadTimes.length / recessions.length) * 100)}%`,
+                details: leadTimes,
+                totalRecessions: recessions.length
+            };
+        }
+
+        function getIndicatorData(indicator) {
+            return globalData.map(d => {
+                let value;
+                switch(indicator) {
+                    case '10Y2Y_Yield':
+                        value = d.yield;
+                        break;
+                    case 'ISM_Orders':
+                        value = d.orders;
+                        break;
+                    case 'Building_Permits':
+                        value = d.permits;
+                        break;
+                    case 'Consumer_Confidence':
+                        value = d.confidence;
+                        break;
+                    case 'CLI':
+                        value = d.cli;
+                        break;
+                    case 'SP500':
+                        value = d.sp500;
+                        break;
+                    case 'Initial_Claims':
+                        value = d.claims;
+                        break;
+                    case 'PMI':
+                        value = d.pmi;
+                        break;
+                }
+                return {
+                    date: d.date,
+                    value: value,
+                    threshold: getThreshold(indicator)
+                };
+            }).filter(d => !isNaN(d.value));
+        }
+
+        function getThreshold(indicator) {
+            switch(indicator) {
+                case '10Y2Y_Yield':
+                    return 0;
+                case 'ISM_Orders':
+                case 'PMI':
+                    return 50;
+                case 'CLI':
+                    return 99;
+                default:
+                    return null;
+            }
+        }
+
+        function getIndicatorLabel(indicator) {
+            switch(indicator) {
+                case '10Y2Y_Yield':
+                    return 'Yield Curve Spread';
+                case 'ISM_Orders':
+                    return 'ISM New Orders';
+                case 'Building_Permits':
+                    return 'Building Permits';
+                case 'Consumer_Confidence':
+                    return 'Consumer Confidence';
+                case 'CLI':
+                    return 'Composite Leading Indicator';
+                case 'SP500':
+                    return 'S&P 500';
+                case 'Initial_Claims':
+                    return 'Initial Claims';
+                case 'PMI':
+                    return 'PMI';
+                default:
+                    return indicator;
+            }
+        }
+
+        function analyzeIndicator(indicator, data) {
+            const signals = [];
+            const rules = {
+                '10Y2Y_Yield': {
+                    description: 'Signal when spread is negative for 3+ months',
+                    threshold: 0,
+                    minMonths: 3,
+                    typicalLeadTime: '12-18 months'
+                },
+                'ISM_Orders': {
+                    description: 'Signal when below 45 for 2+ months',
+                    threshold: 45,
+                    minMonths: 2,
+                    typicalLeadTime: '3-6 months'
+                },
+                'Building_Permits': {
+                    description: '10% YOY decline for 3+ months',
+                    threshold: -10,
+                    minMonths: 3,
+                    typicalLeadTime: '6-12 months'
+                },
+                'Consumer_Confidence': {
+                    description: '15+ point drop over 6 months',
+                    threshold: -15,
+                    periodMonths: 6,
+                    typicalLeadTime: '3-6 months'
+                },
+                'PMI': {
+                    description: 'Below 48 for 2+ months',
+                    threshold: 48,
+                    minMonths: 2,
+                    typicalLeadTime: '3-6 months'
+                },
+                'Initial_Claims': {
+                    description: '15% increase over 3 months',
+                    threshold: 15,
+                    periodMonths: 3,
+                    typicalLeadTime: '2-4 months'
+                },
+                'CLI': {
+                    description: 'Below 99 for 3+ months after being above 100',
+                    threshold: 99,
+                    minMonths: 3,
+                    requirePrior: 100,
+                    typicalLeadTime: '6-9 months'
+                },
+                'SP500': {
+                    description: '20% decline from 52-week high',
+                    threshold: -20,
+                    periodMonths: 12,
+                    typicalLeadTime: '3-6 months'
+                }
+            };
+
+            const rule = rules[indicator];
+            if (!rule) return { signals: [], analysis: null };
+
+            let consecutiveCount = 0;
+            let lastValue = null;
+            let signalActive = false;
+            let priorConditionMet = !rule.requirePrior;
+
+            // For rolling calculations
+            const rollingWindow = rule.periodMonths || rule.minMonths || 3;
+            const values = [];
+
+            data.forEach((point, i) => {
+                const value = point.value;
+                values.push({ date: point.date, value });
+
+                if (values.length > rollingWindow) {
+                    values.shift();
+                }
+
+                // Check for prior condition (e.g., CLI being above 100)
+                if (rule.requirePrior && value > rule.requirePrior) {
+                    priorConditionMet = true;
+                }
+
+                // Calculate metric based on indicator type
+                let metricValue = value;
+                if (indicator === 'Building_Permits' || indicator === 'SP500') {
+                    // Calculate YOY change
+                    const yearAgoIndex = data.findIndex(d =>
+                        new Date(d.date).getTime() === new Date(point.date).getTime() - 365 * 24 * 60 * 60 * 1000
+                    );
+                    if (yearAgoIndex >= 0) {
+                        metricValue = ((value - data[yearAgoIndex].value) / data[yearAgoIndex].value) * 100;
+                    }
+                } else if (indicator === 'Consumer_Confidence' || indicator === 'Initial_Claims') {
+                    // Calculate change over period
+                    if (values.length === rollingWindow) {
+                        metricValue = ((value - values[0].value) / values[0].value) * 100;
+                    }
+                }
+
+                // Check if threshold is breached
+                const isBreached = rule.threshold > 0 ?
+                    metricValue < rule.threshold :
+                    metricValue < rule.threshold;
+
+                if (isBreached && priorConditionMet) {
+                    consecutiveCount++;
+                    if (consecutiveCount >= (rule.minMonths || 1) && !signalActive) {
+                        signalActive = true;
+                        signals.push({
+                            date: point.date,
+                            value: metricValue,
+                            type: 'signal'
+                        });
+                    }
+                } else {
+                    consecutiveCount = 0;
+                    signalActive = false;
+                }
+
+                lastValue = value;
+            });
+
+            // Analyze signals against recessions
+            const analysis = signals.map(signal => {
+                const signalDate = new Date(signal.date);
+                let result = 'False Positive';
+                let leadTime = null;
+                let duringRecession = false;
+
+                // Check if signal occurred during a recession
+                for (const recession of recessions) {
+                    const recessionStart = new Date(recession.start);
+                    const recessionEnd = new Date(recession.end);
+
+                    if (signalDate >= recessionStart && signalDate <= recessionEnd) {
+                        duringRecession = true;
+                        break;
+                    }
+                }
+
+                // If not during recession, check if it predicted one
+                if (!duringRecession) {
+                    for (const recession of recessions) {
+                        const recessionStart = new Date(recession.start);
+                        const leadTimeMonths = Math.round((recessionStart - signalDate) / (30 * 24 * 60 * 60 * 1000));
+
+                        if (leadTimeMonths > 0 && leadTimeMonths <= 24) {
+                            result = 'True Positive';
+                            leadTime = leadTimeMonths;
+                            break;
+                        }
+                    }
+                }
+
+                return {
+                    ...signal,
+                    result,
+                    leadTime,
+                    duringRecession
+                };
+            });
+
+            // Calculate success metrics
+            const validSignals = analysis.filter(s => !s.duringRecession);
+            const truePositives = validSignals.filter(s => s.result === 'True Positive');
+            const successRate = validSignals.length > 0 ?
+                (truePositives.length / validSignals.length * 100).toFixed(1) : 'N/A';
+            const avgLeadTime = truePositives.length > 0 ?
+                Math.round(truePositives.reduce((sum, s) => sum + s.leadTime, 0) / truePositives.length) : 'N/A';
+
+            return {
+                signals: analysis,
+                rule: rules[indicator],
+                stats: {
+                    totalSignals: signals.length,
+                    validSignals: validSignals.length,
+                    truePositives: truePositives.length,
+                    duringRecession: analysis.filter(s => s.duringRecession).length,
+                    successRate,
+                    avgLeadTime
+                }
+            };
+        }
+
+        function updateLeadTimeStats(selectedIndicator) {
+            const statsDiv = document.getElementById('leadTimeStats');
+
+            if (selectedIndicator === 'all') {
+                // Compare all indicators
+                const allStats = ['10Y2Y_Yield', 'ISM_Orders', 'Building_Permits',
+                    'Consumer_Confidence', 'CLI', 'SP500', 'Initial_Claims', 'PMI']
+                    .map(ind => {
+                        const data = getIndicatorData(ind);
+                        const analysis = analyzeIndicator(ind, data);
+                        return {
+                            name: getIndicatorLabel(ind),
+                            ...analysis.stats,
+                            rule: analysis.rule
+                        };
+                    })
+                    .filter(stat => stat.validSignals > 0);
+
+                statsDiv.innerHTML = `
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-2 text-left">Indicator</th>
+                                    <th class="px-4 py-2 text-left">Rule</th>
+                                    <th class="px-4 py-2 text-left">Success Rate</th>
+                                    <th class="px-4 py-2 text-left">Avg Lead Time</th>
+                                    <th class="px-4 py-2 text-left">Signals</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${allStats.map(stat => `
+                                    <tr class="border-b hover:bg-gray-50">
+                                        <td class="px-4 py-2">${stat.name}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-600">${stat.rule.description}</td>
+                                        <td class="px-4 py-2">
+                                            <span class="font-medium ${
+                                                stat.successRate > 70 ? 'text-green-600' :
+                                                stat.successRate > 40 ? 'text-yellow-600' :
+                                                'text-red-600'
+                                            }">
+                                                ${stat.successRate}%
+                                            </span>
+                                            <span class="text-sm text-gray-500">
+                                                (${stat.truePositives}/${stat.validSignals})
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2">
+                                            ${stat.avgLeadTime} months
+                                            <span class="text-sm text-gray-500">
+                                                (Expected: ${stat.rule.typicalLeadTime})
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2">
+                                            ${stat.validSignals} valid
+                                            ${stat.duringRecession > 0 ?
+                                                `<span class="text-sm text-gray-500">(+${stat.duringRecession} during)</span>` :
+                                                ''}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                // Show detailed analysis for single indicator
+                const data = getIndicatorData(selectedIndicator);
+                const analysis = analyzeIndicator(selectedIndicator, data);
+                const { stats, signals, rule } = analysis;
+
+                statsDiv.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-medium">Rule Analysis</h4>
+                            <p class="text-sm text-gray-600 mt-1">${rule.description}</p>
+                            <p class="mt-2">
+                                Success Rate:
+                                <span class="font-medium ${
+                                    stats.successRate > 70 ? 'text-green-600' :
+                                    stats.successRate > 40 ? 'text-yellow-600' :
+                                    'text-red-600'
+                                }">
+                                    ${stats.successRate}%
+                                </span>
+                                <span class="text-sm text-gray-500">
+                                    (${stats.truePositives} of ${stats.validSignals} signals)
+                                </span>
+                            </p>
+                            <p class="mt-1">
+                                Average Lead Time:
+                                <span class="font-medium">${stats.avgLeadTime} months</span>
+                                <span class="text-sm text-gray-500">
+                                    (Expected: ${rule.typicalLeadTime})
+                                </span>
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-medium mb-2">Signal History</h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr class="bg-gray-50">
+                                            <th class="px-4 py-2 text-left">Date</th>
+                                            <th class="px-4 py-2 text-left">Value</th>
+                                            <th class="px-4 py-2 text-left">Result</th>
+                                            <th class="px-4 py-2 text-left">Lead Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${signals.map(signal => `
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="px-4 py-2">
+                                                    ${new Date(signal.date).toLocaleDateString()}
+                                                </td>
+                                                <td class="px-4 py-2">${signal.value.toFixed(2)}</td>
+                                                <td class="px-4 py-2">
+                                                    <span class="px-2 py-1 text-sm rounded ${
+                                                        signal.duringRecession ? 'bg-gray-100 text-gray-800' :
+                                                        signal.result === 'True Positive' ? 'bg-green-100 text-green-800' :
+                                                        'bg-red-100 text-red-800'
+                                                    }">
+                                                        ${signal.duringRecession ? 'During Recession' :
+                                                          signal.result}
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-2">
+                                                    ${signal.duringRecession ? 'N/A' :
+                                                      signal.leadTime ? `${signal.leadTime} months` : 'None'}
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateChart(data, recessions) {
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('relationshipChart').getContext('2d');
+            const showGDP = document.getElementById('show-gdp').checked;
+            const showUnemployment = document.getElementById('show-unemployment').checked;
+            const highlightRecessions = document.getElementById('highlight-recessions').checked;
+
+            // Analyze the indicator
+            const analysis = analyzeIndicator(currentIndicator, data);
+
+            // Update signal type display
+            document.getElementById('currentSignalType').textContent = analysis.rule.description;
+
+            // Update signal analysis table
+            const signalRows = analysis.signals.map(signal => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-4 py-2">${new Date(signal.date).toLocaleDateString()}</td>
+                    <td class="px-4 py-2">${signal.value.toFixed(2)}</td>
+                    <td class="px-4 py-2">
+                        <span class="px-2 py-1 text-sm rounded ${
+                            signal.duringRecession ? 'bg-gray-100 text-gray-800' :
+                            signal.result === 'True Positive' ? 'bg-green-100 text-green-800' :
+                            'bg-red-100 text-red-800'
+                        }">
+                            ${signal.duringRecession ? 'During Recession' :
+                              signal.result}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2">${signal.duringRecession ? 'N/A' :
+                      signal.leadTime ? `${signal.leadTime} months` : 'None'}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('signalAnalysis').innerHTML = signalRows;
+
+            const datasets = [{
+                label: getIndicatorLabel(currentIndicator),
+                data: data.map(d => ({ x: d.date, y: d.value })),
+                borderColor: 'rgb(59, 130, 246)',
+                borderWidth: 2,
+                pointRadius: 0,
+                yAxisID: 'y'
+            }];
+
+            if (showGDP) {
+                datasets.push({
+                    label: 'GDP Growth',
+                    data: globalData
+                        .filter(d => !isNaN(d.gdp))
+                        .map(d => ({ x: d.date, y: d.gdp })),
+                    borderColor: 'rgb(34, 197, 94)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    yAxisID: 'gdp'
+                });
+            }
+
+            if (showUnemployment) {
+                datasets.push({
+                    label: 'Unemployment Rate',
+                    data: globalData
+                        .filter(d => !isNaN(d.unemployment))
+                        .map(d => ({ x: d.date, y: d.unemployment })),
+                    borderColor: 'rgb(239, 68, 68)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    yAxisID: 'unemployment'
+                });
+            }
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'year',
+                                displayFormats: {
+                                    year: 'yyyy'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: getIndicatorLabel(currentIndicator)
+                            }
+                        },
+                        ...(showGDP ? {
+                            gdp: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'GDP Growth (%)'
+                                },
+                                grid: {
+                                    drawOnChartArea: false
+                                }
+                            }
+                        } : {}),
+                        ...(showUnemployment ? {
+                            unemployment: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Unemployment Rate (%)'
+                                },
+                                grid: {
+                                    drawOnChartArea: false
+                                }
+                            }
+                        } : {})
+                    },
+                    plugins: {
+                        annotation: {
+                            annotations: {
+                                ...recessions.reduce((acc, recession, i) => ({
+                                    ...acc,
+                                    [`recession${i}`]: {
+                                        type: 'box',
+                                        xMin: recession.start,
+                                        xMax: recession.end,
+                                        backgroundColor: 'rgba(200, 200, 200, 0.2)',
+                                        borderWidth: 0
+                                    }
+                                }), {}),
+                                ...analysis.signals.reduce((acc, signal, i) => ({
+                                    ...acc,
+                                    [`signal${i}`]: {
+                                        type: 'line',
+                                        xMin: signal.date,
+                                        xMax: signal.date,
+                                        borderColor: signal.duringRecession ?
+                                            'rgba(200, 200, 200, 0.5)' :
+                                            signal.result === 'True Positive' ?
+                                                'rgba(34, 197, 94, 0.5)' :
+                                                'rgba(239, 68, 68, 0.5)',
+                                        borderWidth: 2
+                                    }
+                                }), {})
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateAnalysis(indicator) {
+            const data = getIndicatorData(indicator);
+            const analysis = analyzeIndicator(indicator, data);
+
+            let analysisHtml = '';
+
+            if (indicator === 'CLI') {
+                const recentTrend = analysis.signals.slice(-6);
+                const avgRateOfChange = recentTrend.reduce((a, b) => a + b.value, 0) / recentTrend.length;
+
+                analysisHtml = `
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-medium">Recent Signals</h4>
+                            <ul class="mt-2 space-y-2">
+                                ${analysis.signals.slice(-5).map(signal => `
+                                    <li class="flex items-center">
+                                        <span class="w-24 text-sm text-gray-500">
+                                            ${new Date(signal.date).toLocaleDateString()}
+                                        </span>
+                                        <span class="px-2 py-1 text-sm rounded ${
+                                            signal.type === 'peak' ? 'bg-green-100 text-green-800' :
+                                            signal.type === 'trough' ? 'bg-red-100 text-red-800' :
+                                            signal.type === 'sustained_decline' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-blue-100 text-blue-800'
+                                        }">
+                                            ${
+                                                signal.type === 'peak' ? 'Peak' :
+                                                signal.type === 'trough' ? 'Trough' :
+                                                signal.type === 'sustained_decline' ? '6-Month Decline' :
+                                                signal.type === 'cross_above_100' ? 'Crossed Above 100' :
+                                                'Crossed Below 100'
+                                            }
+                                        </span>
+                                        <span class="ml-2">${signal.value.toFixed(2)}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-medium">Momentum Analysis</h4>
+                            <p class="mt-2">
+                                6-Month Rate of Change:
+                                <span class="${avgRateOfChange >= 0 ? 'text-green-600' : 'text-red-600'}">
+                                    ${avgRateOfChange.toFixed(2)}%
+                                </span>
+                            </p>
+                            <p class="text-sm text-gray-600 mt-1">
+                                ${
+                                    Math.abs(avgRateOfChange) > 2 ? 'Strong' :
+                                    Math.abs(avgRateOfChange) > 1 ? 'Moderate' :
+                                    'Weak'
+                                } ${avgRateOfChange >= 0 ? 'positive' : 'negative'} momentum
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else if (indicator === '10Y2Y_Yield') {
+                const inversions = analysis.signals.filter(s => s.type === 'inversion');
+                const currentSpread = data[data.length - 1].value;
+
+                analysisHtml = `
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-medium">Yield Curve Status</h4>
+                            <p class="mt-2 ${currentSpread >= 0 ? 'text-green-600' : 'text-red-600'}">
+                                Current Spread: ${currentSpread.toFixed(2)}%
+                            </p>
+                            <p class="text-sm text-gray-600 mt-1">
+                                ${
+                                    currentSpread >= 1 ? 'Normal yield curve' :
+                                    currentSpread >= 0 ? 'Flattening yield curve' :
+                                    'Inverted yield curve - recession signal'
+                                }
+                            </p>
+                        </div>
+                        ${inversions.length > 0 ? `
+                            <div>
+                                <h4 class="font-medium">Recent Inversions</h4>
+                                <ul class="mt-2 space-y-2">
+                                    ${inversions.slice(-3).map(inv => `
+                                        <li class="flex items-center">
+                                            <span class="w-24 text-sm text-gray-500">
+                                                ${new Date(inv.date).toLocaleDateString()}
+                                            </span>
+                                            <span class="px-2 py-1 text-sm bg-red-100 text-red-800 rounded">
+                                                Inversion
+                                            </span>
+                                            <span class="ml-2">${inv.value.toFixed(2)}%</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            document.getElementById('analysisResults').innerHTML = analysisHtml;
+        }
+    </script>
+
+    <script>
+        function setupNavigation() {
+            const steps = ['instructions', 'explore'];
+            const navButtons = steps.map(step => document.getElementById(`nav-${step}`));
+            const stepContents = steps.map(step => document.getElementById(`step-${step}`));
+
+            function showStep(index) {
+                navButtons.forEach((btn, i) => {
+                    if (i === index) {
+                        btn.classList.remove('text-gray-500', 'border-transparent');
+                        btn.classList.add('text-blue-600', 'border-blue-600');
+                    } else {
+                        btn.classList.remove('text-blue-600', 'border-blue-600');
+                        btn.classList.add('text-gray-500', 'border-transparent');
+                    }
+                });
+
+                stepContents.forEach((content, i) => {
+                    if (i === index) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Set up click handlers for nav buttons
+            navButtons.forEach((btn, index) => {
+                btn.addEventListener('click', () => showStep(index));
+            });
+
+            // Check for hash in URL
+            if (window.location.hash === '#explore') {
+                showStep(1);  // Show explore step
+            } else {
+                showStep(0);  // Show instructions by default
+            }
+
+            // Handle Start Exploring button
+            const startExploreBtn = document.querySelector('[onclick="document.getElementById(\'nav-explore\').click()"]');
+            if (startExploreBtn) {
+                startExploreBtn.addEventListener('click', () => showStep(1));
+            }
+        }
+
+        // Initialize navigation
+        setupNavigation();
+    </script>
+</body>
+</html>

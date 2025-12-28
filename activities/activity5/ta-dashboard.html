@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity 5 TA Dashboard - AI Exam Generator</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="../../js/supabase-init.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #8B5CF6;
+        }
+
+        .dashboard-header h1 {
+            color: #8B5CF6;
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        .dashboard-header p {
+            color: #666;
+            margin: 10px 0 0 0;
+            font-size: 1.1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .stat-card .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .section-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .section-tab {
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .section-tab.active {
+            background: #8B5CF6;
+            color: white;
+            border-color: #8B5CF6;
+        }
+
+        .section-tab:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        .content-sections {
+            display: grid;
+            gap: 30px;
+        }
+
+        .section-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .section-card-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section-card-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.3em;
+        }
+
+        .section-card-content {
+            padding: 20px;
+        }
+
+        .student-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.3s ease;
+        }
+
+        .student-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .student-item:last-child {
+            border-bottom: none;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-id {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .student-progress {
+            margin-top: 5px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .progress-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .progress-badge.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .progress-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .progress-badge.not-started {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .conversation-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #8B5CF6;
+        }
+
+        .conversation-preview h4 {
+            margin: 0 0 10px 0;
+            color: #8B5CF6;
+            font-size: 1em;
+        }
+
+        .conversation-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .refresh-button {
+            background: #8B5CF6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .refresh-button:hover {
+            background: #7C3AED;
+        }
+
+        .export-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-left: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .export-button:hover {
+            background: #218838;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .activity-details {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .activity-details.show {
+            display: block;
+        }
+
+        .toggle-details {
+            background: none;
+            border: none;
+            color: #8B5CF6;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: underline;
+        }
+
+        .toggle-details:hover {
+            color: #7C3AED;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-tabs {
+                flex-direction: column;
+            }
+
+            .student-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Activity 5 TA Dashboard</h1>
+            <p>AI Exam Generator - Student Progress & Analytics</p>
+            <div style="margin-top: 20px;">
+                <button class="refresh-button" id="refreshButton">Refresh Data</button>
+                <button class="export-button" id="exportButton">Export Data</button>
+            </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3>Total Students</h3>
+                <div class="stat-number" id="totalStudents">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active This Week</h3>
+                <div class="stat-number" id="activeStudents">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Completed Activity</h3>
+                <div class="stat-number" id="completedActivity">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Average Conversations</h3>
+                <div class="stat-number" id="avgConversations">-</div>
+            </div>
+        </div>
+
+        <div class="section-tabs" id="sectionTabs">
+            <!-- Section tabs will be populated here -->
+        </div>
+
+        <div class="content-sections">
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h3>Student Progress Overview</h3>
+                </div>
+                <div class="section-card-content">
+                    <div id="studentList" class="student-list">
+                        <div class="loading">Loading student data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h3>Recent Activity</h3>
+                </div>
+                <div class="section-card-content">
+                    <div id="recentActivity">
+                        <div class="loading">Loading recent activity...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Activity5Dashboard {
+            constructor() {
+                this.selectedSection = 'all';
+                this.studentsData = [];
+                this.sectionsData = [];
+                this.statsData = {};
+                this.recentActivityData = [];
+            }
+
+            async initialize() {
+                try {
+                    await this.loadSections();
+                    await this.loadData();
+                    this.setupEventListeners();
+                } catch (error) {
+                    console.error('Dashboard initialization error:', error);
+                    this.showError('Failed to initialize dashboard');
+                }
+            }
+
+            async loadSections() {
+                try {
+                    const { data: sections, error } = await supabase
+                        .from('ta_sections')
+                        .select('section_name')
+                        .order('section_name');
+
+                    if (error) throw error;
+
+                    this.sectionsData = sections;
+                    this.renderSectionTabs();
+                } catch (error) {
+                    console.error('Error loading sections:', error);
+                }
+            }
+
+            renderSectionTabs() {
+                const tabsContainer = document.getElementById('sectionTabs');
+                tabsContainer.innerHTML = '';
+
+                // Add "All Sections" tab
+                const allTab = document.createElement('div');
+                allTab.className = 'section-tab active';
+                allTab.textContent = 'All Sections';
+                allTab.onclick = () => this.selectSection('all');
+                tabsContainer.appendChild(allTab);
+
+                // Add individual section tabs
+                this.sectionsData.forEach(section => {
+                    const tab = document.createElement('div');
+                    tab.className = 'section-tab';
+                    tab.textContent = section.section_name;
+                    tab.onclick = () => this.selectSection(section.section_name);
+                    tabsContainer.appendChild(tab);
+                });
+            }
+
+            selectSection(sectionName) {
+                this.selectedSection = sectionName;
+                
+                // Update tab appearance
+                document.querySelectorAll('.section-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                event.target.classList.add('active');
+
+                // Reload data for selected section
+                this.loadData();
+            }
+
+            async loadData() {
+                try {
+                    await Promise.all([
+                        this.loadStudentProgress(),
+                        this.loadStats(),
+                        this.loadRecentActivity()
+                    ]);
+
+                    this.renderStudentList();
+                    this.renderStats();
+                    this.renderRecentActivity();
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.showError('Failed to load data');
+                }
+            }
+
+            async loadStudentProgress() {
+                try {
+                    let query = supabase
+                        .from('students')
+                        .select(`
+                            student_id,
+                            ta_sections!inner(section_name)
+                        `);
+
+                    if (this.selectedSection !== 'all') {
+                        query = query.eq('ta_sections.section_name', this.selectedSection);
+                    }
+
+                    const { data: students, error: studentsError } = await query;
+                    if (studentsError) throw studentsError;
+
+                    // Get activity data for each student
+                    const studentIds = students.map(s => s.student_id);
+                    
+                    const [conversationsData, reflectionsData, studyGuidesData] = await Promise.all([
+                        this.loadConversationsData(studentIds),
+                        this.loadReflectionsData(studentIds),
+                        this.loadStudyGuidesData(studentIds)
+                    ]);
+
+                    // Combine student data with activity progress
+                    this.studentsData = students.map(student => {
+                        const conversations = conversationsData.find(c => c.student_id === student.student_id);
+                        const reflection = reflectionsData.find(r => r.student_id === student.student_id);
+                        const studyGuide = studyGuidesData.find(s => s.student_id === student.student_id);
+
+                        return {
+                            ...student,
+                            conversations: conversations,
+                            reflection: reflection,
+                            studyGuide: studyGuide,
+                            progress: this.calculateProgress(conversations, reflection, studyGuide)
+                        };
+                    });
+
+                } catch (error) {
+                    console.error('Error loading student progress:', error);
+                    this.studentsData = [];
+                }
+            }
+
+            async loadConversationsData(studentIds) {
+                try {
+                    const { data, error } = await supabase
+                        .from('activity5_conversations')
+                        .select('*')
+                        .in('student_id', studentIds);
+
+                    if (error) throw error;
+                    return data || [];
+                } catch (error) {
+                    console.error('Error loading conversations:', error);
+                    return [];
+                }
+            }
+
+            async loadReflectionsData(studentIds) {
+                try {
+                    const { data, error } = await supabase
+                        .from('activity5_group_reflections')
+                        .select('*')
+                        .in('student_id', studentIds);
+
+                    if (error) throw error;
+                    return data || [];
+                } catch (error) {
+                    console.error('Error loading reflections:', error);
+                    return [];
+                }
+            }
+
+            async loadStudyGuidesData(studentIds) {
+                try {
+                    const { data, error } = await supabase
+                        .from('activity5_study_guides')
+                        .select('*')
+                        .in('student_id', studentIds);
+
+                    if (error) throw error;
+                    return data || [];
+                } catch (error) {
+                    console.error('Error loading study guides:', error);
+                    return [];
+                }
+            }
+
+            calculateProgress(conversations, reflection, studyGuide) {
+                const progress = {
+                    solo: conversations ? 'completed' : 'not-started',
+                    group: reflection ? 'completed' : 'not-started',
+                    study: studyGuide ? 'completed' : 'not-started'
+                };
+
+                // Calculate overall completion
+                const completedCount = Object.values(progress).filter(status => status === 'completed').length;
+                progress.overall = completedCount === 3 ? 'completed' : 
+                                  completedCount > 0 ? 'pending' : 'not-started';
+
+                return progress;
+            }
+
+            async loadStats() {
+                try {
+                    const totalStudents = this.studentsData.length;
+                    const activeStudents = this.studentsData.filter(s => s.conversations || s.reflection || s.studyGuide).length;
+                    const completedActivity = this.studentsData.filter(s => s.progress.overall === 'completed').length;
+                    
+                    // Calculate average conversations
+                    const conversationsCount = this.studentsData
+                        .filter(s => s.conversations)
+                        .map(s => {
+                            try {
+                                const convData = JSON.parse(s.conversations.conversation_data || '[]');
+                                return Math.floor(convData.length / 2); // Divide by 2 since each exchange has user + AI message
+                            } catch {
+                                return 0;
+                            }
+                        });
+                    
+                    const avgConversations = conversationsCount.length > 0 
+                        ? Math.round(conversationsCount.reduce((a, b) => a + b, 0) / conversationsCount.length)
+                        : 0;
+
+                    this.statsData = {
+                        totalStudents,
+                        activeStudents,
+                        completedActivity,
+                        avgConversations
+                    };
+                } catch (error) {
+                    console.error('Error calculating stats:', error);
+                    this.statsData = {
+                        totalStudents: 0,
+                        activeStudents: 0,
+                        completedActivity: 0,
+                        avgConversations: 0
+                    };
+                }
+            }
+
+            async loadRecentActivity() {
+                try {
+                    const { data, error } = await supabase
+                        .from('activity5_access_log')
+                        .select('*')
+                        .order('access_time', { ascending: false })
+                        .limit(10);
+
+                    if (error) throw error;
+                    this.recentActivityData = data || [];
+                } catch (error) {
+                    console.error('Error loading recent activity:', error);
+                    this.recentActivityData = [];
+                }
+            }
+
+            renderStudentList() {
+                const container = document.getElementById('studentList');
+                
+                if (this.studentsData.length === 0) {
+                    container.innerHTML = '<div class="loading">No students found for selected section.</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                this.studentsData.forEach(student => {
+                    const studentItem = document.createElement('div');
+                    studentItem.className = 'student-item';
+
+                    const conversationCount = student.conversations ? 
+                        Math.floor(JSON.parse(student.conversations.conversation_data || '[]').length / 2) : 0;
+
+                    studentItem.innerHTML = `
+                        <div class="student-info">
+                            <div class="student-id">${student.student_id}</div>
+                            <div class="student-progress">
+                                <span class="progress-badge ${student.progress.solo}">Solo Chat: ${student.progress.solo}</span>
+                                <span class="progress-badge ${student.progress.group}">Group Reflection: ${student.progress.group}</span>
+                                <span class="progress-badge ${student.progress.study}">Study Guide: ${student.progress.study}</span>
+                            </div>
+                            <button class="toggle-details" onclick="this.parentElement.parentElement.querySelector('.activity-details').classList.toggle('show')">
+                                View Details
+                            </button>
+                            <div class="activity-details">
+                                <div class="conversation-preview">
+                                    <h4>Activity Summary</h4>
+                                    <div class="conversation-stats">
+                                        <span>Conversations: ${conversationCount}</span>
+                                        <span>Last Activity: ${student.conversations ? new Date(student.conversations.last_updated).toLocaleDateString() : 'Never'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    container.appendChild(studentItem);
+                });
+            }
+
+            renderStats() {
+                document.getElementById('totalStudents').textContent = this.statsData.totalStudents;
+                document.getElementById('activeStudents').textContent = this.statsData.activeStudents;
+                document.getElementById('completedActivity').textContent = this.statsData.completedActivity;
+                document.getElementById('avgConversations').textContent = this.statsData.avgConversations;
+            }
+
+            renderRecentActivity() {
+                const container = document.getElementById('recentActivity');
+                
+                if (this.recentActivityData.length === 0) {
+                    container.innerHTML = '<div class="loading">No recent activity found.</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                this.recentActivityData.forEach(activity => {
+                    const activityItem = document.createElement('div');
+                    activityItem.className = 'student-item';
+                    
+                    activityItem.innerHTML = `
+                        <div class="student-info">
+                            <div class="student-id">${activity.student_id}</div>
+                            <div style="margin-top: 5px; color: #666; font-size: 0.9em;">
+                                ${activity.activity_type} - ${new Date(activity.access_time).toLocaleString()}
+                            </div>
+                        </div>
+                    `;
+
+                    container.appendChild(activityItem);
+                });
+            }
+
+            setupEventListeners() {
+                document.getElementById('refreshButton').addEventListener('click', () => {
+                    this.loadData();
+                });
+
+                document.getElementById('exportButton').addEventListener('click', () => {
+                    this.exportData();
+                });
+            }
+
+            exportData() {
+                const exportData = {
+                    timestamp: new Date().toISOString(),
+                    section: this.selectedSection,
+                    stats: this.statsData,
+                    students: this.studentsData.map(student => ({
+                        student_id: student.student_id,
+                        section: student.ta_sections.section_name,
+                        progress: student.progress,
+                        conversation_count: student.conversations ? 
+                            Math.floor(JSON.parse(student.conversations.conversation_data || '[]').length / 2) : 0,
+                        last_activity: student.conversations ? student.conversations.last_updated : null
+                    }))
+                };
+
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = `activity5_data_${this.selectedSection}_${new Date().toISOString().split('T')[0]}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+            }
+
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = message;
+                
+                const container = document.querySelector('.dashboard-container');
+                container.insertBefore(errorDiv, container.firstChild);
+                
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            }
+        }
+
+        // Initialize dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Wait for Supabase to be available
+            if (typeof supabase === 'undefined') {
+                console.error('Supabase not available');
+                return;
+            }
+
+            const dashboard = new Activity5Dashboard();
+            await dashboard.initialize();
+        });
+    </script>
+</body>
+</html>

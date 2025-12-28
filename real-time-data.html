@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real-Time Data - Principles of Macroeconomics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+
+<!-- CORS helper (existing in this repo) -->
+<script>
+  // Minimal CORS helper (inlined) so the page works in VS Code Live Preview.
+  // FRED does not allow browser CORS from localhost; we route through a public proxy.
+  // If you deploy to a real domain and have your own proxy, set useCorsProxy=false.
+  window.CORS_CONFIG = {
+    activeProxy: 'corsproxy',
+    useCorsProxy: true,
+    wrapUrl(url) {
+      if (!this.useCorsProxy) return url;
+      if (this.activeProxy === 'allorigins') {
+        return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+      }
+      // default: corsproxy.io supports simple prefixing
+      return 'https://corsproxy.io/?' + url;
+    },
+  };
+</script>
+
+<style>
+  /* Keep existing header styles so the banner/header remains intact */
+  .banner-container { position: relative; width: 100%; height: 0; padding-bottom: 25%; min-height: 120px; max-height: 400px; overflow: hidden; }
+  .banner-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+  .banner-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: rgba(0, 0, 0, 0.4); }
+  .page-title { font-size: 1.5rem; font-weight: bold; }
+  .page-subtitle { font-size: 1rem; margin-top: 0.5rem; }
+  @media (min-width: 640px) { .page-title { font-size: 2rem; } .page-subtitle { font-size: 1.25rem; } }
+  @media (min-width: 1024px) { .page-title { font-size: 2.5rem; } .page-subtitle { font-size: 1.5rem; } }
+  .nav-links { position: absolute; top: 1rem; left: 1rem; display: flex; gap: 1rem; }
+  .nav-links a { color: rgba(255, 255, 255, 0.8); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+  .nav-links a:hover { color: white; }
+  .nav-links a.active { color: white; font-weight: 500; }
+
+  /* New dashboard polish */
+  .glass { background: rgba(255,255,255,0.75); backdrop-filter: blur(10px); }
+  .skeleton { background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%); background-size: 400% 100%; animation: shimmer 1.2s ease-in-out infinite; }
+  @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+  /* Tabs */
+  .rt-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgb(226 232 240);
+    background: rgb(248 250 252);
+    color: rgb(51 65 85);
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  }
+  .rt-tab:hover { background: rgb(241 245 249); }
+  .rt-tab.active { background: rgb(37 99 235); border-color: rgb(37 99 235); color: white; }
+
+  .rt-subtab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgb(226 232 240);
+    background: white;
+    color: rgb(51 65 85);
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  }
+  .rt-subtab:hover { background: rgb(248 250 252); }
+  .rt-subtab.active { background: rgb(15 23 42); border-color: rgb(15 23 42); color: white; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+<!-- Header (preserved) -->
+<header>
+  <div class="banner-container">
+    <img src="./images/banner19.png" alt="Real-Time Data Banner" class="banner-image">
+    <div class="banner-overlay">
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="materials.html">Materials</a>
+        <a href="real-time-data.html" class="active">Real-Time Data</a>
+        <a href="faq.html">FAQ</a>
+      </div>
+      <div class="text-center text-white px-4">
+        <h1 class="page-title">Real-Time Economic Data</h1>
+        <p class="page-subtitle">Live Data from Federal Reserve Economic Data (FRED)</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content (rebuilt) -->
+<main class="container mx-auto py-10 px-4">
+  <!-- Top-level tabs (keeps overall UX, just drills deeper) -->
+  <section class="mb-6">
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-slate-200">
+        <div class="flex flex-wrap gap-2" role="tablist" aria-label="Dashboard sections">
+          <button class="rt-tab active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+          <button class="rt-tab" data-tab="gdp" role="tab" aria-selected="false">GDP</button>
+          <button class="rt-tab" data-tab="inflation" role="tab" aria-selected="false">Inflation</button>
+          <button class="rt-tab" data-tab="labor" role="tab" aria-selected="false">Labor</button>
+          <button class="rt-tab" data-tab="rates" role="tab" aria-selected="false">Rates</button>
+        </div>
+        <div class="text-xs text-slate-500">Same controls + caching. Deeper views per topic.</div>
+      </div>
+      <div class="px-4 py-3">
+        <div class="text-sm text-slate-700">
+          Tip: Use <span class="font-medium">Overview</span> in lecture for the fast story; use the topic tabs for discussion sections and deeper dives.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Today’s pulse (full width) moved above controls -->
+  <section class="mb-8">
+    <div class="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-sm p-6">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-semibold">Today’s pulse</h3>
+          <p class="text-sm text-white/70">Four headline indicators, live.</p>
+        </div>
+        <div class="rounded-xl bg-white/10 px-3 py-1 text-xs font-semibold">FRED</div>
+      </div>
+
+      <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3" id="headline-cards">
+        <div class="rounded-xl bg-white/10 p-4">
+          <div class="h-3 w-20 rounded skeleton"></div>
+          <div class="mt-3 h-7 w-40 rounded skeleton"></div>
+          <div class="mt-2 h-3 w-28 rounded skeleton"></div>
+        </div>
+        <div class="rounded-xl bg-white/10 p-4">
+          <div class="h-3 w-24 rounded skeleton"></div>
+          <div class="mt-3 h-7 w-36 rounded skeleton"></div>
+          <div class="mt-2 h-3 w-32 rounded skeleton"></div>
+        </div>
+        <div class="rounded-xl bg-white/10 p-4 hidden sm:block">
+          <div class="h-3 w-20 rounded skeleton"></div>
+          <div class="mt-3 h-7 w-40 rounded skeleton"></div>
+          <div class="mt-2 h-3 w-28 rounded skeleton"></div>
+        </div>
+        <div class="rounded-xl bg-white/10 p-4 hidden sm:block">
+          <div class="h-3 w-24 rounded skeleton"></div>
+          <div class="mt-3 h-7 w-36 rounded skeleton"></div>
+          <div class="mt-2 h-3 w-32 rounded skeleton"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Controls row (separate from live connection) -->
+  <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+      <div class="text-xs text-slate-500">Time window</div>
+      <div class="text-sm font-medium mt-1">Choose how far back to display</div>
+      <div class="mt-3 flex flex-wrap gap-2" id="range-buttons"></div>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+      <div class="text-xs text-slate-500">Overlay</div>
+      <div class="text-sm font-medium mt-1">Show US recessions (NBER)</div>
+      <label class="mt-3 inline-flex items-center gap-2 cursor-pointer select-none">
+        <input id="toggle-recessions" type="checkbox" class="h-4 w-4" checked>
+        <span class="text-sm text-slate-700">Shade recession periods</span>
+      </label>
+      <p class="text-xs text-slate-500 mt-2">Uses the FRED series <code class="font-mono">USREC</code>.</p>
+      <div id="alert" class="hidden mt-4 rounded-xl border px-4 py-3 text-sm"></div>
+    </div>
+  </section>
+
+  <!-- Overview (current 2x2 charts preserved) -->
+  <section id="panel-overview" class="rt-panel grid grid-cols-1 xl:grid-cols-2 gap-6" role="tabpanel">
+    <!-- Reordered: Growth first, then Inflation, then Labor, then Rates -->
+
+    <!-- Growth -->
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-semibold">Growth</h3>
+          <p class="text-sm text-slate-600">Real GDP (QoQ annualized) & Industrial Production (YoY %).</p>
+        </div>
+        <div class="text-xs text-slate-500 text-right">
+          <div><span class="font-medium">GDP:</span> GDPC1</div>
+          <div><span class="font-medium">IP:</span> INDPRO</div>
+        </div>
+      </div>
+      <div class="mt-4 h-[360px]">
+        <canvas id="chart-growth"></canvas>
+      </div>
+      <div id="stats-growth" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+    </div>
+
+    <!-- Inflation -->
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-semibold">Inflation</h3>
+          <p class="text-sm text-slate-600">CPI (YoY %) and PCE (YoY %).</p>
+        </div>
+        <div class="text-xs text-slate-500 text-right">
+          <div><span class="font-medium">CPI:</span> CPIAUCSL</div>
+          <div><span class="font-medium">PCE:</span> PCEPI</div>
+        </div>
+      </div>
+      <div class="mt-4 h-[360px]">
+        <canvas id="chart-inflation"></canvas>
+      </div>
+      <div id="stats-inflation" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+    </div>
+
+    <!-- Labor -->
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-semibold">Unemployment Rates</h3>
+          <p class="text-sm text-slate-600">U2 is job losers; U3 is headline; U6 captures broader underutilization.</p>
+        </div>
+        <div class="text-xs text-slate-500 text-right">
+          <div><span class="font-medium">UNRATE:</span> UNRATE</div>
+          <div><span class="font-medium">LFP:</span> CIVPART</div>
+        </div>
+      </div>
+      <div class="mt-4 h-[360px]">
+        <canvas id="chart-labor"></canvas>
+      </div>
+      <div id="stats-labor" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+    </div>
+
+    <!-- Rates -->
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-semibold">Interest rates</h3>
+          <p class="text-sm text-slate-600">Policy rate and the yield curve (10Y–2Y).</p>
+        </div>
+        <div class="text-xs text-slate-500 text-right">
+          <div><span class="font-medium">FFR:</span> FEDFUNDS</div>
+          <div><span class="font-medium">10Y:</span> DGS10</div>
+          <div><span class="font-medium">2Y:</span> DGS2</div>
+        </div>
+      </div>
+      <div class="mt-4 h-[360px]">
+        <canvas id="chart-rates"></canvas>
+      </div>
+      <div id="stats-rates" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+    </div>
+  </section>
+
+  <!-- GDP tab panel (new) -->
+  <section id="panel-gdp" class="rt-panel hidden" role="tabpanel" aria-hidden="true">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold">GDP: Real vs Nominal</h3>
+            <p class="text-sm text-slate-600">Compare real output to current-dollar output.</p>
+          </div>
+          <div class="text-xs text-slate-500 text-right">
+            <div><span class="font-medium">Real:</span> GDPC1</div>
+            <div><span class="font-medium">Nominal:</span> GDP</div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <span class="text-xs text-slate-500">View:</span>
+          <button class="rt-subtab active" data-subtab="gdp-growth">Growth (SAAR)</button>
+          <button class="rt-subtab" data-subtab="gdp-level">Level (raw)</button>
+        </div>
+
+        <div class="mt-4 h-[380px]"><canvas id="chart-gdp-main"></canvas></div>
+        <div id="stats-gdp" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold">GDP components (starter)</h3>
+            <p class="text-sm text-slate-600">Consumption, investment, government (real).</p>
+          </div>
+          <div class="text-xs text-slate-500 text-right">
+            <div><span class="font-medium">PCE:</span> PCEC96</div>
+            <div><span class="font-medium">Inv:</span> GPDIC1</div>
+            <div><span class="font-medium">Gov:</span> GCEC1</div>
+          </div>
+        </div>
+        <div class="mt-4 h-[380px]"><canvas id="chart-gdp-components"></canvas></div>
+        <div class="mt-3 text-xs text-slate-500">Note: We can expand this to net exports and contributions next.</div>
+      </div>
+    </div>
+
+    <!-- Removed BEA Industry value added section (feature dropped) -->
+  </section>
+
+  <!-- Inflation tab panel (implemented) -->
+  <section id="panel-inflation" class="rt-panel hidden" role="tabpanel" aria-hidden="true">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold">CPI drivers (YoY %)</h3>
+            <p class="text-sm text-slate-600">Big-picture components that move inflation.</p>
+          </div>
+          <div class="text-xs text-slate-500 text-right">
+            <div><span class="font-medium">All items:</span> CPIAUCSL</div>
+            <div><span class="font-medium">Core:</span> CPILFESL</div>
+          </div>
+        </div>
+        <div class="mt-4 h-[380px]"><canvas id="chart-cpi-breakdown"></canvas></div>
+        <div id="stats-inflation-deep" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold">Inflation heatmap</h3>
+            <p class="text-sm text-slate-600">Pick a month/year to see which categories were hottest then.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <label class="text-xs text-slate-500">Month</label>
+            <select id="inflation-heatmap-month" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"></select>
+            <label class="text-xs text-slate-500">Year</label>
+            <select id="inflation-heatmap-year" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"></select>
+          </div>
+        </div>
+
+        <div class="mt-4 overflow-auto">
+          <table class="min-w-full text-sm">
+            <thead class="text-xs text-slate-500">
+              <tr>
+                <th class="text-left py-2 pr-3">Category</th>
+                <th class="text-right py-2 pr-3">YoY %</th>
+                <th class="text-right py-2 pr-3">Δ vs prior year (pp)</th>
+                <th class="text-right py-2">As of</th>
+              </tr>
+            </thead>
+            <tbody id="inflation-heatmap" class="align-top"></tbody>
+          </table>
+        </div>
+        <div class="mt-3 text-xs text-slate-500">Colors show relative heat within this table (red = hotter, blue = cooler).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Labor tab panel (new) -->
+  <section id="panel-labor" class="rt-panel hidden" role="tabpanel" aria-hidden="true">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold">Unemployment Rates</h3>
+            <p class="text-sm text-slate-600">U2 is job losers; U3 is headline; U6 captures broader underutilization.</p>
+          </div>
+          <div class="text-xs text-slate-500 text-right">
+            <div><span class="font-medium">U2:</span> U2RATE</div>
+            <div><span class="font-medium">U3:</span> UNRATE</div>
+            <div><span class="font-medium">U6:</span> U6RATE</div>
+          </div>
+        </div>
+        <div class="mt-4 h-[380px]"><canvas id="chart-labor-u"></canvas></div>
+        <div id="stats-labor-u" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold">JOLTS (tightness)</h3>
+            <p class="text-sm text-slate-600">Openings and openings per unemployed (computed).</p>
+          </div>
+          <div class="text-xs text-slate-500 text-right">
+            <div><span class="font-medium">Openings:</span> JTUJOL</div>
+            <div><span class="font-medium">Unemployed:</span> LNU03000000</div>
+          </div>
+        </div>
+        <div class="mt-4 h-[380px]"><canvas id="chart-jolts"></canvas></div>
+        <div id="stats-jolts" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rates tab panel (implemented) -->
+  <section id="panel-rates" class="rt-panel hidden" role="tabpanel" aria-hidden="true">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold">Yield curve</h3>
+            <p class="text-sm text-slate-600">Treasury rates across maturities.</p>
+          </div>
+          <div class="text-xs text-slate-500 text-right">
+            <div><span class="font-medium">3M:</span> DGS3MO</div>
+            <div><span class="font-medium">2Y:</span> DGS2</div>
+            <div><span class="font-medium">10Y:</span> DGS10</div>
+            <div><span class="font-medium">30Y:</span> DGS30</div>
+          </div>
+        </div>
+        <div class="mt-4 h-[380px]"><canvas id="chart-yield-curve"></canvas></div>
+        <div id="stats-rates-deep" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold">Household borrowing + spreads</h3>
+            <p class="text-sm text-slate-600">Mortgages + curve spreads to discuss recession risk.</p>
+          </div>
+          <div class="text-xs text-slate-500 text-right">
+            <div><span class="font-medium">Mortgage:</span> MORTGAGE30US</div>
+            <div><span class="font-medium">10Y–2Y:</span> computed</div>
+            <div><span class="font-medium">10Y–3M:</span> computed</div>
+          </div>
+        </div>
+        <div class="mt-4 h-[380px]"><canvas id="chart-spreads"></canvas></div>
+        <div class="mt-3 text-xs text-slate-500">Tip: an inverted curve (negative spreads) often precedes slowdowns.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Data Source -->
+  <section class="mt-10 rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <h3 class="text-lg font-semibold">Data source</h3>
+        <p class="text-sm text-slate-600">All data are pulled from the Federal Reserve Bank of St. Louis FRED API.</p>
+      </div>
+      <a class="text-sm font-medium text-blue-600 hover:underline" href="https://fred.stlouisfed.org/" target="_blank" rel="noreferrer">Explore FRED →</a>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  // -----------------------------
+  // FRED wiring (direct, no proxy)
+  // -----------------------------
+  const FRED_API_KEY = 'c1a69cc8450457303e5f04ffb3f68b97';
+  const FRED_BASE = 'https://api.stlouisfed.org/fred';
+
+  // Cache policy
+  const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+  const CACHE_PREFIX = 'fred_cache_v1:';
+
+  const SERIES = {
+    CPI: { id: 'CPIAUCSL', label: 'CPI (YoY %)', units: 'pc1', freq: 'm' },
+    PCE: { id: 'PCEPI', label: 'PCE (YoY %)', units: 'pc1', freq: 'm' },
+
+    GDP_REAL: { id: 'GDPC1', label: 'Real GDP (QoQ SAAR %)', units: null, freq: 'q' },
+    GDP_NOMINAL: { id: 'GDP', label: 'Nominal GDP (QoQ SAAR %)', units: null, freq: 'q' },
+
+    // Expanded components (simple names)
+    PCE_REAL: { id: 'PCEC96', label: 'Consumption', units: null, freq: 'q' },
+    INVEST_REAL: { id: 'GPDIC1', label: 'Investment', units: null, freq: 'q' },
+    GOV_REAL: { id: 'GCEC1', label: 'Government', units: null, freq: 'q' },
+    EXPORTS_REAL: { id: 'EXPGSC1', label: 'Exports', units: null, freq: 'q' },
+    IMPORTS_REAL: { id: 'IMPGSC1', label: 'Imports', units: null, freq: 'q' },
+
+    INDPRO: { id: 'INDPRO', label: 'Industrial Production (YoY %)', units: 'pc1', freq: 'm' },
+
+    UNRATE: { id: 'UNRATE', label: 'Unemployment Rate (%)', units: null, freq: 'm' },
+    LFP: { id: 'CIVPART', label: 'Labor Force Participation (%)', units: null, freq: 'm' },
+    U6: { id: 'U6RATE', label: 'U6 Underutilization (%)', units: null, freq: 'm' },
+    U2: { id: 'U2RATE', label: 'U2 Unemployment (%)', units: null, freq: 'm' },
+
+    JOLTS_OPENINGS: { id: 'JTUJOL', label: 'Job Openings (level, thousands)', units: null, freq: 'm' },
+    UNEMP_LEVEL: { id: 'LNU03000000', label: 'Unemployed (level, thousands)', units: null, freq: 'm' },
+
+    FFR: { id: 'FEDFUNDS', label: 'Fed Funds Rate (%)', units: null, freq: 'm' },
+    FFR: { id: 'FEDFUNDS', label: 'Fed Funds Rate (%)', units: null, freq: 'm' },
+    DGS10: { id: 'DGS10', label: '10Y Treasury (%)', units: null, freq: 'd' },
+    DGS2: { id: 'DGS2', label: '2Y Treasury (%)', units: null, freq: 'd' },
+
+    USREC: { id: 'USREC', label: 'Recessions', units: null, freq: 'm' },
+
+    // Inflation components
+    CPI_CORE: { id: 'CPILFESL', label: 'Core CPI (YoY %)', units: 'pc1', freq: 'm' },
+    CPI_FOOD: { id: 'CPIUFDSL', label: 'Food', units: 'pc1', freq: 'm' },
+    CPI_ENERGY: { id: 'CPIENGSL', label: 'Energy', units: 'pc1', freq: 'm' },
+    CPI_SHELTER: { id: 'CPIHOSSL', label: 'Shelter', units: 'pc1', freq: 'm' },
+    CPI_SERVICES: { id: 'CUSR0000SAS', label: 'Services', units: 'pc1', freq: 'm' },
+
+    // Rates deep dive
+    DGS3MO: { id: 'DGS3MO', label: '3M Treasury (%)', units: null, freq: 'd' },
+    DGS5: { id: 'DGS5', label: '5Y Treasury (%)', units: null, freq: 'd' },
+    DGS30: { id: 'DGS30', label: '30Y Treasury (%)', units: null, freq: 'd' },
+    MORT30: { id: 'MORTGAGE30US', label: '30Y Mortgage (%)', units: null, freq: 'w' },
+  };
+
+  // UI state
+  const STATE = {
+    rangeYears: 10,
+    showRecessions: true,
+    activeTab: 'overview',
+    gdpView: 'gdp-growth',
+    gdpBaseYear: 2017,
+    inflationHeatmapLookbackMonths: 12,
+    lastUpdated: null,
+    fromCache: false,
+    inflationHeatmapMonth: null,
+    inflationHeatmapYear: null,
+  };
+
+  // DOM helpers
+  const $ = (sel) => document.querySelector(sel);
+  const pillStatus = $('#pill-status');
+  const pillCache = $('#pill-cache');
+  const pillUpdated = $('#pill-updated');
+  const alertBox = $('#alert');
+  const headlineRoot = $('#headline-cards');
+
+  // Range buttons
+  const ranges = [
+    { label: '1Y', value: 1 },
+    { label: '5Y', value: 5 },
+    { label: '10Y', value: 10 },
+    { label: '20Y', value: 20 },
+    { label: 'All', value: 'all' },
+  ];
+
+  function setAlert(kind, message) {
+    // kind: 'info' | 'warn' | 'error' | 'ok'
+    if (!message) {
+      alertBox.classList.add('hidden');
+      alertBox.textContent = '';
+      return;
+    }
+    alertBox.classList.remove('hidden');
+
+    const base = 'rounded-xl border px-4 py-3 text-sm';
+    const styles = {
+      info: 'bg-blue-50 border-blue-200 text-blue-900',
+      ok: 'bg-emerald-50 border-emerald-200 text-emerald-900',
+      warn: 'bg-amber-50 border-amber-200 text-amber-900',
+      error: 'bg-rose-50 border-rose-200 text-rose-900',
+    };
+    alertBox.className = base + ' ' + (styles[kind] || styles.info);
+    alertBox.textContent = message;
+  }
+
+  function setPill(el, kind, text) {
+    if (!el) return;
+    const base = 'inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold';
+    const styles = {
+      neutral: 'bg-slate-100 text-slate-700',
+      ok: 'bg-emerald-100 text-emerald-800',
+      warn: 'bg-amber-100 text-amber-800',
+      error: 'bg-rose-100 text-rose-800',
+      info: 'bg-blue-100 text-blue-800',
+    };
+    el.className = base + ' ' + (styles[kind] || styles.neutral);
+    el.textContent = text;
+  }
+
+  function formatDate(d) {
+    try {
+      return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(d);
+    } catch {
+      return d.toISOString();
+    }
+  }
+
+  function parseFredValue(v) {
+    if (v === '.' || v === null || v === undefined) return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function subtractYears(date, years) {
+    const d = new Date(date);
+    d.setFullYear(d.getFullYear() - years);
+    return d;
+  }
+
+  function cacheKey(path, params) {
+    const qs = new URLSearchParams(params);
+    return CACHE_PREFIX + path + '?' + qs.toString();
+  }
+
+  function getCache(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.t || !parsed.data) return null;
+      if ((Date.now() - parsed.t) > CACHE_TTL_MS) return null;
+      return parsed.data;
+    } catch {
+      return null;
+    }
+  }
+
+  function setCache(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify({ t: Date.now(), data }));
+    } catch {
+      // ignore quota issues
+    }
+  }
+
+  async function fredGet(path, params) {
+    const withAuth = {
+      ...params,
+      api_key: FRED_API_KEY,
+      file_type: 'json',
+    };
+
+    const key = cacheKey(path, withAuth);
+    const cached = getCache(key);
+    if (cached) {
+      STATE.fromCache = true;
+      return cached;
+    }
+
+    STATE.fromCache = false;
+    const url = new URL(FRED_BASE + path);
+    Object.entries(withAuth).forEach(([k, v]) => {
+      if (v === null || v === undefined || v === '') return;
+      url.searchParams.set(k, String(v));
+    });
+
+    // FRED does not permit browser CORS from localhost in many environments.
+    // Use the workspace's CORS_CONFIG helper when available.
+    const requestUrl = (window.CORS_CONFIG && typeof window.CORS_CONFIG.wrapUrl === 'function')
+      ? window.CORS_CONFIG.wrapUrl(url.toString())
+      : url.toString();
+
+    const res = await fetch(requestUrl, { method: 'GET' });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`FRED request failed (${res.status}): ${text.slice(0, 180)}`);
+    }
+    const json = await res.json();
+    setCache(key, json);
+    return json;
+  }
+
+  async function fetchSeriesObservations({ id, units, start }) {
+    const params = {
+      series_id: id,
+      observation_start: start,
+      units: units || undefined,
+      sort_order: 'asc',
+    };
+    const json = await fredGet('/series/observations', params);
+    const obs = (json && json.observations) ? json.observations : [];
+    return obs
+      .map(o => ({ x: new Date(o.date), y: parseFredValue(o.value) }))
+      .filter(p => p.y !== null);
+  }
+
+  function computeYoY(seriesPoints, freq) {
+    // Only used for GDP level to compute QoQ annualized growth; other YoY handled via FRED units=pc1.
+    if (!seriesPoints.length) return [];
+
+    if (freq === 'q') {
+      // QoQ SAAR: ((level_t/level_{t-1})^4 - 1) * 100
+      const out = [];
+      for (let i = 1; i < seriesPoints.length; i++) {
+        const prev = seriesPoints[i - 1].y;
+        const cur = seriesPoints[i].y;
+        if (prev === null || cur === null || prev === 0) continue;
+        const saar = (Math.pow(cur / prev, 4) - 1) * 100;
+        out.push({ x: seriesPoints[i].x, y: saar });
+      }
+      return out;
+    }
+
+    return seriesPoints;
+  }
+
+  function lastPoint(points) {
+    return points && points.length ? points[points.length - 1] : null;
+  }
+
+  function pctChange(points, windowSize) {
+    // percent change from windowSize points earlier
+    if (!points || points.length <= windowSize) return null;
+    const a = points[points.length - 1].y;
+    const b = points[points.length - 1 - windowSize].y;
+    if (a === null || b === null || b === 0) return null;
+    return ((a - b) / Math.abs(b)) * 100;
+  }
+
+  function numberFmt(n, digits = 2) {
+    if (n === null || n === undefined || !Number.isFinite(n)) return '—';
+    return n.toLocaleString(undefined, { maximumFractionDigits: digits, minimumFractionDigits: digits });
+  }
+
+  function valueChipHTML(title, value, subtitle) {
+    return `
+      <div class="rounded-xl border border-slate-200 p-4">
+        <div class="text-xs text-slate-500">${title}</div>
+        <div class="mt-1 text-lg font-semibold">${value}</div>
+        <div class="mt-1 text-xs text-slate-500">${subtitle || ''}</div>
+      </div>
+    `;
+  }
+
+  // Charts
+  // Chart.js plugins loaded from CDN expose themselves as global variables.
+  // Register them defensively to avoid runtime errors when a plugin fails to load.
+  const ZoomPlugin = window.ChartZoom || window['ChartZoom'] || window['chartjs-plugin-zoom'];
+  const AnnotationPlugin = window.ChartAnnotation || window['ChartAnnotation'] || window['chartjs-plugin-annotation'];
+  try {
+    if (ZoomPlugin) Chart.register(ZoomPlugin);
+    if (AnnotationPlugin) Chart.register(AnnotationPlugin);
+  } catch (e) {
+    // If plugin registration fails, keep charts functional without those plugins.
+    console.warn('Chart plugin registration failed; continuing without plugin(s).', e);
+  }
+
+  const charts = {
+    inflation: null,
+    growth: null,
+    labor: null,
+    rates: null,
+    gdpMain: null,
+    gdpComponents: null,
+    laborU: null,
+    jolts: null,
+    cpiBreakdown: null,
+    yieldCurve: null,
+    spreads: null,
+  };
+
+  // Base Chart.js options shared by all charts
+  function baseChartOptions() {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 10, usePointStyle: true } },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${numberFmt(ctx.parsed.y, 2)}` } },
+        zoom: {
+          zoom: {
+            wheel: { enabled: true },
+            pinch: { enabled: true },
+            mode: 'x',
+          },
+          pan: { enabled: true, mode: 'x' },
+          limits: { x: { min: 'original', max: 'original' } },
+        },
+        annotation: { annotations: {} },
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { tooltipFormat: 'PPP' },
+          grid: { color: 'rgba(15, 23, 42, 0.06)' },
+          ticks: { maxRotation: 0 },
+        },
+        y: {
+          grid: { color: 'rgba(15, 23, 42, 0.06)' },
+          ticks: { callback: (v) => v },
+        },
+      },
+    };
+  }
+
+  // Upgrade chart builder to optionally use multiple y-axes
+  function buildChart(canvasId, datasets, yTitle, scalesOverride) {
+    const ctx = document.getElementById(canvasId);
+    return new Chart(ctx, {
+      type: 'line',
+      data: { datasets },
+      options: {
+        ...baseChartOptions(),
+        scales: scalesOverride || {
+          ...baseChartOptions().scales,
+          y: {
+            ...baseChartOptions().scales.y,
+            title: { display: !!yTitle, text: yTitle },
+          },
+        },
+      },
+    });
+  }
+
+  function updateOrCreate(chartKey, canvasId, datasets, yTitle, recessionPeriods, scalesOverride) {
+    const existing = charts[chartKey];
+    if (!existing) {
+      charts[chartKey] = buildChart(canvasId, datasets, yTitle, scalesOverride);
+    } else {
+      existing.data.datasets = datasets;
+      if (scalesOverride) existing.options.scales = scalesOverride;
+    }
+
+    if (recessionPeriods) setRecessionAnnotations(charts[chartKey], recessionPeriods);
+    charts[chartKey].update();
+  }
+
+  function updateOrCreateExtra(chartKey, canvasId, datasets, yTitle, recessionPeriods, scalesOverride) {
+    const existing = charts[chartKey];
+    if (!existing) {
+      charts[chartKey] = buildChart(canvasId, datasets, yTitle, scalesOverride);
+    } else {
+      existing.data.datasets = datasets;
+      if (scalesOverride) existing.options.scales = scalesOverride;
+    }
+    if (recessionPeriods) setRecessionAnnotations(charts[chartKey], recessionPeriods);
+    charts[chartKey].update();
+  }
+
+  function setActiveTab(tabName) {
+    STATE.activeTab = tabName;
+
+    document.querySelectorAll('.rt-tab').forEach(btn => {
+      const isActive = btn.getAttribute('data-tab') === tabName;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+
+    document.querySelectorAll('.rt-panel').forEach(panel => {
+      const isPanel = panel.id === `panel-${tabName}`;
+      panel.classList.toggle('hidden', !isPanel);
+      panel.setAttribute('aria-hidden', isPanel ? 'false' : 'true');
+    });
+  }
+
+  function safeFetchSeriesObservations(def, startISO) {
+    return fetchSeriesObservations({ ...def, start: startISO }).catch(() => []);
+  }
+
+  function normalizeIndexToYear(points, year, fallbackToFirst = true) {
+    // Index series to 100 at the average level in `year`.
+    if (!points || !points.length) return [];
+
+    const inYear = points.filter(p => p && p.x && p.x.getFullYear && p.x.getFullYear() === year && Number.isFinite(p.y));
+    const base = inYear.length
+      ? (inYear.reduce((s, p) => s + p.y, 0) / inYear.length)
+      : (fallbackToFirst ? points.find(p => Number.isFinite(p.y))?.y : null);
+
+    if (!Number.isFinite(base) || base === 0) return points;
+    return points.map(p => ({ x: p.x, y: (p.y / base) * 100 }));
+  }
+
+  // Keep old helper for other uses
+  function normalizeIndex(points) {
+    // Index to 100 at first valid point
+    if (!points.length) return [];
+    const base = points[0].y;
+    if (!Number.isFinite(base) || base === 0) return points;
+    return points.map(p => ({ x: p.x, y: (p.y / base) * 100 }));
+  }
+
+  // Heatmap helpers (used by Inflation tab)
+  function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+
+  function heatColor(value, min, max) {
+    // blue -> gray -> red (light alpha fill)
+    if (!Number.isFinite(value) || !Number.isFinite(min) || !Number.isFinite(max) || min === max) return 'rgba(148,163,184,0.18)';
+    const t = clamp01((value - min) / (max - min));
+    const r = Math.round(59 + t * (244 - 59));
+    const g = Math.round(130 + t * (63 - 130));
+    const b = Math.round(246 + t * (94 - 246));
+    return `rgba(${r},${g},${b},0.18)`;
+  }
+
+  function pointByDate(points) {
+    const m = new Map();
+    (points || []).forEach(p => m.set(p.x.toISOString().slice(0, 10), p.y));
+    return m;
+  }
+
+  function computeSpread(aPoints, bPoints) {
+    const b = pointByDate(bPoints);
+    return (aPoints || [])
+      .map(p => {
+        const key = p.x.toISOString().slice(0, 10);
+        const yb = b.get(key);
+        if (yb === null || yb === undefined) return null;
+        return { x: p.x, y: p.y - yb };
+      })
+      .filter(Boolean);
+  }
+
+  async function renderGDPTab(startISO, recessionPeriods) {
+    const [realLvl, nomLvl, pceLvl, invLvl, govLvl, expLvl, impLvl] = await Promise.all([
+      safeFetchSeriesObservations(SERIES.GDP_REAL, startISO),
+      safeFetchSeriesObservations(SERIES.GDP_NOMINAL, startISO),
+      safeFetchSeriesObservations(SERIES.PCE_REAL, startISO),
+      safeFetchSeriesObservations(SERIES.INVEST_REAL, startISO),
+      safeFetchSeriesObservations(SERIES.GOV_REAL, startISO),
+      safeFetchSeriesObservations(SERIES.EXPORTS_REAL, startISO),
+      safeFetchSeriesObservations(SERIES.IMPORTS_REAL, startISO),
+    ]);
+
+    const realGrowth = computeYoY(realLvl, 'q');
+    const nomGrowth = computeYoY(nomLvl, 'q');
+
+    // Level view should show raw amounts (no indexing)
+    const mainDatasets = (STATE.gdpView === 'gdp-level')
+      ? [
+          { label: 'Real GDP (level)', data: realLvl, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.10)', tension: 0.2, pointRadius: 0 },
+          { label: 'Nominal GDP (level)', data: nomLvl, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.10)', tension: 0.2, pointRadius: 0 },
+        ]
+      : [
+          { label: 'Real GDP (QoQ SAAR %)', data: realGrowth, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.10)', tension: 0.2, pointRadius: 0 },
+          { label: 'Nominal GDP (QoQ SAAR %)', data: nomGrowth, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.10)', tension: 0.2, pointRadius: 0 },
+        ];
+
+    updateOrCreateExtra('gdpMain', 'chart-gdp-main', mainDatasets, (STATE.gdpView === 'gdp-level') ? 'Billions of chained/current dollars' : 'Percent', recessionPeriods);
+
+    // Components: growth rates (SAAR)
+    const pceGrowth = computeYoY(pceLvl, 'q');
+    const invGrowth = computeYoY(invLvl, 'q');
+    const govGrowth = computeYoY(govLvl, 'q');
+    const expGrowth = computeYoY(expLvl, 'q');
+    const impGrowth = computeYoY(impLvl, 'q');
+
+    updateOrCreateExtra(
+      'gdpComponents',
+      'chart-gdp-components',
+      [
+        { label: 'Consumption (SAAR %)', data: pceGrowth, borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.10)', tension: 0.2, pointRadius: 0 },
+        { label: 'Investment (SAAR %)', data: invGrowth, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.10)', tension: 0.2, pointRadius: 0 },
+        { label: 'Government (SAAR %)', data: govGrowth, borderColor: '#64748b', backgroundColor: 'rgba(100,116,139,0.10)', tension: 0.2, pointRadius: 0 },
+        { label: 'Exports (SAAR %)', data: expGrowth, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', tension: 0.2, pointRadius: 0 },
+        { label: 'Imports (SAAR %)', data: impGrowth, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', tension: 0.2, pointRadius: 0 },
+      ],
+      'Percent',
+      recessionPeriods
+    );
+
+    const latestReal = lastPoint(realGrowth)?.y;
+    const latestNom = lastPoint(nomGrowth)?.y;
+    const latest = (STATE.gdpView === 'gdp-level')
+      ? [
+          valueChipHTML('Real GDP (level)', numberFmt(lastPoint(realLvl)?.y, 0), lastPoint(realLvl) ? `as of ${lastPoint(realLvl).x.toISOString().slice(0,10)}` : ''),
+          valueChipHTML('Nominal GDP (level)', numberFmt(lastPoint(nomLvl)?.y, 0), lastPoint(nomLvl) ? `as of ${lastPoint(nomLvl).x.toISOString().slice(0,10)}` : ''),
+          valueChipHTML('Nominal − real (level)', numberFmt((lastPoint(nomLvl)?.y ?? NaN) - (lastPoint(realLvl)?.y ?? NaN), 0), 'Raw difference'),
+        ]
+      : [
+          valueChipHTML('Real GDP growth (SAAR)', `${numberFmt(latestReal, 2)}%`, lastPoint(realGrowth) ? `as of ${lastPoint(realGrowth).x.toISOString().slice(0,10)}` : ''),
+          valueChipHTML('Nominal GDP growth (SAAR)', `${numberFmt(latestNom, 2)}%`, lastPoint(nomGrowth) ? `as of ${lastPoint(nomGrowth).x.toISOString().slice(0,10)}` : ''),
+          valueChipHTML('Approx inflation wedge', `${numberFmt((latestNom ?? NaN) - (latestReal ?? NaN), 2)} pp`, 'Nominal minus real growth'),
+        ];
+
+    const statsEl = document.getElementById('stats-gdp');
+    if (statsEl) statsEl.innerHTML = latest.join('');
+  }
+
+  async function renderLaborTab(startISO, recessionPeriods) {
+    const [u3, u6, u2, openings, unempLevel] = await Promise.all([
+      safeFetchSeriesObservations(SERIES.UNRATE, startISO),
+      safeFetchSeriesObservations(SERIES.U6, startISO),
+      safeFetchSeriesObservations(SERIES.U2, startISO),
+      safeFetchSeriesObservations(SERIES.JOLTS_OPENINGS, startISO),
+      safeFetchSeriesObservations(SERIES.UNEMP_LEVEL, startISO),
+    ]);
+
+    const openingsPerUnemp = computeRatioSeries(openings, unempLevel);
+
+    updateOrCreateExtra(
+      'laborU',
+      'chart-labor-u',
+      [
+        { label: 'U2 (U2RATE)', data: u2, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.08)', tension: 0.2, pointRadius: 0 },
+        { label: 'U3 (UNRATE)', data: u3, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.10)', tension: 0.2, pointRadius: 0 },
+        { label: 'U6 (U6RATE)', data: u6, borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,0.10)', tension: 0.2, pointRadius: 0 },
+      ],
+      'Percent',
+      recessionPeriods
+    );
+
+    updateOrCreateExtra(
+      'jolts',
+      'chart-jolts',
+      [
+        { label: 'Job openings (thousands)', data: openings, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.10)', tension: 0.2, pointRadius: 0, yAxisID: 'y' },
+        { label: 'Openings per unemployed (ratio)', data: openingsPerUnemp, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.08)', tension: 0.2, pointRadius: 0, yAxisID: 'y1' },
+      ],
+      null,
+      recessionPeriods,
+      {
+        x: { ...baseChartOptions().scales.x },
+        y: {
+          ...baseChartOptions().scales.y,
+          display: true,
+          position: 'left',
+          title: { display: true, text: 'Openings (thousands)' },
+        },
+        y1: {
+          ...baseChartOptions().scales.y,
+          display: true,
+          position: 'right',
+          offset: true,
+          grid: { drawOnChartArea: false },
+          title: { display: true, text: 'Openings / unemployed' },
+          grace: '10%',
+        },
+      }
+    );
+
+    const joltsEl = document.getElementById('stats-jolts');
+    if (joltsEl) {
+      joltsEl.innerHTML = [
+        valueChipHTML('Openings (latest)', numberFmt(lastPoint(openings)?.y, 0), lastPoint(openings) ? `as of ${lastPoint(openings).x.toISOString().slice(0,10)}` : ''),
+        valueChipHTML('Unemployed (latest)', numberFmt(lastPoint(unempLevel)?.y, 0), lastPoint(unempLevel) ? `as of ${lastPoint(unempLevel).x.toISOString().slice(0,10)}` : ''),
+        valueChipHTML('Openings per unemployed', numberFmt(lastPoint(openingsPerUnemp)?.y, 2), lastPoint(openingsPerUnemp) ? `as of ${lastPoint(openingsPerUnemp).x.toISOString().slice(0,10)}` : ''),
+      ].join('');
+    }
+
+    const uStatsEl = document.getElementById('stats-labor-u');
+    if (uStatsEl) {
+      uStatsEl.innerHTML = [
+        valueChipHTML('Latest U2', `${numberFmt(lastPoint(u2)?.y, 2)}%`, lastPoint(u2) ? `as of ${lastPoint(u2).x.toISOString().slice(0,10)}` : ''),
+        valueChipHTML('Latest U3', `${numberFmt(lastPoint(u3)?.y, 2)}%`, lastPoint(u3) ? `as of ${lastPoint(u3).x.toISOString().slice(0,10)}` : ''),
+        valueChipHTML('Latest U6', `${numberFmt(lastPoint(u6)?.y, 2)}%`, lastPoint(u6) ? `as of ${lastPoint(u6).x.toISOString().slice(0,10)}` : ''),
+      ].join('');
+    }
+  }
+
+  function setRecessionAnnotations(chart, recessionPeriods) {
+    // chartjs-plugin-annotation: add box annotations
+    const anns = {};
+    recessionPeriods.forEach((p, idx) => {
+      anns['rec_' + idx] = {
+        type: 'box',
+        xMin: p.start,
+        xMax: p.end,
+        backgroundColor: 'rgba(148, 163, 184, 0.18)',
+        borderWidth: 0,
+      };
+    });
+    chart.options.plugins.annotation.annotations = STATE.showRecessions ? anns : {};
+  }
+
+  async function renderInflationTab(startISO, recessionPeriods) {
+    const [all, core, food, energy, shelter, services] = await Promise.all([
+      safeFetchSeriesObservations(SERIES.CPI, startISO),
+      safeFetchSeriesObservations(SERIES.CPI_CORE, startISO),
+      safeFetchSeriesObservations(SERIES.CPI_FOOD, startISO),
+      safeFetchSeriesObservations(SERIES.CPI_ENERGY, startISO),
+      safeFetchSeriesObservations(SERIES.CPI_SHELTER, startISO),
+      safeFetchSeriesObservations(SERIES.CPI_SERVICES, startISO),
+    ]);
+
+    updateOrCreateExtra(
+      'cpiBreakdown',
+      'chart-cpi-breakdown',
+      [
+        { label: 'All items (CPI)', data: all, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.10)', tension: 0.2, pointRadius: 0 },
+        { label: 'Core (ex food & energy)', data: core, borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.10)', tension: 0.2, pointRadius: 0 },
+        { label: 'Food', data: food, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.08)', tension: 0.2, pointRadius: 0 },
+        { label: 'Energy', data: energy, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.08)', tension: 0.2, pointRadius: 0 },
+        { label: 'Shelter', data: shelter, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', tension: 0.2, pointRadius: 0 },
+        { label: 'Services', data: services, borderColor: '#14b8a6', backgroundColor: 'rgba(20,184,166,0.08)', tension: 0.2, pointRadius: 0 },
+      ],
+      'Percent',
+      recessionPeriods
+    );
+
+    const stats = document.getElementById('stats-inflation-deep');
+    if (stats) {
+      stats.innerHTML = [
+        valueChipHTML('All items CPI (YoY)', `${numberFmt(lastPoint(all)?.y, 2)}%`, lastPoint(all) ? `as of ${lastPoint(all).x.toISOString().slice(0,10)}` : ''),
+        valueChipHTML('Core CPI (YoY)', `${numberFmt(lastPoint(core)?.y, 2)}%`, lastPoint(core) ? `as of ${lastPoint(core).x.toISOString().slice(0,10)}` : ''),
+        valueChipHTML('Core vs headline', `${numberFmt((lastPoint(core)?.y ?? NaN) - (lastPoint(all)?.y ?? NaN), 2)} pp`, 'Core minus headline'),
+      ].join('');
+    }
+
+    const inferred = inferHeatmapDateFromSeries(all);
+    if (inferred) {
+      const minYear = Math.min(...all.map(p => p.x.getFullYear()));
+      const maxYear = Math.max(...all.map(p => p.x.getFullYear()));
+      const chosenYear = Number.isFinite(STATE.inflationHeatmapYear) ? STATE.inflationHeatmapYear : inferred.year;
+      const chosenMonth = (STATE.inflationHeatmapMonth || inferred.month);
+
+      renderMonthYearSelectors({ year: chosenYear, month: chosenMonth, minYear, maxYear });
+
+      const yyyymm = `${chosenYear}-${chosenMonth}`;
+
+      const seriesRows = [
+        { name: 'All items', points: all },
+        { name: 'Core', points: core },
+        { name: 'Food', points: food },
+        { name: 'Energy', points: energy },
+        { name: 'Shelter', points: shelter },
+        { name: 'Services', points: services },
+      ].map(r => {
+        const pt = getMonthlyPoint(r.points, yyyymm);
+        // Compare to same month 1 year earlier if available (YoY in "YoY %" series changes in pp)
+        const prior = getMonthlyPoint(r.points, `${chosenYear - 1}-${chosenMonth}`);
+        const delta = (pt && prior) ? (pt.y - prior.y) : null;
+        return {
+          name: r.name,
+          value: pt ? pt.y : null,
+          delta: Number.isFinite(delta) ? delta : null,
+          date: pt ? pt.x.toISOString().slice(0, 10) : '—',
+        };
+      }).filter(r => r.value !== null);
+
+      const vals = seriesRows.map(r => r.value).filter(Number.isFinite);
+      const min = Math.min(...vals);
+      const max = Math.max(...vals);
+
+      const tbody = document.getElementById('inflation-heatmap');
+      if (tbody) {
+        tbody.innerHTML = seriesRows
+          .sort((a, b) => (b.value ?? -Infinity) - (a.value ?? -Infinity))
+          .map(r => {
+            const bg = heatColor(r.value, min, max);
+            return `
+              <tr class="border-t border-slate-100">
+                <td class="py-2 pr-3 font-medium" style="background:${bg}">${r.name}</td>
+                <td class="py-2 pr-3 text-right tabular-nums" style="background:${bg}">${numberFmt(r.value, 2)}%</td>
+                <td class="py-2 pr-3 text-right tabular-nums" style="background:${bg}">${numberFmt(r.delta, 2)} pp</td>
+                <td class="py-2 text-right text-slate-600" style="background:${bg}">${r.date}</td>
+              </tr>
+            `;
+          })
+          .join('');
+      }
+    }
+  }
+
+  async function renderRatesTab(startISO, recessionPeriods) {
+    const [ffr, dgs3mo, dgs2, dgs5, dgs10, dgs30, mort] = await Promise.all([
+      safeFetchSeriesObservations(SERIES.FFR, startISO),
+      safeFetchSeriesObservations(SERIES.DGS3MO, startISO),
+      safeFetchSeriesObservations(SERIES.DGS2, startISO),
+      safeFetchSeriesObservations(SERIES.DGS5, startISO),
+      safeFetchSeriesObservations(SERIES.DGS10, startISO),
+      safeFetchSeriesObservations(SERIES.DGS30, startISO),
+      safeFetchSeriesObservations(SERIES.MORT30, startISO),
+    ]);
+
+    updateOrCreateExtra(
+      'yieldCurve',
+      'chart-yield-curve',
+      [
+        { label: 'Fed funds', data: ffr, borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,0.08)', tension: 0.2, pointRadius: 0 },
+        { label: '3M', data: dgs3mo, borderColor: '#64748b', backgroundColor: 'rgba(100,116,139,0.06)', tension: 0.2, pointRadius: 0 },
+        { label: '2Y', data: dgs2, borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.06)', tension: 0.2, pointRadius: 0 },
+        { label: '5Y', data: dgs5, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.06)', tension: 0.2, pointRadius: 0 },
+        { label: '10Y', data: dgs10, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.06)', tension: 0.2, pointRadius: 0 },
+        { label: '30Y', data: dgs30, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.06)', tension: 0.2, pointRadius: 0 },
+      ],
+      'Percent',
+      recessionPeriods
+    );
+
+    const spread10_2 = computeSpread(dgs10, dgs2);
+    const spread10_3m = computeSpread(dgs10, dgs3mo);
+
+    updateOrCreateExtra(
+      'spreads',
+      'chart-spreads',
+      [
+        { label: '30Y mortgage', data: mort, borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,0.10)', tension: 0.2, pointRadius: 0 },
+        { label: '10Y − 2Y (pp)', data: spread10_2, borderColor: '#64748b', backgroundColor: 'rgba(100,116,139,0.08)', tension: 0.2, pointRadius: 0 },
+        { label: '10Y − 3M (pp)', data: spread10_3m, borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.08)', tension: 0.2, pointRadius: 0 },
+      ],
+      'Percent / Percentage points',
+      recessionPeriods
+    );
+
+    const stats = document.getElementById('stats-rates-deep');
+    if (stats) {
+      stats.innerHTML = [
+        valueChipHTML('Fed funds', `${numberFmt(lastPoint(ffr)?.y, 2)}%`, lastPoint(ffr) ? `as of ${lastPoint(ffr).x.toISOString().slice(0,10)}` : ''),
+        valueChipHTML('10Y − 2Y', `${numberFmt(lastPoint(spread10_2)?.y, 2)} pp`, lastPoint(spread10_2) ? `as of ${lastPoint(spread10_2).x.toISOString().slice(0,10)}` : ''),
+        valueChipHTML('Mortgage (30Y)', `${numberFmt(lastPoint(mort)?.y, 2)}%`, lastPoint(mort) ? `as of ${lastPoint(mort).x.toISOString().slice(0,10)}` : ''),
+      ].join('');
+    }
+  }
+
+  async function loadAndRender({ force = false } = {}) {
+    setAlert(null, null);
+    setPill(pillStatus, 'info', 'Loading…');
+    setPill(pillCache, 'neutral', 'Cache: —');
+
+    if (force) {
+      // Best-effort: clear our cache namespace
+      try {
+        const keys = Object.keys(localStorage);
+        keys.forEach(k => { if (k.startsWith(CACHE_PREFIX)) localStorage.removeItem(k); });
+      } catch {
+        // ignore
+      }
+    }
+
+    const startISO = currentStartDateISO();
+
+    // Fetch all series in parallel
+    const [
+      cpi,
+      pce,
+      gdpLevel,
+      indpro,
+      unrate,
+      lfp,
+      ffr,
+      dgs10,
+      dgs2,
+      usrec,
+    ] = await Promise.all([
+      fetchSeriesObservations({ ...SERIES.CPI, start: startISO }),
+      fetchSeriesObservations({ ...SERIES.PCE, start: startISO }),
+      fetchSeriesObservations({ ...SERIES.GDP_REAL, start: startISO }),
+      fetchSeriesObservations({ ...SERIES.INDPRO, start: startISO }),
+      fetchSeriesObservations({ ...SERIES.UNRATE, start: startISO }),
+      fetchSeriesObservations({ ...SERIES.LFP, start: startISO }),
+      fetchSeriesObservations({ ...SERIES.FFR, start: startISO }),
+      fetchSeriesObservations({ ...SERIES.DGS10, start: startISO }),
+      fetchSeriesObservations({ ...SERIES.DGS2, start: startISO }),
+      fetchSeriesObservations({ ...SERIES.USREC, start: startISO }),
+    ]);
+
+    // GDP growth transform
+    const gdpGrowth = computeYoY(gdpLevel, 'q');
+
+    // Yield curve
+    const dgs2ByDate = new Map(dgs2.map(p => [p.x.toISOString().slice(0, 10), p.y]));
+    const curve = dgs10
+      .map(p => {
+        const key = p.x.toISOString().slice(0, 10);
+        const y2 = dgs2ByDate.get(key);
+        if (y2 === null || y2 === undefined) return null;
+        return { x: p.x, y: p.y - y2 };
+      })
+      .filter(Boolean);
+
+    const recessionPeriods = computeRecessionPeriods(usrec);
+
+    // Charts
+    updateOrCreate(
+      'inflation',
+      'chart-inflation',
+      [
+        { label: SERIES.CPI.label, data: cpi, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.12)', tension: 0.2, pointRadius: 0 },
+        { label: SERIES.PCE.label, data: pce, borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.10)', tension: 0.2, pointRadius: 0 },
+      ],
+      'Percent',
+      recessionPeriods
+    );
+
+    updateOrCreate(
+      'growth',
+      'chart-growth',
+      [
+        { label: SERIES.GDP_REAL.label, data: gdpGrowth, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.10)', tension: 0.2, pointRadius: 0 },
+        { label: SERIES.INDPRO.label, data: indpro, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.10)', tension: 0.2, pointRadius: 0 },
+      ],
+      'Percent',
+      recessionPeriods
+    );
+
+    // Overview labor chart: put labor force participation on the right axis
+    updateOrCreate(
+      'labor',
+      'chart-labor',
+      [
+        { label: SERIES.UNRATE.label, data: unrate, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.10)', tension: 0.2, pointRadius: 0, yAxisID: 'y' },
+        { label: SERIES.LFP.label, data: lfp, borderColor: '#14b8a6', backgroundColor: 'rgba(20,184,166,0.10)', tension: 0.2, pointRadius: 0, yAxisID: 'y1' },
+      ],
+      null,
+      recessionPeriods,
+      {
+        x: { ...baseChartOptions().scales.x },
+        y: {
+          ...baseChartOptions().scales.y,
+          position: 'left',
+          title: { display: true, text: 'Unemployment (%)' },
+        },
+        y1: {
+          ...baseChartOptions().scales.y,
+          position: 'right',
+          grid: { drawOnChartArea: false },
+          title: { display: true, text: 'Labor force participation (%)' },
+        },
+      }
+    );
+
+    updateOrCreate(
+      'rates',
+      'chart-rates',
+      [
+        { label: SERIES.FFR.label, data: ffr, borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,0.10)', tension: 0.2, pointRadius: 0 },
+        { label: 'Yield curve (10Y − 2Y)', data: curve, borderColor: '#64748b', backgroundColor: 'rgba(100,116,139,0.10)', tension: 0.2, pointRadius: 0 },
+      ],
+      'Percent / Percentage points',
+      recessionPeriods
+    );
+
+    // Deep-dive tab renders
+    await Promise.all([
+      renderGDPTab(startISO, recessionPeriods),
+      renderLaborTab(startISO, recessionPeriods),
+      renderInflationTab(startISO, recessionPeriods),
+      renderRatesTab(startISO, recessionPeriods),
+    ]);
+
+    // Stats panels
+    $('#stats-inflation').innerHTML = [
+      valueChipHTML('Latest CPI (YoY)', `${numberFmt(lastPoint(cpi)?.y, 2)}%`, lastPoint(cpi) ? `as of ${lastPoint(cpi).x.toISOString().slice(0,10)}` : ''),
+      valueChipHTML('Latest PCE (YoY)', `${numberFmt(lastPoint(pce)?.y, 2)}%`, lastPoint(pce) ? `as of ${lastPoint(pce).x.toISOString().slice(0,10)}` : ''),
+      valueChipHTML('Inflation gap', `${numberFmt((lastPoint(cpi)?.y ?? NaN) - (lastPoint(pce)?.y ?? NaN), 2)} pp`, 'CPI minus PCE'),
+    ].join('');
+
+    $('#stats-growth').innerHTML = [
+      valueChipHTML('GDP growth (SAAR)', `${numberFmt(lastPoint(gdpGrowth)?.y, 2)}%`, lastPoint(gdpGrowth) ? `as of ${lastPoint(gdpGrowth).x.toISOString().slice(0,10)}` : ''),
+      valueChipHTML('Industrial Production (YoY)', `${numberFmt(lastPoint(indpro)?.y, 2)}%`, lastPoint(indpro) ? `as of ${lastPoint(indpro).x.toISOString().slice(0,10)}` : ''),
+      valueChipHTML('Momentum (IP, ~1Y)', `${numberFmt(pctChange(indpro, Math.min(12, indpro.length - 1)) , 2)}%`, 'Approx using last 12 monthly obs'),
+    ].join('');
+
+    $('#stats-labor').innerHTML = [
+      valueChipHTML('Unemployment', `${numberFmt(lastPoint(unrate)?.y, 2)}%`, lastPoint(unrate) ? `as of ${lastPoint(unrate).x.toISOString().slice(0,10)}` : ''),
+      valueChipHTML('Labor force participation', `${numberFmt(lastPoint(lfp)?.y, 2)}%`, lastPoint(lfp) ? `as of ${lastPoint(lfp).x.toISOString().slice(0,10)}` : ''),
+      valueChipHTML('Δ Unemployment (12m)', `${numberFmt((lastPoint(unrate)?.y ?? NaN) - (unrate.length > 12 ? unrate[unrate.length-13].y : NaN), 2)} pp`, 'Change over ~12 months'),
+    ].join('');
+
+    $('#stats-rates').innerHTML = [
+      valueChipHTML('Fed funds rate', `${numberFmt(lastPoint(ffr)?.y, 2)}%`, lastPoint(ffr) ? `as of ${lastPoint(ffr).x.toISOString().slice(0,10)}` : ''),
+      valueChipHTML('10Y − 2Y', `${numberFmt(lastPoint(curve)?.y, 2)} pp`, lastPoint(curve) ? `as of ${lastPoint(curve).x.toISOString().slice(0,10)}` : ''),
+      valueChipHTML('10Y Treasury', `${numberFmt(lastPoint(dgs10)?.y, 2)}%`, lastPoint(dgs10) ? `as of ${lastPoint(dgs10).x.toISOString().slice(0,10)}` : ''),
+    ].join('');
+
+    // Headlines
+    renderHeadlines({
+      cpi: {
+        title: 'Inflation (CPI YoY)',
+        value: `${numberFmt(lastPoint(cpi)?.y, 2)}%`,
+        subtitle: lastPoint(cpi) ? `as of ${lastPoint(cpi).x.toISOString().slice(0,10)}` : '—',
+        delta: (cpi.length > 12) ? (lastPoint(cpi).y - cpi[cpi.length - 13].y) : null,
+      },
+      unrate: {
+        title: 'Unemployment rate',
+        value: `${numberFmt(lastPoint(unrate)?.y, 2)}%`,
+        subtitle: lastPoint(unrate) ? `as of ${lastPoint(unrate).x.toISOString().slice(0,10)}` : '—',
+        delta: (unrate.length > 12) ? (lastPoint(unrate).y - unrate[unrate.length - 13].y) : null,
+      },
+      ffr: {
+        title: 'Fed funds rate',
+        value: `${numberFmt(lastPoint(ffr)?.y, 2)}%`,
+        subtitle: lastPoint(ffr) ? `as of ${lastPoint(ffr).x.toISOString().slice(0,10)}` : '—',
+        delta: (ffr.length > 12) ? (lastPoint(ffr).y - ffr[ffr.length - 13].y) : null,
+      },
+      gdp: {
+        title: 'GDP growth (QoQ SAAR)',
+        value: `${numberFmt(lastPoint(gdpGrowth)?.y, 2)}%`,
+        subtitle: lastPoint(gdpGrowth) ? `as of ${lastPoint(gdpGrowth).x.toISOString().slice(0,10)}` : '—',
+        delta: (gdpGrowth.length > 4) ? (lastPoint(gdpGrowth).y - gdpGrowth[gdpGrowth.length - 5].y) : null,
+      },
+    });
+
+    // Status pills
+    STATE.lastUpdated = new Date();
+    setPill(pillStatus, 'ok', 'Connected');
+    setPill(pillCache, STATE.fromCache ? 'neutral' : 'info', `Cache: ${STATE.fromCache ? 'HIT' : 'MISS'}`);
+    setPill(pillUpdated, 'neutral', `Updated: ${formatDate(STATE.lastUpdated)}`);
+
+    clearZoom();
+  }
+
+  function wireControls() {
+    setRangeButtons();
+
+    // Top-level tabs
+    document.querySelectorAll('.rt-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        setActiveTab(btn.getAttribute('data-tab'));
+      });
+    });
+
+    // GDP sub-tabs
+    document.querySelectorAll('.rt-subtab[data-subtab]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const v = btn.getAttribute('data-subtab');
+        if (!v) return;
+        STATE.gdpView = v;
+        document.querySelectorAll('.rt-subtab[data-subtab]').forEach(b => b.classList.toggle('active', b.getAttribute('data-subtab') === v));
+        try {
+          const startISO = currentStartDateISO();
+          const usrec = await safeFetchSeriesObservations(SERIES.USREC, startISO);
+          const recessionPeriods = computeRecessionPeriods(usrec);
+          await renderGDPTab(startISO, recessionPeriods);
+        } catch (e) {
+          console.warn('GDP view update failed', e);
+        }
+      });
+    });
+
+    const toggleRec = $('#toggle-recessions');
+    if (toggleRec) {
+      toggleRec.addEventListener('change', (e) => {
+        STATE.showRecessions = !!e.target.checked;
+        Object.values(charts).forEach(ch => {
+          if (!ch) return;
+          const annotations = ch.options.plugins.annotation.annotations || {};
+          ch.options.plugins.annotation.annotations = STATE.showRecessions ? annotations : {};
+          ch.update();
+        });
+      });
+    }
+
+    const refreshBtn = $('#btn-refresh');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', async () => {
+        setPill(pillStatus, 'info', 'Refreshing…');
+        setAlert('info', 'Refreshing: clearing cache and reloading from FRED…');
+        try {
+          await loadAndRender({ force: true });
+          setAlert('ok', 'Fresh data loaded successfully.');
+        } catch (err) {
+          console.error(err);
+          setPill(pillStatus, 'error', 'Error');
+          setAlert('error', String(err && err.message ? err.message : err));
+        }
+      });
+    }
+
+    // Double-click reset on all chart canvases
+    ['chart-inflation','chart-growth','chart-labor','chart-rates','chart-gdp-main','chart-gdp-components','chart-labor-u','chart-jolts','chart-cpi-breakdown','chart-yield-curve','chart-spreads']
+      .forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('dblclick', () => clearZoom());
+      });
+  }
+
+  function monthOptions() {
+    return [
+      { v: '01', l: 'Jan' }, { v: '02', l: 'Feb' }, { v: '03', l: 'Mar' }, { v: '04', l: 'Apr' },
+      { v: '05', l: 'May' }, { v: '06', l: 'Jun' }, { v: '07', l: 'Jul' }, { v: '08', l: 'Aug' },
+      { v: '09', l: 'Sep' }, { v: '10', l: 'Oct' }, { v: '11', l: 'Nov' }, { v: '12', l: 'Dec' },
+    ];
+  }
+
+  function getMonthlyPoint(points, yyyymm) {
+    // points are monthly with x Date at 1st of month
+    const m = new Map(points.map(p => [p.x.toISOString().slice(0, 7), p]));
+    return m.get(yyyymm);
+  }
+
+  function inferHeatmapDateFromSeries(points) {
+    const lp = lastPoint(points);
+    if (!lp) return null;
+    const y = lp.x.getFullYear();
+    const m = String(lp.x.getMonth() + 1).padStart(2, '0');
+    return { year: y, month: m };
+  }
+
+  function renderMonthYearSelectors({ year, month, minYear, maxYear }) {
+    const monthSel = document.getElementById('inflation-heatmap-month');
+    const yearSel = document.getElementById('inflation-heatmap-year');
+    if (!monthSel || !yearSel) return;
+
+    monthSel.innerHTML = monthOptions().map(o => `<option value="${o.v}">${o.l}</option>`).join('');
+    yearSel.innerHTML = Array.from({ length: (maxYear - minYear + 1) }, (_, i) => (minYear + i))
+      .reverse()
+      .map(y => `<option value="${y}">${y}</option>`)
+      .join('');
+
+    monthSel.value = month;
+    yearSel.value = String(year);
+
+    monthSel.onchange = () => {
+      STATE.inflationHeatmapMonth = monthSel.value;
+      STATE.inflationHeatmapYear = Number(yearSel.value);
+      loadAndRender().catch(() => void 0);
+    };
+    yearSel.onchange = () => {
+      STATE.inflationHeatmapMonth = monthSel.value;
+      STATE.inflationHeatmapYear = Number(yearSel.value);
+      loadAndRender().catch(() => void 0);
+    };
+  }
+
+  function computeRecessionPeriods(usrecPoints) {
+    // USREC is 1 during recession months (date is first of month). We'll create start/end ranges.
+    const periods = [];
+    let open = null;
+
+    for (let i = 0; i < usrecPoints.length; i++) {
+      const pt = usrecPoints[i];
+      const isRec = pt.y === 1;
+      if (isRec && !open) {
+        open = new Date(pt.x);
+      }
+      if (!isRec && open) {
+        // end at previous point month end-ish
+        const end = new Date(usrecPoints[i - 1].x);
+        end.setMonth(end.getMonth() + 1);
+        periods.push({ start: open, end });
+        open = null;
+      }
+    }
+
+    if (open) {
+      const last = usrecPoints[usrecPoints.length - 1].x;
+      const end = new Date(last);
+      end.setMonth(end.getMonth() + 1);
+      periods.push({ start: open, end });
+    }
+
+    return periods;
+  }
+
+  function renderHeadlines(latest) {
+    // latest: { cpi, unrate, ffr, gdp }
+    headlineRoot.innerHTML = [
+      headlineCard(latest.cpi),
+      headlineCard(latest.unrate),
+      headlineCard(latest.ffr),
+      headlineCard(latest.gdp),
+    ].join('');
+  }
+
+  function headlineCard({ title, value, subtitle, delta }) {
+    const deltaHtml = (delta === null || delta === undefined)
+      ? `<span class="text-xs text-white/60">Δ: —</span>`
+      : (() => {
+          const positive = delta >= 0;
+          const cls = positive ? 'text-emerald-200' : 'text-rose-200';
+          const sign = positive ? '+' : '';
+          return `<span class="text-xs ${cls}">Δ ${sign}${numberFmt(delta, 2)}%</span>`;
+        })();
+
+    return `
+      <div class="rounded-xl bg-white/10 p-4">
+        <div class="text-xs text-white/70">${title}</div>
+        <div class="mt-2 text-2xl font-semibold tracking-tight">${value}</div>
+        <div class="mt-2 flex items-center justify-between gap-3">
+          <div class="text-xs text-white/60">${subtitle}</div>
+          ${deltaHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  function setRangeButtons() {
+    const root = document.getElementById('range-buttons');
+    root.innerHTML = ranges.map(r => {
+      const active = (STATE.rangeYears === r.value);
+      const cls = active
+        ? 'bg-blue-600 text-white border-blue-600'
+        : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50';
+      return `<button data-range="${r.value}" class="inline-flex items-center rounded-lg border px-3 py-1.5 text-sm font-medium transition ${cls}">${r.label}</button>`;
+    }).join('');
+
+    root.querySelectorAll('button[data-range]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const v = btn.getAttribute('data-range');
+        STATE.rangeYears = (v === 'all') ? 'all' : Number(v);
+        setRangeButtons();
+        loadAndRender().catch(() => void 0);
+      });
+    });
+  }
+
+  function currentStartDateISO() {
+    if (STATE.rangeYears === 'all') return '1900-01-01';
+    const start = subtractYears(new Date(), STATE.rangeYears);
+    return start.toISOString().slice(0, 10);
+  }
+
+  function clearZoom() {
+    Object.values(charts).forEach(ch => {
+      if (ch && ch.resetZoom) ch.resetZoom();
+    });
+  }
+
+  async function healthCheck() {
+    // lightweight call to ensure key works
+    await fredGet('/series', { series_id: SERIES.CPI.id });
+  }
+
+  function computeRatioSeries(numerPoints, denomPoints) {
+    const denomByDate = new Map((denomPoints || []).map(p => [p.x.toISOString().slice(0, 10), p.y]));
+    return (numerPoints || [])
+      .map(p => {
+        const key = p.x.toISOString().slice(0, 10);
+        const d = denomByDate.get(key);
+        if (!Number.isFinite(p.y) || !Number.isFinite(d) || d === 0) return null;
+        return { x: p.x, y: p.y / d };
+      })
+      .filter(Boolean);
+  }
+
+  async function bootstrap() {
+    wireControls();
+    setActiveTab('overview');
+
+    // API key presence
+    if (!FRED_API_KEY || FRED_API_KEY.length < 10) {
+      setPill(pillStatus, 'warn', 'Missing API key');
+      setAlert('warn', 'FRED API key is missing. Add it near the top of the script in real-time-data.html.');
+      return;
+    }
+
+    try {
+      await healthCheck();
+      await loadAndRender();
+      // Do not show the user tip alert.
+      setAlert(null, null);
+    } catch (err) {
+      console.error(err);
+      setPill(pillStatus, 'error', 'Connection failed');
+      setPill(pillCache, 'neutral', 'Cache: —');
+      setPill(pillUpdated, 'neutral', 'Updated: —');
+
+      const msg = String(err && err.message ? err.message : err);
+      if (location.protocol === 'file:') {
+        setAlert('error', `Request failed. You are opening this page via file:// which often breaks fetch/CORS. Start a local server then reload. Details: ${msg}`);
+      } else {
+        setAlert('error', `Request failed. Details: ${msg}`);
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', bootstrap);
+})();
+</script>
+</body>
+</html>

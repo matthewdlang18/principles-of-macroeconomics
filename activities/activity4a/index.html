@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Investment Odyssey - Activity 4A</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/header-styles.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="../../styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="../js/auth-service.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner14.png" alt="Investment Odyssey Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container mx-auto">
+                    <div class="nav-links">
+                        <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+                        <a href="../index.html" class="nav-link">← Back to Activities</a>
+                    </div>
+                    <h1 class="activity-title">Discussion Activity 4A: Investment Odyssey</h1>
+                    <p class="activity-date">February 24-27, 2026 (Week 8)</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Links -->
+    <div class="flex mb-8 border-b container mx-auto mt-4">
+        <a href="front-page.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Home</a>
+        <a href="single-player.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Single Player</a>
+        <a href="index.html" class="step-nav font-medium px-4 py-2 border-b-2 border-blue-600 text-blue-600">Class Game</a>
+        <a href="leaderboard.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Leaderboard</a>
+        <a href="ta-dashboard.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">TA Dashboard</a>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <p class="lead">Welcome to the Investment Odyssey game! Dive into the world of virtual economics, navigate the volatile waves of the market, and strategize your trades.</p>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3>Student Login</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="auth-status" class="alert alert-success mb-3 d-none">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <span>Logged in as <strong id="current-user-name"></strong></span>
+                            </div>
+                        </div>
+
+                        <div id="auth-form" class="d-none">
+                            <div class="text-center mb-4">
+                                <p class="lead">Choose how you want to play:</p>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-6 mb-2">
+                                    <button id="login-btn" class="btn btn-primary btn-block">
+                                        <i class="fas fa-sign-in-alt mr-2"></i> Login
+                                    </button>
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <button id="register-btn" class="btn btn-success btn-block">
+                                        <i class="fas fa-user-plus mr-2"></i> New Student
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="class-code">Class Code (Optional):</label>
+                                <input type="text" class="form-control" id="class-code" placeholder="Enter class code if you have one">
+                                <small class="form-text text-muted">Ask your instructor for your class code.</small>
+                            </div>
+                        </div>
+
+                        <div id="logged-in-view" class="d-none">
+                            <div class="alert alert-info">
+                                <p class="mb-1"><strong>Student ID:</strong> <span id="logged-in-id"></span></p>
+                                <p class="mb-0"><strong>Class:</strong> <span id="logged-in-class">Not enrolled in a class</span></p>
+                            </div>
+                            <div class="form-group">
+                                <label for="join-class-code">Join a Class:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="join-class-code" placeholder="Enter class code">
+                                    <div class="input-group-append">
+                                        <button id="join-class-btn" class="btn btn-outline-secondary">Join</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button id="continue-btn" class="btn btn-success">Continue to Game</button>
+                                <button id="logout-btn" class="btn btn-outline-secondary">Logout</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h3>TA Dashboard</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>TAs can create and manage classes, start games, and view leaderboards.</p>
+                        <a href="ta-dashboard.html" class="btn btn-success btn-block">Access TA Dashboard</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h3>How to Play</h3>
+                    </div>
+                    <div class="card-body">
+                        <h4>For Students:</h4>
+                        <ol>
+                            <li>Enter your name and the class number provided by your TA.</li>
+                            <li>Join the game and start managing your portfolio.</li>
+                            <li>Buy and sell assets to maximize your returns.</li>
+                            <li>Check the leaderboard to see how you compare to your classmates.</li>
+                        </ol>
+
+                        <h4>For TAs:</h4>
+                        <ol>
+                            <li>Access the TA Dashboard.</li>
+                            <li>Create a new class with a unique class number.</li>
+                            <li>Share the class number with your students.</li>
+                            <li>Start the game and manage rounds from your dashboard.</li>
+                            <li>View class-specific leaderboards to track student performance.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/student-auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            if (StudentAuth.isLoggedIn()) {
+                // Show logged in view
+                const user = StudentAuth.getCurrentUser();
+                document.getElementById('current-user-name').textContent = user.studentName;
+                document.getElementById('logged-in-id').textContent = user.studentId;
+
+                // Get class info if available
+                if (user.currentClassId) {
+                    ClassService.getClassData(user.currentClassId)
+                        .then(result => {
+                            if (result.success) {
+                                document.getElementById('logged-in-class').textContent = result.data.name;
+                            }
+                        });
+                }
+
+                // Show logged in view
+                document.getElementById('auth-status').classList.remove('d-none');
+                document.getElementById('auth-form').classList.add('d-none');
+                document.getElementById('logged-in-view').classList.remove('d-none');
+            } else {
+                // Show login/register form
+                document.getElementById('auth-status').classList.add('d-none');
+                document.getElementById('auth-form').classList.remove('d-none');
+                document.getElementById('logged-in-view').classList.add('d-none');
+            }
+
+            // Register button
+            document.getElementById('register-btn').addEventListener('click', function() {
+                StudentAuth.showRegistrationModal();
+            });
+
+            // Login button
+            document.getElementById('login-btn').addEventListener('click', function() {
+                StudentAuth.showLoginModal();
+            });
+
+            // Join class button
+            document.getElementById('join-class-btn').addEventListener('click', async function() {
+                const classCode = document.getElementById('join-class-code').value.trim();
+                if (!classCode) {
+                    alert('Please enter a class code');
+                    return;
+                }
+
+                const user = StudentAuth.getCurrentUser();
+                if (!user) {
+                    alert('You must be logged in to join a class');
+                    return;
+                }
+
+                try {
+                    const result = await StudentService.enrollInClass(user.studentId, classCode);
+                    if (result.success) {
+                        alert('Successfully joined class: ' + result.data.className);
+                        document.getElementById('logged-in-class').textContent = result.data.className;
+
+                        // Update session
+                        SessionManager.saveSession({
+                            studentId: user.studentId,
+                            name: user.studentName,
+                            enrollments: [...user.enrollments, result.data.classId]
+                        }, result.data.classId);
+
+                        // Clear the input
+                        document.getElementById('join-class-code').value = '';
+                    } else {
+                        alert('Failed to join class: ' + result.error);
+                    }
+                } catch (error) {
+                    console.error('Error joining class:', error);
+                    alert('An error occurred while joining the class');
+                }
+            });
+
+            // Continue button
+            document.getElementById('continue-btn').addEventListener('click', function() {
+                window.location.href = 'student-dashboard.html';
+            });
+
+            // Logout button
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                StudentAuth.logout();
+            });
+
+            // Set callback for auth success
+            window.onAuthSuccess = function(userData) {
+                console.log('Authentication successful:', userData);
+                window.location.reload();
+            };
+
+            // Check if we need to reset the class game
+            if (localStorage.getItem('resetClassGame') === 'true') {
+                console.log('Resetting class game as requested');
+
+                // Clear the flag
+                localStorage.removeItem('resetClassGame');
+
+                // Clear any stored game state
+                localStorage.removeItem('activity4a_student_id');
+                localStorage.removeItem('activity4a_student_name');
+                localStorage.removeItem('activity4a_class_number');
+                sessionStorage.removeItem('gameState');
+
+                // Clear session
+                SessionManager.clearSession();
+
+                // Show a message
+                alert('Class game has been reset. Please enter your information to join.');
+            }
+        });
+    </script>
+</body>
+</html>

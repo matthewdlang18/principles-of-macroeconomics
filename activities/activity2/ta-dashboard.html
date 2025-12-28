@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TA Dashboard - Alternative GDP Index Rankings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet for map visualization -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel file handling -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- D3.js for data processing -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .banner-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 25%;
+            min-height: 150px;
+            max-height: 320px;
+            overflow: hidden;
+            background-color: #1d4ed8;
+        }
+        
+        .banner-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.9;
+        }
+
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0.75rem;
+        }
+
+        .nav-link {
+            color: #bfdbfe;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .nav-link:hover {
+            color: white;
+        }
+
+        /* Medium screens */
+        @media (min-width: 640px) {
+            .banner-overlay {
+                padding: 1.5rem 2rem;
+            }
+            
+            .nav-links {
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            .nav-link {
+                font-size: 1rem;
+                margin-bottom: 0;
+                margin-right: 1.5rem;
+            }
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background-color: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        th {
+            background-color: #1e40af;
+            color: white;
+            cursor: pointer;
+            position: relative;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        th:hover {
+            background-color: #1e3a8a;
+        }
+
+        th::after {
+            content: '';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        th.sort-asc::after {
+            content: '↑';
+        }
+
+        th.sort-desc::after {
+            content: '↓';
+        }
+
+        td {
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        tr:hover {
+            background-color: #f3f4f6;
+        }
+
+        .info {
+            padding: 1rem;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .legend {
+            background: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner11.png" alt="Well-being Index Activity Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="nav-links">
+                    <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+                    <a href="../index.html" class="nav-link">← Back to Activities</a>
+                    <a href="index.html" class="nav-link">← Back to Create Index</a>
+                </div>
+                <h1 class="text-4xl font-bold text-white mb-2">TA Dashboard - Alternative GDP Index Rankings</h1>
+                <p class="text-xl text-blue-100">Analyze submissions for the Alternative GDP Index Rankings activity</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-8 px-4">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- File Upload Section -->
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-medium mb-2">Upload Excel File</h3>
+                    <p class="text-sm text-gray-600 mb-4">Upload an Excel file with student rankings. The first sheet should contain AI rankings, followed by student ranking sheets.</p>
+                    <input type="file" id="fileUpload" accept=".xlsx" class="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700
+                        hover:file:bg-blue-100"/>
+                </div>
+        
+                <!-- Metric Selection -->
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-medium mb-2">Select Metric</h3>
+                    <p class="text-sm text-gray-600 mb-4">Choose which metric to display on the map and chart.</p>
+                    <select id="metricSelect" class="w-full p-2 border border-gray-300 rounded-md">
+                        <option value="class">Class Index Score</option>
+                        <option value="ai">AI Index Score</option>
+                        <option value="gdp">GDP per Capita</option>
+                        <option value="hdi">HDI Score</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Map Section -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-4">Geographic Distribution</h2>
+                <div id="map"></div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-4">Top 10 Countries</h2>
+                <canvas id="rankingChart"></canvas>
+            </div>
+
+            <!-- Table Section -->
+            <div>
+                <h2 class="text-2xl font-bold mb-4">Country Rankings</h2>
+                <div id="tableContainer" class="overflow-x-auto"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 border-t mt-12 py-6 px-4">
+        <div class="container mx-auto text-center text-gray-600">
+            <p>&copy; 2024 Alternative GDP Index Rankings Activity. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        let chart = null;
+        let map = null;
+        let geojsonLayer = null;
+        let countryData = {};
+        let baseRankings = null;
+        let countryMappings = null;
+        let currentMetric = 'class';
+        let currentData = null;
+        let currentSortColumn = null;
+        let currentSortDirection = 'asc';
+
+        // Initialize the map
+        function initMap() {
+            map = L.map('map').setView([20, 0], 2);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: ' OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        // Load base rankings, GeoJSON data, and country mappings
+        async function loadBaseData() {
+            const [rankingsResponse, geojsonResponse, mappingsResponse] = await Promise.all([
+                fetch('data/average_rankings.csv'),
+                fetch('data/countries.geo.json'),
+                fetch('data/UNHDIGDPData.csv')
+            ]);
+
+            const rankingsText = await rankingsResponse.text();
+            const geojsonData = await geojsonResponse.json();
+            const mappingsText = await mappingsResponse.text();
+
+            // Parse CSV files
+            baseRankings = d3.csvParse(rankingsText);
+            countryMappings = d3.csvParse(mappingsText);
+            
+            // Create lookup for HDI and GDP rankings
+            countryMappings = countryMappings.map(country => {
+                return {
+                    ...country,
+                    HDIRank: 0,
+                    GDPRank: 0
+                };
+            });
+
+            // Calculate HDI and GDP rankings
+            countryMappings.sort((a, b) => b.HDI - a.HDI)
+                .forEach((country, index) => {
+                    country.HDIRank = index + 1;
+                });
+
+            countryMappings.sort((a, b) => b['GDP per capita'] - a['GDP per capita'])
+                .forEach((country, index) => {
+                    country.GDPRank = index + 1;
+                });
+
+            // Initialize map with GeoJSON data
+            if (!map) {
+                initMap();
+            }
+
+            return { baseRankings, geojsonData, countryMappings };
+        }
+
+        // Load initial data
+        loadBaseData().then(({ baseRankings, geojsonData }) => {
+            window.geojsonData = geojsonData;
+        });
+
+        document.getElementById('metricSelect').addEventListener('change', function(e) {
+            currentMetric = e.target.value;
+            if (currentData) {
+                updateVisualization(currentData);
+            }
+        });
+
+        function getMetricValue(countryData) {
+            switch (currentMetric) {
+                case 'class':
+                    return parseFloat(countryData['Average Index Score']) || NaN;
+                case 'ai':
+                    return parseFloat(countryData['AI Index Score']) || NaN;
+                case 'gdp':
+                    return parseFloat(countryData['GDP per capita']) || NaN;
+                case 'hdi':
+                    return parseFloat(countryData['HDI']) || NaN;
+                default:
+                    return parseFloat(countryData['Average Index Score']) || NaN;
+            }
+        }
+
+        function getMetricLabel() {
+            switch (currentMetric) {
+                case 'class':
+                    return 'Class Index Score';
+                case 'ai':
+                    return 'AI Index Score';
+                case 'gdp':
+                    return 'GDP per Capita';
+                case 'hdi':
+                    return 'HDI Score';
+                default:
+                    return 'Score';
+            }
+        }
+
+        function formatValue(value, isRank = false) {
+            if (value === 'N/A' || value === undefined || value === null) return 'N/A';
+            if (isRank) {
+                return typeof value === 'number' ? Math.round(value) : Math.round(parseFloat(value));
+            }
+            if (typeof value === 'number') return value.toFixed(3);
+            if (typeof value === 'string' && !isNaN(parseFloat(value))) return parseFloat(value).toFixed(3);
+            return value;
+        }
+
+        function compareValues(a, b, isAsc = true) {
+            // Always put N/A at the bottom regardless of sort direction
+            if (a === 'N/A' && b === 'N/A') return 0;
+            if (a === 'N/A') return 1;  // a goes to bottom
+            if (b === 'N/A') return -1; // b goes to bottom
+            
+            if (typeof a === 'string' && typeof b === 'string') {
+                // Try to convert to numbers if possible
+                const numA = parseFloat(a);
+                const numB = parseFloat(b);
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    return isAsc ? numA - numB : numB - numA;
+                }
+                // Otherwise compare as strings
+                return isAsc ? 
+                    a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'}) :
+                    b.localeCompare(a, undefined, {numeric: true, sensitivity: 'base'});
+            }
+            
+            return isAsc ? a - b : b - a;
+        }
+
+        function sortTable(columnIndex, columnName) {
+            const table = document.querySelector('table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Update sort direction
+            if (currentSortColumn === columnIndex) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = columnIndex;
+                currentSortDirection = 'asc';
+            }
+            
+            // Update header arrows
+            const headers = table.querySelectorAll('th');
+            headers.forEach(header => {
+                header.classList.remove('sort-asc', 'sort-desc');
+            });
+            headers[columnIndex].classList.add(
+                currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc'
+            );
+
+            // Sort rows
+            rows.sort((rowA, rowB) => {
+                const cellA = rowA.cells[columnIndex].textContent;
+                const cellB = rowB.cells[columnIndex].textContent;
+                return compareValues(cellA, cellB, currentSortDirection === 'asc');
+            });
+
+            // Remove existing rows
+            rows.forEach(row => tbody.removeChild(row));
+            // Add sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        document.getElementById('fileUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                // Process AI Rankings from first sheet
+                const aiRankings = {};
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const aiData = XLSX.utils.sheet_to_json(firstSheet);
+                aiData.forEach(row => {
+                    if (row.Country && row['Index Score'] !== undefined) {
+                        aiRankings[row.Country] = parseFloat(row['Index Score']);
+                    }
+                });
+
+                // Process class rankings from remaining sheets
+                const countryScores = {};
+                workbook.SheetNames.slice(1).forEach(sheetName => {
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                    jsonData.forEach(row => {
+                        if (row.Country && row['Index Score'] !== undefined) {
+                            if (!countryScores[row.Country]) {
+                                countryScores[row.Country] = [];
+                            }
+                            countryScores[row.Country].push(parseFloat(row['Index Score']));
+                        }
+                    });
+                });
+
+                // Calculate averages and create final data
+                const finalData = Object.entries(countryScores).map(([country, scores]) => {
+                    const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+                    const countryInfo = countryMappings.find(c => c.Country === country);
+                    
+                    return {
+                        Country: country,
+                        'Average Index Score': avgScore.toFixed(3),
+                        'AI Index Score': aiRankings[country]?.toFixed(3) || 'N/A',
+                        'Number of Rankings': scores.length,
+                        'HDI': countryInfo ? countryInfo.HDI : 'N/A',
+                        'HDI Rank': countryInfo ? countryInfo.HDIRank : 'N/A',
+                        'GDP per capita': countryInfo ? countryInfo['GDP per capita'] : 'N/A',
+                        'GDP Rank': countryInfo ? countryInfo.GDPRank : 'N/A',
+                        'id': countryInfo ? countryInfo.id : null
+                    };
+                });
+
+                // Add ranks for each metric
+                const validData = finalData.filter(item => !isNaN(parseFloat(item['Average Index Score'])));
+                validData.sort((a, b) => parseFloat(b['Average Index Score']) - parseFloat(a['Average Index Score']));
+                validData.forEach((item, index) => {
+                    const matchingItem = finalData.find(d => d.Country === item.Country);
+                    if (matchingItem) matchingItem['Class Rank'] = index + 1;
+                });
+
+                const validAIData = finalData.filter(item => !isNaN(parseFloat(item['AI Index Score'])));
+                validAIData.sort((a, b) => parseFloat(b['AI Index Score']) - parseFloat(a['AI Index Score']));
+                validAIData.forEach((item, index) => {
+                    const matchingItem = finalData.find(d => d.Country === item.Country);
+                    if (matchingItem) matchingItem['AI Rank'] = index + 1;
+                });
+
+                currentData = finalData;
+                updateVisualization(finalData);
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+
+        function updateVisualization(data) {
+            // Filter out invalid entries for the current metric
+            const validData = data.filter(item => !isNaN(getMetricValue(item)));
+            
+            // Sort data based on current metric
+            validData.sort((a, b) => getMetricValue(b) - getMetricValue(a));
+            validData.forEach((item, index) => {
+                const matchingItem = data.find(d => d.Country === item.Country);
+                if (matchingItem) matchingItem.Rank = index + 1;
+            });
+
+            createTable(data);
+            createChart(validData.slice(0, 10));
+            updateMap(data);
+        }
+
+        function createTable(data) {
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+            
+            // Create header row
+            const headerRow = document.createElement('tr');
+            ['Rank', 'Country', 'Class Index Score', 'Class Rank', 'AI Index Score', 'AI Rank', 
+             'HDI Score', 'HDI Rank', 'GDP per capita', 'GDP Rank', 'Number of Rankings'].forEach((header, index) => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                th.addEventListener('click', () => sortTable(index, header));
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            
+            // Create data rows
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                const values = [
+                    formatValue(row.Rank, true),
+                    row.Country,
+                    formatValue(row['Average Index Score']),
+                    formatValue(row['Class Rank'], true),
+                    formatValue(row['AI Index Score']),
+                    formatValue(row['AI Rank'], true),
+                    formatValue(row['HDI']),
+                    formatValue(row['HDI Rank'], true),
+                    formatValue(row['GDP per capita']),
+                    formatValue(row['GDP Rank'], true),
+                    row['Number of Rankings']
+                ];
+                
+                values.forEach(value => {
+                    const td = document.createElement('td');
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            
+            const container = document.getElementById('tableContainer');
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+
+        function createChart(data) {
+            if (chart) {
+                chart.destroy();
+            }
+
+            const metricLabel = getMetricLabel();
+            const ctx = document.getElementById('rankingChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(item => item.Country),
+                    datasets: [{
+                        label: metricLabel,
+                        data: data.map(item => getMetricValue(item)),
+                        backgroundColor: 'rgba(76, 175, 80, 0.6)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: metricLabel
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Country'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Top 10 Countries by ${metricLabel}`
+                        }
+                    }
+                }
+            });
+        }
+
+        function getQuantileBreaks(data) {
+            // Get all valid scores
+            const scores = data.map(d => getMetricValue(d)).filter(score => !isNaN(score));
+            scores.sort((a, b) => a - b);
+            
+            // Calculate quantile breaks for 7 groups
+            const breaks = [];
+            for (let i = 1; i < 7; i++) {
+                const index = Math.floor((i / 7) * scores.length);
+                breaks.push(scores[index]);
+            }
+            return breaks;
+        }
+
+        function getColor(value, breaks) {
+            if (isNaN(value)) return '#f7f7f7';  // Gray for missing data
+            
+            // Red to green color scale with 7 colors
+            const colors = [
+                '#d73027',  // Red
+                '#f46d43',  // Red-Orange
+                '#fdae61',  // Orange
+                '#fee08b',  // Yellow
+                '#d9ef8b',  // Light green
+                '#91cf60',  // Medium green
+                '#1a9850'   // Dark green
+            ];
+
+            for (let i = 0; i < breaks.length; i++) {
+                if (value <= breaks[i]) return colors[i];
+            }
+            return colors[colors.length - 1];
+        }
+
+        function updateMap(data) {
+            if (geojsonLayer) {
+                map.removeLayer(geojsonLayer);
+            }
+
+            const breaks = getQuantileBreaks(data);
+
+            geojsonLayer = L.geoJSON(window.geojsonData, {
+                style: function(feature) {
+                    const countryData = data.find(d => d.id === feature.id);
+                    return {
+                        fillColor: countryData ? getColor(getMetricValue(countryData), breaks) : '#f7f7f7',
+                        weight: 1,
+                        opacity: 1,
+                        color: 'white',
+                        fillOpacity: 0.7
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    const countryData = data.find(d => d.id === feature.id);
+                    
+                    if (countryData) {
+                        const metricLabel = getMetricLabel();
+                        const metricValue = getMetricValue(countryData);
+                        layer.bindPopup(`
+                            <b>${countryData.Country}</b><br>
+                            ${metricLabel}: ${metricValue}<br>
+                            Rank: ${countryData.Rank}<br>
+                            Class Rank: ${countryData['Class Rank']}<br>
+                            AI Rank: ${countryData['AI Rank']}<br>
+                            HDI Rank: ${countryData['HDI Rank']}<br>
+                            GDP Rank: ${countryData['GDP Rank']}
+                        `);
+                    }
+                }
+            }).addTo(map);
+
+            // Update legend
+            if (map.legend) {
+                map.removeControl(map.legend);
+            }
+
+            const legend = L.control({position: 'bottomright'});
+            legend.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'info legend');
+                const colors = [
+                    '#d73027',  // Red
+                    '#f46d43',  // Red-Orange
+                    '#fdae61',  // Orange
+                    '#fee08b',  // Yellow
+                    '#d9ef8b',  // Light green
+                    '#91cf60',  // Medium green
+                    '#1a9850'   // Dark green
+                ];
+
+                // Add legend title
+                div.innerHTML = `<h4>${getMetricLabel()} Ranges</h4>`;
+                
+                // Add legend items with improved spacing
+                for (let i = 0; i < breaks.length; i++) {
+                    const start = i === 0 ? Math.min(...data.map(d => getMetricValue(d))) : breaks[i - 1];
+                    const end = breaks[i];
+                    div.innerHTML +=
+                        '<div style="margin-bottom: 5px;"><i style="background:' + colors[i] + '"></i> ' +
+                        start.toFixed(3) + ' &ndash; ' + end.toFixed(3) + '</div>';
+                }
+                
+                // Add the last range
+                div.innerHTML +=
+                    '<div style="margin-bottom: 5px;"><i style="background:' + colors[colors.length - 1] + '"></i> ' +
+                    '> ' + breaks[breaks.length - 1].toFixed(3) + '</div>';
+                
+                return div;
+            };
+            legend.addTo(map);
+            map.legend = legend;
+        }
+
+        // Initialize map when the page loads
+        window.onload = initMap;
+    </script>
+</body>
+</html>

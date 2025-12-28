@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Materials - Principles of Macroeconomics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/lecture-materials.js"></script>
+<style>
+  .banner-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 25%; /* This sets the aspect ratio of the container */
+    min-height: 120px; /* Minimum height on small screens */
+    max-height: 400px; /* Maximum height on large screens */
+    overflow: hidden;
+  }
+
+  .banner-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  /* Mobile-first responsive text sizes */
+  .course-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  .course-subtitle {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Medium screens */
+  @media (min-width: 640px) {
+    .course-title {
+      font-size: 2rem;
+    }
+    .course-subtitle {
+      font-size: 1.25rem;
+    }
+  }
+
+  /* Large screens */
+  @media (min-width: 1024px) {
+    .course-title {
+      font-size: 2.5rem;
+    }
+    .course-subtitle {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+</head>
+<body class="bg-gray-50">
+<!-- Header -->
+<header>
+  <div class="banner-container">
+    <img src="./images/banner1.png" alt="Macroeconomics Course Banner" class="banner-image">
+    <div class="banner-overlay">
+      <div class="text-center text-white px-4">
+        <h2 class="course-title">Course Materials</h2>
+        <p class="course-subtitle">Winter 2026 • ECON 2</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<main class="container mx-auto py-8 px-4">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold">Course Materials</h2>
+        <a href="index.html" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">← Back to Home</a>
+    </div>
+
+    <!-- Course Information -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <h3 class="text-xl font-bold text-blue-700 mb-4">Course Information</h3>
+        <div class="flex flex-col space-y-2">
+            <a href="course_materials/ECON_2_Winter_26_Syllabus.pdf" class="group flex items-center p-3 rounded-lg bg-gray-50 hover:bg-blue-100 transition-all duration-200 border border-gray-200 hover:border-blue-300 shadow-sm hover:shadow">
+                <svg class="w-5 h-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <span class="text-gray-700 group-hover:text-blue-700 font-medium">Course Syllabus</span>
+                <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+
+            <a href="grade-calculator.html" class="group flex items-center p-3 rounded-lg bg-gray-50 hover:bg-blue-100 transition-all duration-200 border border-gray-200 hover:border-blue-300 shadow-sm hover:shadow">
+                <svg class="w-5 h-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                <span class="text-gray-700 group-hover:text-blue-700 font-medium">Grade Calculator</span>
+                <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+
+            <a href="https://shorturl.at/eYOXy" class="group flex items-center p-3 rounded-lg bg-gray-50 hover:bg-blue-100 transition-all duration-200 border border-gray-200 hover:border-blue-300 shadow-sm hover:shadow">
+                <svg class="w-5 h-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="text-gray-700 group-hover:text-blue-700 font-medium">Coffee Hours Sign-Up</span>
+                <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+
+            <a href="https://ucsb.instructure.com/courses/31006/modules" class="group flex items-center p-3 rounded-lg bg-gray-50 hover:bg-blue-100 transition-all duration-200 border border-gray-200 hover:border-blue-300 shadow-sm hover:shadow">
+                <svg class="w-5 h-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                </svg>
+                <span class="text-gray-700 group-hover:text-blue-700 font-medium">Canvas Course Page</span>
+                <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+
+            <a href="https://app.tophat.com/e/636856/content/my-course" class="group flex items-center p-3 rounded-lg bg-gray-50 hover:bg-blue-100 transition-all duration-200 border border-gray-200 hover:border-blue-300 shadow-sm hover:shadow">
+                <svg class="w-5 h-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                <span class="text-gray-700 group-hover:text-blue-700 font-medium">TopHat Course Page</span>
+                <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+
+            <a href="fred-data.html" class="group flex items-center p-3 rounded-lg bg-gradient-to-r from-blue-50 to-green-50 hover:from-blue-100 hover:to-green-100 transition-all duration-200 border border-blue-300 hover:border-blue-400 shadow-sm hover:shadow">
+                <svg class="w-5 h-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+                <div class="flex-1">
+                    <span class="text-gray-700 group-hover:text-blue-700 font-medium">Live Economic Data (FRED)</span>
+                    <span class="block text-xs text-green-600 font-medium">✨ NEW: Auto-updating charts!</span>
+                </div>
+                <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+
+            <!-- Removed duplicate old link -->
+        </div>
+    </div>
+
+    <!-- Course Schedule -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <h3 class="text-xl font-bold text-blue-700 mb-4">Course Schedule</h3>
+
+        <div class="overflow-hidden">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="py-3 px-4 text-left w-24">Week</th>
+                        <th class="py-3 px-4 text-left w-1/4">Topic</th>
+                        <th class="py-3 px-4 text-left w-[37.5%]">Readings and Materials</th>
+                        <th class="py-3 px-4 text-left w-[37.5%]">Assignments</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <tr>
+                        <td class="py-3 px-4">Week 1</td>
+                        <td class="py-3 px-4">Reviewing Supply and Demand with Housing</td>
+                        <td class="py-3 px-4">
+                            <div>Chapters 1, 2.0-2.5</div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Monday:</span><br>
+                                <div id="week1-monday-materials">
+                                    <a href="lecture_slides/Lecture1_updated.pdf" class="text-blue-600 hover:underline">Lecture Slides</a> •
+                                    <span class="text-gray-400 italic">Lecture notes not yet available</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Wednesday:</span><br>
+                                <div id="week1-wednesday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="https://app.tophat.com/e/636856/content/my-course" class="text-blue-600 hover:underline">TopHat Quiz 1</a> released Jan 8, Due Jan 13<br>
+                            Discussion Google Form: Supply and Demand Review<br>
+                            <a href="review_session/Week1ReviewSession.pdf" class="text-blue-600 hover:underline">Week 1 Review Session Questions</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4">Week 2</td>
+                        <td class="py-3 px-4">Introduction to Macroeconomics, GDP</td>
+                        <td class="py-3 px-4">
+                            <div>Chapters 3.0, 3.1</div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Monday:</span><br>
+                                <div id="week2-monday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Wednesday:</span><br>
+                                <div id="week2-wednesday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="https://app.tophat.com/e/636856/content/my-course" class="text-blue-600 hover:underline">TopHat Quiz 2</a> released Jan 15, Due Jan 20<br>
+                            <a href="activities/activity1/index.html" class="text-blue-600 hover:underline">Activity #1</a> in section<br>
+                            <a href="review_session/Week2ReviewSession.pdf" class="text-blue-600 hover:underline">Week 2 Review Session Questions</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4">Week 3</td>
+                        <td class="py-3 px-4">CPI</td>
+                        <td class="py-3 px-4">
+                            <div>Chapter 3.2</div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Monday:</span><br>
+                                <div id="week3-monday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Wednesday:</span><br>
+                                <div id="week3-wednesday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="https://app.tophat.com/e/636856/content/my-course" class="text-blue-600 hover:underline">TopHat Quiz 3</a> released Jan 22, Due Jan 27<br>
+                            <a href="activities/activity2/index.html" class="text-blue-600 hover:underline">Activity #2</a> in section<br>
+                            <a href="review_session/Week3ReviewSession.pdf" class="text-blue-600 hover:underline">Week 3 Review Session Questions</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4">Week 4</td>
+                        <td class="py-3 px-4">CPI and Unemployment, Short-Run Macroeconomics</td>
+                        <td class="py-3 px-4">
+                            <div>Chapters 3.2, 3.3, 4.0, 4.1</div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Monday:</span><br>
+                                <div id="week4-monday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Wednesday:</span><br>
+                                <div id="week4-wednesday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="https://app.tophat.com/e/636856/content/my-course" class="text-blue-600 hover:underline">TopHat Quiz 4</a> released Jan 29, Due Feb 2<br>
+                            Discussion Google Form: Midterm Review<br>
+                            <a href="review_session/Week4ReviewSession.pdf" class="text-blue-600 hover:underline">Week 4 Review Session Questions</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4">Week 5</td>
+                        <td class="py-3 px-4">Midterm Exam (Mon), Consumption Function and Short-Run Equilibrium (Wed)</td>
+                        <td class="py-3 px-4">
+                            <div>Chapters 4.1, 4.2, 4.3</div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Monday:</span><br>
+                                <span class="font-semibold text-blue-700">Midterm Exam - In Class</span>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Wednesday:</span><br>
+                                <div id="week5-wednesday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4"><strong>Midterm Exam: Monday, February 2nd</strong><br>No Quiz this week<br>Discussion Google Form: Midterm Recap<br>No Review Session this week</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4">Week 6</td>
+                        <td class="py-3 px-4">Short-Run Equilibrium and Fiscal Policy</td>
+                        <td class="py-3 px-4">
+                            <div>Chapters 4.3, 5.1</div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Monday:</span><br>
+                                <div id="week6-monday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Wednesday:</span><br>
+                                <div id="week6-wednesday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="https://app.tophat.com/e/636856/content/my-course" class="text-blue-600 hover:underline">TopHat Quiz 5</a> released Feb 12, Due Feb 17<br>
+                            Activity #3 in section<br>
+                            <a href="review_session/Week6ReviewSession.pdf" class="text-blue-600 hover:underline">Week 6 Review Session Questions</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4">Week 7</td>
+                        <td class="py-3 px-4">Tax Multiplier and Deficits, Debts, and Money</td>
+                        <td class="py-3 px-4">
+                            <div>Chapters 5.1, 5.2, 6.1</div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Monday:</span><br>
+                                <div id="week7-monday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Wednesday:</span><br>
+                                <div id="week7-wednesday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="https://app.tophat.com/e/636856/content/my-course" class="text-blue-600 hover:underline">TopHat Quiz 6</a> released Feb 19, Due Feb 24<br>
+                            Discussion Google Form: Aggregate Expenditures Model<br>
+                            <a href="review_session/Week7ReviewSession.pdf" class="text-blue-600 hover:underline">Week 7 Review Session Questions</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4">Week 8</td>
+                        <td class="py-3 px-4">Deficits, Debts, and Money</td>
+                        <td class="py-3 px-4">
+                            <div>Chapters 5.1, 5.2, 6.1</div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Monday:</span><br>
+                                <div id="week8-monday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Wednesday:</span><br>
+                                <div id="week8-wednesday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="https://app.tophat.com/e/636856/content/my-course" class="text-blue-600 hover:underline">TopHat Quiz 7</a> released Feb 26, Due Mar 3<br>
+                            Activity #4 in section<br>
+                            <a href="review_session/Week8ReviewSession.pdf" class="text-blue-600 hover:underline">Week 8 Review Session Questions</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4">Week 9</td>
+                        <td class="py-3 px-4">Monetary Policy and Aggregate Demand</td>
+                        <td class="py-3 px-4">
+                            <div>Chapters 6.1, 6.2, 6.3, 7.1</div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Monday:</span><br>
+                                <span class="font-semibold text-blue-700">Presidents' Day - No Class</span>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Wednesday:</span><br>
+                                <div id="week9-wednesday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="https://app.tophat.com/e/636856/content/my-course" class="text-blue-600 hover:underline">TopHat Quiz 8</a> released Mar 5, Due Mar 10<br>
+                            Discussion Google Form: Monetary Policy<br>
+                            <a href="review_session/Week9ReviewSession.pdf" class="text-blue-600 hover:underline">Week 9 Review Session Questions</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4">Week 10</td>
+                        <td class="py-3 px-4">Aggregate Demand, Aggregate Supply</td>
+                        <td class="py-3 px-4">
+                            <div>Chapters 7.1, 7.2, 7.3, 7.4</div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Monday:</span><br>
+                                <div id="week10-monday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-gray-600">Wednesday:</span><br>
+                                <div id="week10-wednesday-materials">
+                                    <span class="text-gray-400 italic">Lecture materials not yet available</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="https://app.tophat.com/e/636856/content/my-course" class="text-blue-600 hover:underline">TopHat Quiz 9</a> released Mar 12, Due Mar 18<br>
+                            Activity #5 in section<br>
+                            <a href="review_session/Week10ReviewSession.pdf" class="text-blue-600 hover:underline">Week 10 Review Session Questions</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4 bg-blue-50 font-semibold" colspan="4">
+                            Final Exam: Wednesday, March 18th, 2026 at 9:00-11:00 AM
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Study Resources -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <h3 class="text-xl font-bold text-blue-700 mb-4">Weekly Learning Structure</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold mb-2 text-blue-700">Lectures</h4>
+                <p class="text-gray-700 mb-2">Mondays & Wednesdays, 9:30-10:45 AM in Music LLCH</p>
+                <ul class="list-disc ml-6 text-gray-700">
+                    <li>Take notes during lecture</li>
+                    <li>Participate in real-time TopHat questions</li>
+                    <li>Ask questions during the lecture</li>
+                    <li>Review difficult topics after lecture</li>
+                </ul>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold mb-2 text-blue-700">Discussion Sections</h4>
+                <p class="text-gray-700 mb-2">AI-based activities to connect with peers</p>
+                <ul class="list-disc ml-6 text-gray-700">
+                    <li>Complete and submit the assigned activity by the end of section</li>
+                    <li>Your top 3 (of 5) activities count for 15% of your grade</li>
+                    <li>Attendance and participation are mandatory for credit</li>
+                </ul>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold mb-2 text-blue-700">Lecture Quizzes</h4>
+                <p class="text-gray-700 mb-2">Released Wednesdays, due before next Monday's lecture</p>
+                <ul class="list-disc ml-6 text-gray-700">
+                    <li>Based on previous week's material</li>
+                    <li>One chance to answer questions</li>
+                    <li>40-50 correct answers needed for full credit (10% of grade)</li>
+                </ul>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold mb-2 text-blue-700">Review Sessions</h4>
+                <p class="text-gray-700 mb-2">TBD</p>
+                <ul class="list-disc ml-6 text-gray-700">
+                    <li>Focus on lengthy, difficult word problems</li>
+                    <li>Not mandatory but helpful for deeper understanding</li>
+                    <li>Led by teaching assistants</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h4 class="font-semibold text-blue-700 mb-2">Office Hours</h4>
+            <div class="text-gray-700">
+                <p class="mb-2"><strong>Professor Lang:</strong> Wednesdays, 5:00-6:30 PM in North Hall 3032</p>
+                <p class="mb-2"><strong>Coffee Hours:</strong> TBD, Look for announcements on Canvas</p>
+                <p class="mb-2">Sign up for Coffee Hours at: <a href="https://shorturl.at/eYOXy" class="text-blue-600 hover:underline">https://shorturl.at/eYOXy</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Resources -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold text-blue-700 mb-4">Course Resources</h3>
+
+        <div class="mb-6">
+            <h4 class="font-semibold mb-2">TopHat Subscription (Required)</h4>
+            <p class="text-gray-700 mb-4">The only item you are required to purchase is a TopHat.com subscription. The quizzes will be run through TopHat and the platform will enhance lectures, since questions posed to the class can be "texted-in" through the app. All announcements and relevant information will be posted on TopHat (and Canvas).</p>
+
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <h5 class="font-semibold text-blue-700 mb-2">To enroll in the class TopHat page:</h5>
+                <ul class="list-disc ml-6 text-gray-700 space-y-2">
+                    <li>Go to <a href="http://www.tophat.com" class="text-blue-600 hover:underline">www.tophat.com</a></li>
+                    <li>Log in to your existing Top Hat student account or use your school email to create a new account</li>
+                    <li>Search for "Principles of Macroeconomics – Winter 2026", Join Code: 636856</li>
+                    <li>Be sure to use your school email and correct ID number so we can accurately identify you!</li>
+                    <li>If you click "Next" enough, the price should only be <strong>$25 for a 4-month subscription</strong></li>
+                </ul>
+            </div>
+
+            <h4 class="font-semibold mb-2">Textbook</h4>
+            <ul class="list-disc ml-6 text-gray-700 space-y-2">
+                <li><strong>E-Textbook:</strong> <em>Introduction to Macroeconomics</em> (Free this term on TopHat!)</li>
+                <li><strong>Optional Textbook:</strong> <em>Macroeconomics: Principles and Applications</em>, 6th Ed., Hall & Lieberman</li>
+            </ul>
+
+            <p class="mt-4 text-gray-600 italic">If you have financial constraints, please contact Professor Lang for potential accommodations.</p>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-gray-100 border-t mt-12 py-6 px-4">
+<div class="container mx-auto">
+<p class="text-gray-600">© 2026 Economics Department</p>
+</div>
+</footer>
+
+<script>
+// Initialize automatic lecture materials detection when page loads
+if (typeof updateAllLectureMaterials === 'function') {
+    updateAllLectureMaterials();
+}
+</script>
+</body>
+</html>

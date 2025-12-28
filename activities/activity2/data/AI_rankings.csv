@@ -1,0 +1,125 @@
+Country,id,Index Score
+Afghanistan,AFG,-0.012
+Albania,ALB,0.456
+Algeria,DZA,0.095
+Angola,AGO,-1.323
+Argentina,ARG,0.981
+Armenia,ARM,0.669
+Australia,AUS,1.388
+Austria,AUT,1.279
+Azerbaijan,AZE,-0.239
+Bangladesh,BGD,-0.63
+Belarus,BLR,0.414
+Belgium,BEL,1.144
+Belize,BLZ,-0.234
+Benin,BEN,-1.535
+Bhutan,BTN,-0.508
+Bosnia and Herzegovina,BIH,0.49
+Botswana,BWA,-0.687
+Brazil,BRA,0.463
+Brunei Darussalam,BRN,-0.263
+Bulgaria,BGR,0.659
+Burkina Faso,BFA,-1.188
+Burundi,BDI,-0.678
+Cambodia,KHM,-0.324
+Cameroon,CMR,-1.273
+Canada,CAN,1.172
+Chad,TCD,-1.731
+Chile,CHL,1.003
+China,CHN,0.451
+Colombia,COL,0.407
+"Congo, Dem. Rep.",COD,-1.557
+"Congo, Rep.",COG,-0.986
+Cote d'Ivoire,CIV,-1.487
+Croatia,HRV,0.701
+Cuba,HRV,0.824
+Cyprus,CYP,1.088
+Czechia,CZE,0.802
+Denmark,DNK,1.092
+Dominican Republic,DOM,-0.158
+Ecuador,ECU,0.397
+"Egypt, Arab Rep.",EGY,-0.287
+El Salvador,SLV,0.151
+Estonia,EST,0.66
+Fiji,FJI,-0.141
+Finland,FIN,1.226
+France,FRA,1.163
+Gabon,GAB,-0.917
+Georgia,GEO,0.475
+Germany,DEU,1.205
+Ghana,GHA,-0.9
+Greece,GRC,1.556
+Guatemala,GTM,-0.294
+Guinea,GIN,-1.609
+Honduras,HND,-0.003
+Hungary,HUN,0.423
+Iceland,ISL,1.056
+India,IND,-0.645
+Indonesia,IDN,-0.441
+"Iran, Islamic Rep.",IRN,0.167
+Ireland,IRL,0.781
+Israel,ISR,0.721
+Italy,ITA,0.961
+Japan,JPN,1.089
+Jordan,JOR,0.059
+Kazakhstan,KAZ,-0.011
+Korea,KOR,1.198
+Kuwait,KWT,0.384
+Kyrgyz Republic,KGZ,-0.044
+Lao PDR,LAO,-0.957
+Latvia,LVA,0.76
+Lebanon,LBN,0.43
+Lithuania,LTU,0.568
+Luxembourg,LUX,0.246
+Madagascar,MDG,-1.189
+Malaysia,MYS,0.013
+Malta,MLT,1.033
+Mauritania,MRT,-1.019
+Mexico,MEX,0.015
+Moldova,MDA,0.127
+Mongolia,MNG,0.138
+Montenegro,MNE,0.741
+Morocco,MAR,0.005
+Namibia,NAM,-0.502
+Nepal,NPL,-0.546
+Netherlands,NLD,1.197
+New Zealand,NIC,1.043
+Nicaragua,NER,0.094
+Niger,NGA,-1.323
+Norway,NOR,1.202
+Oman,OMN,0.004
+Pakistan,PAK,-1.253
+Panama,PAN,0.55
+Philippines,PHL,-0.269
+Poland,POL,0.524
+Portugal,PRT,1.036
+Qatar,QAT,0.019
+Romania,ROU,0.272
+Russian Federation,RUS,0.284
+Rwanda,RWA,-0.6
+Saudi Arabia,SAU,0.511
+Senegal,SEN,-0.709
+Serbia,SRB,0.655
+Slovak Republic,SVK,0.393
+Slovenia,SVN,0.975
+South Africa,ZAF,-0.466
+Spain,ESP,1.262
+Sri Lanka,LKA,-0.121
+Suriname,SUR,-0.363
+Sweden,SWE,1.211
+Switzerland,CHE,1.172
+Tajikistan,TJK,-0.156
+Tanzania,TZA,-0.993
+Thailand,THA,0.192
+Togo,TGO,-1.026
+Tunisia,TUN,0.103
+Turkiye,TUR,0.731
+Turkmenistan,TKM,-0.677
+Ukraine,UKR,0.416
+United Arab Emirates,ARE,0.401
+United Kingdom,GBR,1.142
+United States,USA,1.508
+Uruguay,URY,0.741
+Uzbekistan,UZB,-0.074
+Viet Nam,VNM,-0.141
+Zimbabwe,ZWE,-1.255

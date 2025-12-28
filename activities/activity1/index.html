@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Housing Market Analysis - Principles of Macroeconomics</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Chart.js for data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- SheetJS for Excel file handling -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- Custom CSS -->
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50">
+<!-- Header -->
+<header>
+  <div class="banner-container">
+    <img src="../../images/banner7.png" alt="Housing Market Analysis Banner" class="banner-image">
+    <div class="banner-overlay">
+      <div class="container mx-auto">
+        <div class="nav-links">
+          <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+          <a href="../index.html" class="nav-link">← Back to Activities</a>
+        </div>
+        <h1 class="activity-title">Discussion Activity 1: Housing Market Analysis</h1>
+        <p class="activity-date">January 13-16, 2026 (Week 2)</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+    <!-- Main Content -->
+    <main class="container mx-auto py-8 px-4">
+        <!-- Step Navigation Update -->
+        <div class="flex mb-8 border-b">
+            <button id="nav-instructions" class="step-nav font-medium px-4 py-2 border-b-2 border-blue-600 text-blue-600">1. Instructions</button>
+            <button id="nav-upload" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">2. Upload Data</button>
+            <button id="nav-analysis" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">3. Analysis</button>
+            <button id="nav-ai-response" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">4. AI Response</button>
+        </div>
+
+
+        <!-- Steps Content -->
+        <div id="step-instructions" class="step-content">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-4">Activity Instructions</h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-medium">Objective</h3>
+                        <p style="margin-bottom: 20px;">In this activity, you and your group (of 2 to 3) will identify whether the housing market in a U.S. state is healthy or not by analyzing recent housing metrics data.</p>
+                        <p>After you form your group, claim your state on the Google Sheet provided by your TA.</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-medium">Housing Market Metrics</h3>
+                        <p class="mb-2">You'll analyze these five key metrics to determine market health:</p>
+                        <div class="mt-3 space-y-4">
+                            <div class="p-4 bg-blue-50 rounded-lg">
+                                <h4 class="font-medium">Median Sale Price</h4>
+                                <p>The middle value of all home sale prices for a given period.</p>
+                                <p class="mt-1 italic text-sm">A balanced market has 3-5% growth in prices per year.</p>
+                            </div>
+                            
+                            <div class="p-4 bg-green-50 rounded-lg">
+                                <h4 class="font-medium">Months' Supply (Months of Inventory)</h4>
+                                <p>Number of months it would take to sell all the homes on the market, given the current pace of sales.</p>
+                                <p class="mt-1 italic text-sm">A balanced market has 4-6 months of supply.</p>
+                            </div>
+                            
+                            <div class="p-4 bg-yellow-50 rounded-lg">
+                                <h4 class="font-medium">Days on Market</h4>
+                                <p>The average number of days a home is listed for sale before it goes under contract (sold).</p>
+                                <p class="mt-1 italic text-sm">In a balanced market, homes usually sell within 30-60 days.</p>
+                            </div>
+                            
+                            <div class="p-4 bg-purple-50 rounded-lg">
+                                <h4 class="font-medium">Sale-to-List</h4>
+                                <p>A measure of how close the sale price is to the asking price set by the seller. Specifically (Sale Price/List Price) × 100.</p>
+                                <p class="mt-1 italic text-sm">A sale-to-list price ratio between 98% to 102% is consistent with a balanced market.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-medium">Accessing Housing Data</h3>
+                        <p class="mb-2">To gather data for your assigned state, follow these steps:</p>
+                        <ol class="list-decimal pl-5 space-y-2">
+                            <li>Your TA will show a QR code that links to a Google Sheet</li>
+                            <li>Claim your state by entering your group name next to the state (first come, first served)</li>
+                            <li>Go to the <a href="https://www.redfin.com/news/data-center/" class="text-blue-600 underline" target="_blank">Redfin Data Center</a></li>
+                            <li>Find the "Redfin Monthly Housing Market Data" section</li>
+                            <li>Remove metro areas by clicking "Region Type" and unchecking "County", "Metro", and "Place/City"</li>
+                            <li>Keep "National" and "State" checked</li>
+                            <li>Click on "Region" and select your assigned state</li>
+                            <li>Click "Apply" to see the data</li>
+                            <li>Click on the "Download" button and the raw data will appear</li>
+                            <li>Click the download button, then "Crosstab" button, and choose Excel</li>
+                            <li>Save the file to upload in the next step of this activity</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button id="next-upload" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Next: Upload Your Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="step-upload" class="step-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-4">Upload Your Housing Data</h2>
+                
+                <p class="mb-4">Upload the housing data Excel file you downloaded from Redfin for your state.</p>
+                
+                <div class="p-4 bg-yellow-50 rounded-lg mb-6">
+                    <h3 class="font-medium">Data Upload Instructions:</h3>
+                    <ol class="list-decimal pl-5 space-y-1 mt-2">
+                        <li>Make sure you've downloaded the Excel file (.xlsx) from Redfin Data Center</li>
+                        <li>Click the "Upload File" button below to select your file</li>
+                        <li>Once uploaded, we will generate visualizations to help with your analysis</li>
+                    </ol>
+                </div>
+                
+                <div class="border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center mb-6">
+                    <div id="upload-area" class="text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p class="text-gray-500 mb-3">Drag & drop your Excel file here or click to browse</p>
+                        <button id="upload-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload File</button>
+                        <input type="file" id="file-input" class="hidden" accept=".xlsx,.xls">
+                    </div>
+                    <div id="file-uploaded" class="hidden">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span id="filename" class="text-green-700 font-medium">housing_data.xlsx</span>
+                            <button id="remove-file" class="ml-3 text-red-500 text-sm underline">Remove</button>
+                        </div>
+                        <div class="text-gray-700 mt-2">
+                            <p id="file-stats">File loaded successfully. Click "Next" to proceed to analysis.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="data-preview" class="hidden">
+                    <h3 class="font-medium mb-3">Data Preview</h3>
+                    <div class="overflow-x-auto mb-4">
+                        <table id="preview-table" class="min-w-full border border-gray-300">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <!-- Table headers will be inserted here -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Table rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-sm text-gray-600">Showing preview of data that will be used for analysis.</p>
+                </div>
+                
+                <div class="flex justify-between mt-6">
+                    <button id="back-to-instructions" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Back to Instructions</button>
+                    <button id="next-to-analysis" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" disabled>Next: Analyze Data</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="step-analysis" class="step-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-4">Housing Market Analysis</h2>
+                
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                    <h3 class="font-medium">How to Complete the Analysis:</h3>
+                    <ol class="list-decimal pl-5 space-y-1 mt-2">
+                        <li><strong>Weight</strong>: Assign a weight to each metric based on importance (weights must sum to 100)
+                            <ul class="list-disc pl-5 mt-1 text-sm">
+                                <li>If all metrics are equally important: 25 per metric</li>
+                                <li>If one metric matters more, give it a higher weight</li>
+                            </ul>
+                        </li>
+                        <li><strong>Value</strong>: Assign a value from 1-100 for each metric:
+                            <ul class="list-disc pl-5 mt-1 text-sm">
+                                <li>Below 50: Market favors buyers</li>
+                                <li>Above 50: Market favors sellers</li>
+                                <li>Around 50: Balanced market</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- Add this to the analysis section to show comparison controls -->
+                <div class="mb-6 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <label for="time-range" class="mr-2 text-sm">Data Time Range:</label>
+                        <select id="time-range" class="border rounded p-1 text-sm">
+                            <option value="12">Last 12 months</option>
+                            <option value="24">Last 24 months</option>
+                            <option value="60" selected>Last 5 years</option>
+                            <option value="all">All data</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center">
+                        <label for="national-data-toggle" class="mr-2 text-sm">Show National Data:</label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="national-data-toggle" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Add this to the explanation section -->
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                    <h3 class="font-medium mb-2">Understanding the Comparison:</h3>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>Your state data is shown as <span class="font-medium text-blue-600">solid blue lines</span></li>
+                        <li>National data is shown as <span class="font-medium text-red-600">solid red lines</span></li>
+                        <li>Balanced market ranges are shown as <span class="font-medium text-green-600">green shaded areas</span></li>
+                    </ul>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Median Sale Price -->
+                    <div class="bg-white p-4 border rounded-lg">
+                        <h3 class="text-lg font-medium mb-3">Median Sale Price</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+                            <!-- Metric Input -->
+                            <div class="md:col-span-1">
+                                <div class="border p-3 rounded-lg bg-blue-50">
+                                    <p class="text-xs mb-1">Balanced: 3-5% growth/year</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="block text-xs font-medium mb-1">Weight:</label>
+                                            <input type="number" class="weight-input w-full text-center border rounded p-1 text-sm" data-metric="price" min="0" max="100" step="1" value="25">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium mb-1">Value:</label>
+                                            <input type="number" class="value-input w-full text-center border rounded p-1 text-sm" data-metric="price" min="1" max="100" step="1" value="50">
+                                        </div>
+                                    </div>
+                                    <div class="mt-1">
+                                        <p class="text-xs">Weighted Value: <span class="font-medium weighted-value" data-metric="price">10.00</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Chart -->
+                            <div class="chart-container relative md:col-span-3" style="height: 250px;">
+                                <button class="expand-chart absolute top-0 right-0 p-1 text-gray-600 hover:text-gray-800" data-chart="price">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
+                                    </svg>
+                                </button>
+                                <canvas id="priceChart"></canvas>
+                                <div class="mt-2 text-xs text-gray-600">
+                                    <p><span class="font-medium">Current Value:</span> $<span id="price-value">350,000</span></p>
+                                    <p><span class="font-medium">Annual Growth:</span> <span id="price-growth">5.2%</span> (Balanced: 3-5%)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Months' Supply -->
+                    <div class="bg-white p-4 border rounded-lg">
+                        <h3 class="text-lg font-medium mb-3">Months' Supply</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+                            <!-- Metric Input -->
+                            <div class="md:col-span-1">
+                                <div class="border p-3 rounded-lg bg-green-50">
+                                    <p class="text-xs mb-1">Balanced: 4-6 months</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="block text-xs font-medium mb-1">Weight:</label>
+                                            <input type="number" class="weight-input w-full text-center border rounded p-1 text-sm" data-metric="supply" min="0" max="100" step="1" value="25">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium mb-1">Value:</label>
+                                            <input type="number" class="value-input w-full text-center border rounded p-1 text-sm" data-metric="supply" min="1" max="100" step="1" value="50">
+                                        </div>
+                                    </div>
+                                    <div class="mt-1">
+                                        <p class="text-xs">Weighted Value: <span class="font-medium weighted-value" data-metric="supply">10.00</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Chart -->
+                            <div class="chart-container relative md:col-span-3" style="height: 250px;">
+                                <button class="expand-chart absolute top-0 right-0 p-1 text-gray-600 hover:text-gray-800" data-chart="supply">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
+                                    </svg>
+                                </button>
+                                <canvas id="supplyChart"></canvas>
+                                <div class="mt-2 text-xs text-gray-600">
+                                    <p><span class="font-medium">Current:</span> <span id="supply-value">2.1</span> months</p>
+                                    <p><span class="font-medium">Balanced:</span> 4-6 months</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Days on Market -->
+                    <div class="bg-white p-4 border rounded-lg">
+                        <h3 class="text-lg font-medium mb-3">Days on Market</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+                            <!-- Metric Input -->
+                            <div class="md:col-span-1">
+                                <div class="border p-3 rounded-lg bg-yellow-50">
+                                    <p class="text-xs mb-1">Balanced: 30-60 days</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="block text-xs font-medium mb-1">Weight:</label>
+                                            <input type="number" class="weight-input w-full text-center border rounded p-1 text-sm" data-metric="days" min="0" max="100" step="1" value="25">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium mb-1">Value:</label>
+                                            <input type="number" class="value-input w-full text-center border rounded p-1 text-sm" data-metric="days" min="1" max="100" step="1" value="50">
+                                        </div>
+                                    </div>
+                                    <div class="mt-1">
+                                        <p class="text-xs">Weighted Value: <span class="font-medium weighted-value" data-metric="days">10.00</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Chart -->
+                            <div class="chart-container relative md:col-span-3" style="height: 250px;">
+                                <button class="expand-chart absolute top-0 right-0 p-1 text-gray-600 hover:text-gray-800" data-chart="days">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
+                                    </svg>
+                                </button>
+                                <canvas id="daysChart"></canvas>
+                                <div class="mt-2 text-xs text-gray-600">
+                                    <p><span class="font-medium">Current:</span> <span id="days-value">15</span> days</p>
+                                    <p><span class="font-medium">Balanced:</span> 30-60 days</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sale-to-List -->
+                    <div class="bg-white p-4 border rounded-lg">
+                        <h3 class="text-lg font-medium mb-3">Sale-to-List Ratio</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+                            <!-- Metric Input -->
+                            <div class="md:col-span-1">
+                                <div class="border p-3 rounded-lg bg-purple-50">
+                                    <p class="text-xs mb-1">Balanced: 98-102%</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="block text-xs font-medium mb-1">Weight:</label>
+                                            <input type="number" class="weight-input w-full text-center border rounded p-1 text-sm" data-metric="saleToList" min="0" max="100" step="1" value="25">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium mb-1">Value:</label>
+                                            <input type="number" class="value-input w-full text-center border rounded p-1 text-sm" data-metric="saleToList" min="1" max="100" step="1" value="50">
+                                        </div>
+                                    </div>
+                                    <div class="mt-1">
+                                        <p class="text-xs">Weighted Value: <span class="font-medium weighted-value" data-metric="saleToList">10.00</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Chart -->
+                            <div class="chart-container relative md:col-span-3" style="height: 250px;">
+                                <button class="expand-chart absolute top-0 right-0 p-1 text-gray-600 hover:text-gray-800" data-chart="saleToList">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
+                                    </svg>
+                                </button>
+                                <canvas id="saleToListChart"></canvas>
+                                <div class="mt-2 text-xs text-gray-600">
+                                    <p><span class="font-medium">Current:</span> <span id="sale-to-list-value">101.5%</span></p>
+                                    <p><span class="font-medium">Balanced:</span> 98-102%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <!-- Final Assessment Section -->
+                    <div class="bg-white p-4 border rounded-lg">
+                        <div id="weight-warning" class="hidden text-red-600 mb-4 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                            Weights must sum to 100. Please adjust your weights.
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Totals -->
+                            <div>
+                                <h3 class="text-lg font-medium mb-3">Total Analysis</h3>
+                                <table class="w-full border-collapse">
+                                    <tr>
+                                        <td class="border p-2 font-medium">Total Weight:</td>
+                                        <td class="border p-2 font-bold text-center" id="total-weight">100</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border p-2 font-medium">Final Score:</td>
+                                        <td class="border p-2 font-bold text-center" id="total-weighted-value">50.00</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <!-- Market Assessment -->
+                            <div>
+                                <h3 class="text-lg font-medium mb-3">Your Market Assessment:</h3>
+                                <div class="p-4 border rounded-lg">
+                                    <p class="text-lg mb-3">
+                                        The housing market is a 
+                                        <span id="market-type" class="font-bold">balanced</span> market with a score of 
+                                        <span id="final-score" class="font-bold">50.00</span>.
+                                    </p>
+                                    <div class="relative pt-1">
+                                        <div class="overflow-hidden h-6 text-xs flex rounded bg-gray-200">
+                                            <div class="w-1/3 bg-blue-300 rounded-l"></div>
+                                            <div class="w-1/3 bg-green-300"></div>
+                                            <div class="w-1/3 bg-red-300 rounded-r"></div>
+                                            <div id="score-marker" class="absolute h-full w-1 bg-black" style="left: 50%"></div>
+                                        </div>
+                                        <div class="flex justify-between text-xs mt-1">
+                                            <span>0 - Buyers</span>
+                                            <span>40</span>
+                                            <span>60</span>
+                                            <span>Sellers - 100</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-yellow-50 p-4 rounded-lg mt-6">
+                    <p><strong>Important:</strong> After completing your analysis, one member of your group should enter your values in the Google Sheet provided by your TA. Your TA will use this data to create visual maps showing market assessments across all states.</p>
+                </div>
+                
+                <div class="flex justify-between mt-6">
+                    <button id="back-to-upload" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Back to Data Upload</button>
+                    <div class="flex space-x-3">
+        
+                        <button id="finish-activity" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">AI Analysis</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="step-ai-response" class="step-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-4">AI Housing Market Analysis</h2>
+                
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                    <h3 class="font-medium">How to Complete the AI Analysis:</h3>
+                    <ol class="list-decimal pl-5 space-y-1 mt-2">
+                        <li>Choose an AI platform from the list below</li>
+                        <li>Click the "Copy Prompt" button to copy the standardized analysis prompt</li>
+                        <li>Paste the prompt into your chosen AI tool</li>
+                        <li>Upload your state's housing market data</li>
+                        <li>The AI should complete the analysis table</li>
+                        <li>Input the AI's numerical responses into the second class Google Sheet</li>
+                    </ol>
+                </div>
+        
+                <div class="mb-6">
+                    <h3 class="font-medium mb-4">Select an AI Platform:</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center p-4 border rounded-lg hover:bg-blue-50 transition-colors">
+                            <span class="font-medium">ChatGPT</span>
+                            <span class="text-xs text-gray-500 mt-1">OpenAI</span>
+                        </a>
+                        <a href="https://www.perplexity.ai" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center p-4 border rounded-lg hover:bg-blue-50 transition-colors">
+                            <span class="font-medium">Perplexity</span>
+                            <span class="text-xs text-gray-500 mt-1">perplexity.ai</span>
+                        </a>
+                        <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center p-4 border rounded-lg hover:bg-blue-50 transition-colors">
+                            <span class="font-medium">Google Gemini</span>
+                            <span class="text-xs text-gray-500 mt-1">Google</span>
+                        </a>
+                        <a href="https://chat.mistral.ai" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center p-4 border rounded-lg hover:bg-blue-50 transition-colors">
+                            <span class="font-medium">Mistral</span>
+                            <span class="text-xs text-gray-500 mt-1">mistral.ai</span>
+                        </a>
+                        <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center p-4 border rounded-lg hover:bg-blue-50 transition-colors">
+                            <span class="font-medium">Claude</span>
+                            <span class="text-xs text-gray-500 mt-1">Anthropic</span>
+                        </a>
+                        <a href="https://chat.deepseek.com" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center p-4 border rounded-lg hover:bg-blue-50 transition-colors">
+                            <span class="font-medium">Deepseek</span>
+                            <span class="text-xs text-gray-500 mt-1">www.deepseek.com</span>
+                        </a>
+                    </div>
+                    <p class="text-sm text-gray-600 italic mt-2">Note: ChatGPT (non-Plus version) is limited in analysis capacity. Claude Pro may be needed for larger files.</p>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="font-medium mb-2">AI Analysis Prompt:</h3>
+                    <div class="bg-gray-100 p-4 rounded-lg mb-3">
+                        <p class="italic text-gray-800">
+                            Examine this data and assess the health of the <span id="ai-state-name">[State Name]</span> housing market. Fill out the table where 1 is a market where nothing is selling because there are literally no buyers and 100 is an overheated market, where homes are sold before they even hit the market, and it is hard to find a house to purchase. Give me your final total weighted value and provide a justification for your response.
+                        </p>
+                        <div class="mt-3">
+                            <table class="w-full border">
+                                <thead>
+                                    <tr class="bg-gray-200">
+                                        <th class="border p-2">Housing Metric</th>
+                                        <th class="border p-2">Weight</th>
+                                        <th class="border p-2">Value</th>
+                                        <th class="border p-2">Weighted Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border p-2">Median Sale Price</td>
+                                        <td class="border p-2"></td>
+                                        <td class="border p-2"></td>
+                                        <td class="border p-2"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border p-2">Months' Supply</td>
+                                        <td class="border p-2"></td>
+                                        <td class="border p-2"></td>
+                                        <td class="border p-2"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border p-2">Days on Market</td>
+                                        <td class="border p-2"></td>
+                                        <td class="border p-2"></td>
+                                        <td class="border p-2"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border p-2">Sale-to-List</td>
+                                        <td class="border p-2"></td>
+                                        <td class="border p-2"></td>
+                                        <td class="border p-2"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border p-2 font-bold">Total</td>
+                                        <td class="border p-2">Must Sum to 100</td>
+                                        <td class="border p-2"></td>
+                                        <td class="border p-2"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <button id="copy-ai-prompt" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        Copy Prompt to Clipboard
+                    </button>
+                </div>
+                
+                <div class="bg-yellow-50 p-4 rounded-lg mt-6">
+                    <p><strong>Important:</strong> After completing your AI analysis:</p>
+                    <ol class="list-decimal pl-5 mt-1">
+                        <li>Discuss the AI's assessment with your group</li>
+                        <li>Fill out the handout and turn it into the TA</li>
+                        <li>Prepare for class discussion about your analysis</li>
+                    </ol>
+                </div>
+                
+                <div class="flex justify-between mt-6">
+                    <button id="back-to-analysis" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Back to Analysis</button>
+                    <button id="submit-ai-response" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Submit Final Analysis</button>
+                </div>
+            </div>
+        </div>
+
+<!-- The Completion Modal (updated to match style) -->
+<div id="completion-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-2xl w-full shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold">Activity Part 1 Completed!</h2>
+            <button id="close-modal-x" class="text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <p class="mb-4">You have successfully completed Part 1 of the Housing Market Analysis activity.</p>
+        <p class="mb-2">Your final assessment: The housing market is a <span id="modal-market-type" class="font-bold">balanced</span> market with a score of <span id="modal-score" class="font-bold">50.00</span>.</p>
+        
+        <hr class="my-4 border-gray-200">
+        
+        <h3 class="text-xl font-semibold mb-3">Part 2: AI Analysis of Housing Market</h3>
+        <p class="mb-4">Now let's get feedback on your assessment using AI tools.</p>
+        
+        <div class="p-4 bg-blue-50 rounded-lg mb-4 border border-blue-100">
+            <h4 class="font-medium mb-2">Step 1: Choose an AI Tool</h4>
+            <p class="mb-3">Navigate to one of these AI platforms:</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2">
+                <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center p-3 border rounded-lg hover:bg-white transition-colors">
+                    <img src="/api/placeholder/24/24" alt="ChatGPT" class="mb-1 rounded">
+                    <span class="font-medium">ChatGPT</span>
+                    <span class="text-xs text-gray-500">OpenAI</span>
+                </a>
+                <a href="https://www.perplexity.ai" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center p-3 border rounded-lg hover:bg-white transition-colors">
+                    <img src="/api/placeholder/24/24" alt="Perplexity" class="mb-1 rounded">
+                    <span class="font-medium">Perplexity</span>
+                    <span class="text-xs text-gray-500">perplexity.ai</span>
+                </a>
+                <a href="https://mistral.ai" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center p-3 border rounded-lg hover:bg-white transition-colors">
+                    <img src="/api/placeholder/24/24" alt="Mistral" class="mb-1 rounded">
+                    <span class="font-medium">Mistral</span>
+                    <span class="text-xs text-gray-500">mistral.ai</span>
+                </a>
+                <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center p-3 border rounded-lg hover:bg-white transition-colors">
+                    <span class="font-medium">Claude</span>
+                    <span class="text-xs text-gray-500 mt-1">Anthropic</span>
+                </a>
+            </div>
+            <p class="text-sm text-gray-600 italic">Note: ChatGPT (non-Plus version) is limited in analysis capacity. Claude Pro may be needed for larger files.</p>
+        </div>
+        
+        <div class="p-4 bg-blue-50 rounded-lg mb-4 border border-blue-100">
+            <h4 class="font-medium mb-2">Step 2: Copy and Paste This Prompt</h4>
+            <div class="bg-white p-3 rounded border mb-3">
+                <p class="text-gray-800">
+                    Examine this data and assess the health of the <span id="modal-state-name" class="font-medium">[your state]</span> housing market. Fill out the table where 1 is a market where nothing is selling because there are literally no buyers and 100 is an overheated market, where homes are sold before they even hit the market, and it is hard to find a house to purchase. Give me your final total weighted value and provide a justification for your response.
+    
+Housing Metric	Weight	Value	Weighted Value (Weight/100 x Value)
+Median Sale Price	
+Months' Supply	
+Days on Market	
+Sale-to-List	
+Total	
+Must Sum to 100
+</p>
+            </div>
+            <button id="modal-copy-prompt-btn" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                Copy Prompt to Clipboard
+            </button>
+        </div>
+        
+        <div class="p-4 bg-blue-50 rounded-lg mb-4 border border-blue-100">
+            <h4 class="font-medium mb-2">Step 3: Complete Your Analysis</h4>
+            <ul class="list-disc pl-5 space-y-1">
+                <li>Upload your Redfin data file if the AI tool requests it</li>
+                <li>Record the AI's assessment values in Part 2 of your handout</li>
+                <li>Input the AI values into the 2nd Google Sheet</li>
+                <li>Answer the reflection questions on the back of your handout</li>
+            </ul>
+        </div>
+        
+        <div class="p-4 bg-yellow-50 rounded-lg mb-4 border border-yellow-100">
+            <div class="flex items-start">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                    <p class="font-medium">Final Steps:</p>
+                    <ol class="list-decimal pl-5 mt-1 space-y-1">
+                        <li>One group member should enter your values in the TA's Google Sheet</li>
+                        <li>Your TA will create visual maps showing all states' market assessments</li>
+                        <li>Prepare to discuss your analysis with the class</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex justify-end space-x-3">
+            <button id="close-modal" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors flex items-center">
+                Return to Analysis
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to fix the Copy Prompt functionality -->
+<script>
+    // This script specifically fixes the copy functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Make sure this runs after the page has fully loaded
+        setTimeout(function() {
+            const copyButton = document.getElementById('copy-ai-prompt');
+            
+            if (copyButton) {
+                // Remove any existing event listeners to avoid duplicates
+                const newCopyButton = copyButton.cloneNode(true);
+                copyButton.parentNode.replaceChild(newCopyButton, copyButton);
+                
+                // Add the event listener to the new button
+                newCopyButton.addEventListener('click', function() {
+                    // Get the state name
+                    let stateName = document.getElementById('ai-state-name').textContent || '[Your State]';
+                    
+                    // Create the prompt text
+                    const prompt = `Examine this data and assess the health of the ${stateName} housing market. Fill out the table where 1 is a market where nothing is selling because there are literally no buyers and 100 is an overheated market, where homes are sold before they even hit the market, and it is hard to find a house to purchase. Give me your final total weighted value and provide a justification for your response.
+    
+Housing Metric	Weight	Value	Weighted Value (Weight/100 x Value)
+Median Sale Price	
+Months' Supply	
+Days on Market	
+Sale-to-List	
+Total	
+Must Sum to 100
+`;
+                    
+                    // Simple approach first - create a textarea, copy from it, then remove it
+                    const textArea = document.createElement('textarea');
+                    textArea.value = prompt;
+                    textArea.style.position = 'fixed';  // Avoid scrolling to bottom
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    
+                    try {
+                        const successful = document.execCommand('copy');
+                        const msg = successful ? 'successful' : 'unsuccessful';
+                        console.log('Fallback copying text command was ' + msg);
+                        
+                        // Visual feedback
+                        const originalText = newCopyButton.textContent;
+                        newCopyButton.textContent = "Copied!";
+                        setTimeout(function() {
+                            newCopyButton.textContent = originalText;
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Fallback: Unable to copy', err);
+                        
+                        // Try the Clipboard API as backup
+                        try {
+                            navigator.clipboard.writeText(prompt)
+                                .then(function() {
+                                    console.log('Async: Copying to clipboard was successful!');
+                                    const originalText = newCopyButton.textContent;
+                                    newCopyButton.textContent = "Copied!";
+                                    setTimeout(function() {
+                                        newCopyButton.textContent = originalText;
+                                    }, 2000);
+                                })
+                                .catch(function(err) {
+                                    console.error('Async: Could not copy text: ', err);
+                                    alert('Failed to copy. Please manually copy the text from the prompt box.');
+                                });
+                        } catch (clipboardErr) {
+                            console.error('Both clipboard methods failed:', clipboardErr);
+                            alert('Failed to copy. Please manually copy the text from the prompt box.');
+                        }
+                    }
+                    
+                    document.body.removeChild(textArea);
+                });
+                
+                console.log('Copy button event listener attached');
+            } else {
+                console.error('Copy button not found in the DOM');
+            }
+        }, 500); // Short delay to ensure DOM is fully processed
+    });
+    </script>
+        
+        <!-- Chart Modal for enlarged view -->
+        <div id="chart-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-4 w-11/12 h-5/6 max-w-6xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 id="modal-chart-title" class="text-xl font-bold">Chart Details</h2>
+                    <button id="close-chart-modal" class="text-gray-600 hover:text-gray-900">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="h-5/6 w-full">
+                    <canvas id="modal-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 border-t mt-12 py-6 px-4">
+        <div class="container mx-auto">
+            <p class="text-gray-600">© 2026 Economics Department</p>
+        </div>
+    </footer>
+
+<!-- JavaScript for functionality -->
+<script src="script.js"></script>
+</body>
+</html>

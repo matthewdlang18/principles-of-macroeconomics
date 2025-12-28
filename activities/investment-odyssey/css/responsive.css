@@ -1,0 +1,168 @@
+/* Responsive styles for Investment Odyssey game */
+
+/* General responsive adjustments */
+@media (max-width: 768px) {
+    /* Banner adjustments */
+    .banner-container {
+        height: 200px;
+    }
+
+    .activity-title {
+        font-size: 1.8rem;
+    }
+
+    .activity-date {
+        font-size: 0.9rem;
+    }
+
+    .nav-links {
+        margin-bottom: 1rem;
+    }
+
+    .nav-link {
+        font-size: 0.9rem;
+        margin-right: 0.5rem;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Navigation tabs */
+    .step-nav {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    /* Card adjustments */
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .card-title {
+        font-size: 1.2rem;
+    }
+
+    /* Table adjustments */
+    .table th, .table td {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    /* Button adjustments */
+    .btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Small phone adjustments */
+@media (max-width: 576px) {
+    /* Banner adjustments */
+    .banner-container {
+        height: 180px;
+    }
+
+    .activity-title {
+        font-size: 1.5rem;
+    }
+
+    /* Navigation tabs - scrollable on small screens */
+    .flex.mb-8.border-b {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+        justify-content: flex-start;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+    }
+
+    .flex.mb-8.border-b::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+
+    .step-nav {
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: auto;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    /* Form adjustments */
+    input.form-control, select.form-control {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+}
+
+/* Game controls container */
+@media (max-width: 768px) {
+    .card.bg-light .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .card.bg-light .btn-group {
+        margin-top: 0.5rem;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* Market data card */
+    .card-header.bg-danger .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .card-header.bg-danger .d-flex h3 {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Portfolio allocation chart - make it more visible on mobile */
+    #portfolio-allocation-chart {
+        max-width: 100%;
+        height: auto !important;
+    }
+}
+
+/* Improved layout for wide screens */
+@media (min-width: 1200px) {
+    /* Make portfolio performance and game controls containers equal height */
+    .card-equal-height {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-equal-height .card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Make portfolio allocation chart larger on wide screens */
+    #portfolio-allocation-chart-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Improve touch targets for mobile */
+@media (max-width: 768px) {
+    .btn, .nav-link, .step-nav, a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    input[type="radio"],
+    input[type="checkbox"] {
+        min-width: 20px;
+        min-height: 20px;
+    }
+
+    select {
+        height: 38px;
+    }
+}

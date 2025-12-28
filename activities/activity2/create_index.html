@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discussion Activity 2: Well-being Index</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet for map visualization -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- jQuery for DOM manipulation -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="js/createIndex.js"></script>
+    <style>
+        .banner-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 25%;
+            min-height: 150px;
+            max-height: 320px;
+            overflow: hidden;
+            background-color: #1e40af;
+        }
+        
+        .banner-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.9;
+        }
+        
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 1rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+        }
+        
+        .nav-links {
+            margin-bottom: 1rem;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+            font-size: 0.875rem;
+            margin-right: 1rem;
+        }
+        
+        .nav-link:hover {
+            opacity: 1;
+        }
+        
+        .activity-title {
+            color: white;
+            font-size: 1.875rem;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        .activity-date {
+            color: white;
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+        
+        @media (min-width: 640px) {
+            .banner-overlay {
+                padding: 1.5rem 2.5rem;
+            }
+            
+            .nav-link {
+                font-size: 1rem;
+                margin-bottom: 0;
+            }
+            
+            .nav-link:not(:first-child) {
+                margin-left: 1rem;
+            }
+            
+            .activity-title {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .banner-overlay {
+                padding: 1.5rem 3rem;
+            }
+            
+            .activity-title {
+                font-size: 2.25rem;
+            }
+        }
+        
+        /* Keep Select2 and map styling */
+        .select2-container {
+            width: 100% !important;
+        }
+        .weight-input {
+            width: 80px;
+        }
+        #map {
+            height: 500px;
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 0.5rem;
+        }
+        .info {
+            padding: 6px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+        .legend {
+            line-height: 18px;
+            color: #555;
+            background-color: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            width: 200px;
+        }
+        .legend i {
+            width: 30px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner10.png" alt="Well-being Index Activity Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container mx-auto">
+                    <div class="nav-links">
+                        <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+                        <a href="../index.html" class="nav-link">← Back to Activities</a>
+                    </div>
+                    <h1 class="activity-title">Discussion Activity 2: Well-being Index</h1>
+                    <p class="activity-date">April 15-18, 2025</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto py-8 px-4">
+        <!-- Step Navigation -->
+        <nav class="flex mb-8 border-b">
+            <a href="index.html#instructions" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">1. Instructions</a>
+            <a href="index.html#explore" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">2. Explore Measures</a>
+            <a href="create_index.html" class="step-nav font-medium px-4 py-2 border-b-2 border-blue-600 text-blue-600">3. Create Index</a>
+        </nav>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <!-- Instructions -->
+            <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                <h3 class="font-medium mb-2">How to Create Your Index:</h3>
+                <ol class="list-decimal pl-5 space-y-1">
+                    <li>Select up to 8 variables that you think best capture human well-being</li>
+                    <li>Assign weights to each variable (weights must sum to 100%)</li>
+                    <li>Click "Calculate Index" to see your results</li>
+                    <li>The index you generate is a weighted average of the Z-scores of the selected variables</li>
+                    <li>Once you're satisfied with your index, click the download button to save your rankings. You'll input these rankings into the Google Sheet that your TA provides.</li>
+                </ol>
+            </div>
+
+            <!-- Download button -->
+            <div class="mt-4 mb-6 text-center" id="download-section" style="display: none;">
+                <div class="space-x-4">
+                    <button id="download-btn" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                        Download Rankings
+                    </button>
+                    <button id="start-over-btn" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">
+                        Start Over
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Variable Selection Panel -->
+                <div class="md:col-span-1">
+                    <div class="border rounded-lg p-4">
+                        <h3 class="text-lg font-medium mb-3">Select Variables</h3>
+                        <div id="variable-selector" class="mb-3">
+                            <div class="text-sm font-medium text-gray-700 mb-2">Choose up to 8 variables:</div>
+                            <div class="grid grid-cols-2 gap-2" id="variable-boxes">
+                                <!-- Variable boxes will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div id="weights-container" class="mt-4 space-y-3">
+                            <!-- Weights will be added here dynamically -->
+                        </div>
+                        <button id="calculate" class="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Calculate Index
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="md:col-span-2">
+                    <div id="results" style="display: none;">
+                        <!-- Map Visualization -->
+                        <div class="border rounded-lg p-4 mb-6">
+                            <h3 class="text-lg font-medium mb-3">Index Map</h3>
+                            <div id="map"></div>
+                        </div>
+
+                        <!-- Results Table -->
+                        <div class="border rounded-lg p-4">
+                            <h3 class="text-lg font-medium mb-3">Country Rankings</h3>
+                            <div class="overflow-x-auto">
+                                <table id="results-table" class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Index Score</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GDP Rank</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HDI Rank</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Component Scores</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between mt-6">
+                <a href="index.html#explore" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">← Back to Explore</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 border-t mt-12 py-6 px-4">
+        <div class="container mx-auto text-center text-gray-600">
+            <p>Principles of Macroeconomics - Winter 2026</p>
+        </div>
+    </footer>
+</body>
+</html>

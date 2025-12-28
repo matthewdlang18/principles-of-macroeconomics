@@ -1,0 +1,331 @@
+/* Result Modal */
+.result-modal {
+  z-index: 1050;
+}
+
+.modal-backdrop {
+  z-index: 1040;
+}
+
+.result-modal .modal-dialog {
+  margin: 1.75rem auto;
+  max-width: 500px;
+}
+
+.result-modal .modal-content {
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.result-modal .modal-header {
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem 1.5rem;
+}
+
+.result-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.result-modal .modal-footer {
+  border-top: 1px solid #dee2e6;
+  padding: 1rem;
+}
+
+.score-container {
+  text-align: center;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.final-score {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #28a745;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.score-label {
+  font-size: 1rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.score-breakdown {
+  font-size: 0.9rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+  box-shadow: inset 0 0 0.5rem rgba(0, 0, 0, 0.05);
+}
+
+.score-breakdown .badge {
+  padding: 0.4em 0.6em;
+  font-weight: normal;
+}
+
+.term-definition {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+  margin-top: 1.5rem;
+  border: 1px solid #dee2e6;
+}
+
+.term-definition h5 {
+  color: #007bff;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.term-meta {
+  opacity: 0.7;
+  line-height: 1.4;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+/* Badge colors */
+.badge-primary { background-color: #007bff; }
+.badge-info { background-color: #17a2b8; }
+.badge-secondary { background-color: #6c757d; }
+.badge-warning { background-color: #ffc107; color: #212529; }
+.badge-success { background-color: #28a745; }
+
+/* Play again button */
+.btn-play-again {
+  background-color: #28a745;
+  border-color: #1e7e34;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-play-again:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+  transform: translateY(-1px);
+}
+
+/* Game keyboard */
+.keyboard {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  margin: 5px 0;
+  gap: 5px;
+}
+
+.key {
+  flex: 1;
+  min-width: 35px;
+  height: 45px;
+  margin: 2px;
+  border-radius: 4px;
+  background-color: #e9ecef;
+  border: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.key:hover {
+  background-color: #dee2e6;
+}
+
+.key:active {
+  transform: translateY(1px);
+}
+
+.key.key-wide {
+  flex: 1.5;
+  font-size: 0.9em;
+}
+
+/* Special keys */
+.key[data-key="ENTER"] {
+  background-color: #28a745;
+  color: white;
+  flex: 1.5;
+}
+
+.key[data-key="BACKSPACE"] {
+  background-color: #dc3545;
+  color: white;
+  flex: 1.5;
+}
+
+.key[data-key=" "] {
+  flex: 2;
+  font-size: 0.9em;
+}
+
+/* Key states */
+.key.correct {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.key.present {
+  background-color: #ffc107;
+  color: black;
+  border-color: #ffc107;
+}
+
+.key.absent {
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+/* Game control buttons */
+.game-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px auto;
+  max-width: 600px;
+}
+
+.game-controls .btn {
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.game-controls .btn i {
+  font-size: 1.1em;
+}
+
+.game-controls .btn-restart {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.game-controls .btn-next {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+/* Stats Card */
+.game-stats-card {
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.game-stats-card .card-header {
+  padding: 0.75rem 1rem;
+}
+
+.game-stats-card .card-body {
+  padding: 0.5rem 1rem;
+}
+
+.game-stats-card .stats-row {
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.game-stats-card .stats-value {
+  font-size: 1.1rem;
+}
+
+/* How to Play Card */
+.how-to-play-card {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.how-to-play-card .card-header {
+  padding: 0.75rem 1.25rem;
+}
+
+.how-to-play-card .card-body {
+  padding: 1.25rem;
+}
+
+.how-to-play-card ul {
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.how-to-play-card li {
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.how-to-play-card .scoring-section {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  height: 100%;
+}
+
+.how-to-play-card .scoring-section p {
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 767.98px) {
+  .how-to-play-card .scoring-section {
+    margin-top: 1rem !important;
+  }
+  
+  .game-stats-card {
+    max-width: none;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+  .game-stats-card,
+  .how-to-play-card {
+    margin-top: 1.5rem;
+  }
+}
+
+/* Stats Reset Button */
+.stats-footer {
+    border-top: 1px solid #dee2e6;
+}
+
+.stats-footer .btn-outline-danger {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.stats-footer .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.stats-footer .btn-outline-danger:active {
+    transform: translateY(0);
+}

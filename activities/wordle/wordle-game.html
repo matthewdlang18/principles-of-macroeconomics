@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economics Wordle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        /* Banner styles */
+        .banner-container {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            padding: 2rem;
+        }
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .nav-links-left {
+            display: flex;
+        }
+        .nav-links-right {
+            display: flex;
+            align-items: center;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            margin-right: 1.5rem;
+            font-weight: 300;
+        }
+        .nav-link:hover {
+            color: white;
+            text-decoration: none;
+        }
+        .nav-link.active {
+            color: white;
+            font-weight: bold;
+        }
+        .activity-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+        .activity-date {
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* User info styles */
+        .user-info {
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+        }
+        .user-name {
+            margin-right: 12px;
+        }
+        .sign-out-btn {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sign-out-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Game container styles */
+        .game-container {
+            height: 800px;
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Game card styles */
+        .game-card {
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .game-image {
+            height: 180px;
+            object-fit: cover;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .banner-container {
+                height: 200px;
+            }
+            .activity-title {
+                font-size: 1.8rem;
+            }
+            .activity-date {
+                font-size: 0.9rem;
+            }
+            .nav-link {
+                font-size: 0.9rem;
+                margin-right: 1rem;
+            }
+            .game-container {
+                height: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner15.png" alt="Economics Wordle Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container">
+                    <div class="nav-links">
+                        <div class="nav-links-left">
+                            <a href="../../index.html" class="nav-link">Home</a>
+                            <a href="../../games.html" class="nav-link">Games</a>
+                            <a href="wordle-game.html" class="nav-link active">Economics Wordle</a>
+                        </div>
+                        <div class="nav-links-right">
+                            <!-- User info (shown when logged in) -->
+                            <div class="user-info" id="user-info-container">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <span class="user-name" id="user-name-display">Guest</span>
+                                <button class="sign-out-btn" id="sign-out-btn">Sign Out</button>
+                            </div>
+
+                            <!-- Sign in link (shown when not logged in) -->
+                            <a href="../../games.html" class="nav-link" id="sign-in-link">Sign In</a>
+
+                            <!-- Guest link (shown when not logged in) -->
+                            <a href="#" class="nav-link" id="guest-link">Continue as Guest</a>
+                        </div>
+                    </div>
+                    <h1 class="activity-title">Economics Wordle</h1>
+                    <p class="activity-date">Test your economics knowledge with this word puzzle game</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">About Economics Wordle</h2>
+                        <p class="card-text">
+                            Economics Wordle is a word puzzle game based on economics terms from your textbook.
+                            Try to guess the economic term, concept, policy, or variable in six attempts or less.
+                            After each guess, the color of the tiles will change to show how close your guess was to the word.
+                        </p>
+                        <p class="card-text">
+                            <strong>Green</strong> means the letter is in the correct spot.<br>
+                            <strong>Yellow</strong> means the letter is in the word but in the wrong spot.<br>
+                            <strong>Gray</strong> means the letter is not in the word.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6 mb-4">
+                <div class="card game-card h-100">
+                    <img src="../../images/banner14.png" class="card-img-top game-image" alt="Economic Concepts">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Economic Concepts</h5>
+                        <p class="card-text">Guess economic concepts from their definitions. These are fundamental ideas in economics.</p>
+                        <a href="./dist/index.html?type=concept&t=1" class="btn btn-primary">Play Concepts</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card game-card h-100">
+                    <img src="../../images/banner15.png" class="card-img-top game-image" alt="Economic Terms">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Economic Terms</h5>
+                        <p class="card-text">Test your knowledge of economic terms and acronyms used in your textbook.</p>
+                        <a href="./dist/index.html?type=term&t=1" class="btn btn-primary">Play Terms</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card game-card h-100">
+                    <img src="../../images/banner14.png" class="card-img-top game-image" alt="Policy Terms">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Policy Terms</h5>
+                        <p class="card-text">Challenge yourself with economic policy terms from fiscal and monetary policy.</p>
+                        <a href="./dist/index.html?type=policy&t=1" class="btn btn-primary">Play Policies</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card game-card h-100">
+                    <img src="../../images/banner15.png" class="card-img-top game-image" alt="Economic Variables">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Economic Variables</h5>
+                        <p class="card-text">Identify economic variables that economists measure and analyze.</p>
+                        <a href="./dist/index.html?type=variable&t=1" class="btn btn-primary">Play Variables</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p>Economics Games &copy; 2025 | <a href="../../index.html">Course Home</a></p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"></script>
+
+    <!-- Supabase Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2.38.4/dist/umd/supabase.js"></script>
+    <script src="../../js/env.js"></script>
+    <script src="../../js/supabase-init.js"></script>
+
+    <!-- Authentication Scripts -->
+    <script src="../investment-odyssey/js/service-adapter.js"></script>
+    <script src="../investment-odyssey/js/supabase-auth.js"></script>
+
+    <script>
+        // Simple authentication display logic
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const userInfoContainer = document.getElementById('user-info-container');
+            const signInLink = document.getElementById('sign-in-link');
+            const guestLink = document.getElementById('guest-link');
+            const userNameDisplay = document.getElementById('user-name-display');
+            const signOutBtn = document.getElementById('sign-out-btn');
+
+            // Get user from localStorage
+            const user = JSON.parse(localStorage.getItem('supabase.auth.token') || '{}');
+
+            if (user && user.currentSession) {
+                // User is logged in
+                userInfoContainer.style.display = 'flex';
+                signInLink.style.display = 'none';
+                guestLink.style.display = 'none';
+
+                // Display user name
+                const userName = localStorage.getItem('userName') || 'User';
+                userNameDisplay.textContent = userName;
+
+                // Sign out button
+                signOutBtn.addEventListener('click', function() {
+                    localStorage.removeItem('supabase.auth.token');
+                    localStorage.removeItem('userName');
+                    window.location.href = '../../games.html';
+                });
+            } else {
+                // User is not logged in
+                userInfoContainer.style.display = 'none';
+                signInLink.style.display = 'block';
+                guestLink.style.display = 'block';
+
+                // Guest link
+                guestLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.setItem('userName', 'Guest');
+                    window.location.reload();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

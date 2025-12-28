@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiscal Balance Game - Principles of Macroeconomics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 40vh;
+            min-height: 300px;
+        }
+        .banner-container {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 2rem;
+        }
+        .nav-links {
+            margin-bottom: 2rem;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            margin-right: 1.5rem;
+            font-weight: 300;
+        }
+        .nav-link:hover {
+            color: white;
+        }
+        .activity-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+        .activity-date {
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: rgba(255,255,255,0.8);
+        }
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            height: 120px;
+        }
+        .decision-panel {
+            transition: all 0.3s ease;
+        }
+        .decision-panel.active {
+            border-left: 4px solid #1a478a;
+        }
+        .indicator {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner14.png" alt="Fiscal Balance Game Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container mx-auto">
+                    <div class="nav-links">
+                        <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+                        <a href="../index.html" class="nav-link">← Back to Activities</a>
+                    </div>
+                    <h1 class="activity-title">Discussion Activity 4: Fiscal Balance Game</h1>
+                    <p class="activity-date">February 24-27, 2026 (Week 8)</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Section Selector -->
+    <div class="bg-gray-100 py-3 px-4 mb-4">
+        <div class="container mx-auto flex flex-wrap items-center justify-between">
+            <div class="flex items-center space-x-2 mb-2 sm:mb-0">
+                <label for="section-select" class="font-medium">Your Section:</label>
+                <select id="section-select" class="px-3 py-1 border rounded-md">
+                    <option value="">Select Section</option>
+                    <option value="section1">Section 1 (Mon/Wed 9:00 AM)</option>
+                    <option value="section2">Section 2 (Mon/Wed 11:00 AM)</option>
+                    <option value="section3">Section 3 (Tue/Thu 10:00 AM)</option>
+                    <option value="section4">Section 4 (Tue/Thu 2:00 PM)</option>
+                </select>
+                <button id="save-section" class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save</button>
+            </div>
+            <div class="text-sm text-gray-600">
+                <span id="current-section-display">No section selected</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="flex mb-8 border-b">
+        <button id="nav-instructions" class="step-nav font-medium px-4 py-2 border-b-2 border-blue-600 text-blue-600">1. Instructions</button>
+        <button id="nav-game" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">2. Play Game</button>
+        <button id="nav-analysis" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">3. Analysis</button>
+        <a href="ta-dashboard.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">TA Dashboard</a>
+        <button id="reset-game" class="ml-auto font-medium px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700">Reset Game</button>
+    </div>
+
+    <!-- Instructions Step -->
+    <div id="step-instructions" class="step-content container mx-auto px-4">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold mb-4">Instructions</h2>
+            <p class="mb-4">Welcome to the Fiscal Balance Game! In this activity, you will take on the role of an economic leader making critical decisions about taxation, spending, and debt management while trying to maintain public approval to get re-elected.</p>
+
+            <h3 class="text-xl font-semibold mb-3">Game Overview</h3>
+            <p class="mb-4">As the economic leader, you will navigate through four key decision phases each round (representing one year):</p>
+
+            <ol class="list-decimal pl-6 space-y-2 mb-6">
+                <li><strong>Interest Payment Phase:</strong> Decide how to handle interest payments on national debt.</li>
+                <li><strong>Public Spending Phase:</strong> Determine government spending levels and funding sources.</li>
+                <li><strong>Tax Policy Phase:</strong> Set tax rates and structure to generate revenue.</li>
+                <li><strong>Election Phase:</strong> Face the voters based on your economic performance.</li>
+            </ol>
+
+            <h3 class="text-xl font-semibold mb-3">Key Economic Variables</h3>
+            <p class="mb-4">You'll need to monitor and manage these key economic indicators:</p>
+
+            <ul class="list-disc pl-6 space-y-2 mb-6">
+                <li><strong>GDP:</strong> Measure of economic output</li>
+                <li><strong>Unemployment Rate:</strong> Percentage of workforce without jobs</li>
+                <li><strong>Inflation (CPI):</strong> Measure of price increases</li>
+                <li><strong>Debt Level:</strong> Total national debt</li>
+                <li><strong>Interest Rate:</strong> Cost of servicing debt</li>
+                <li><strong>Tax Rate:</strong> Percentage of GDP collected as revenue</li>
+                <li><strong>Approval Rating:</strong> Determines re-election chances</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold mb-3">Victory Condition</h3>
+            <p class="mb-4">Your goal is to survive as many election cycles as possible while maintaining a healthy economy. You must achieve >50% approval rating to win re-election.</p>
+
+            <div class="mt-8">
+                <button onclick="showStep('game')" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Start Game →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Step -->
+    <div id="step-game" class="step-content container mx-auto px-4 hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Economic Dashboard -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h3 class="text-xl font-semibold mb-4">Economic Dashboard</h3>
+                    <div class="space-y-6">
+                        <!-- Year and Term -->
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="text-sm text-gray-500">Current Year</span>
+                                <div class="text-2xl font-medium" id="current-year">2025</div>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-500">Term</span>
+                                <div class="text-2xl font-medium" id="current-term">1</div>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-500">Phase</span>
+                                <div class="text-lg font-medium" id="current-phase">Interest Payment</div>
+                            </div>
+                        </div>
+
+                        <!-- Key Indicators -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="indicator p-3 bg-gray-50 rounded-lg">
+                                <div class="text-sm text-gray-500 mb-1">GDP Growth</div>
+                                <div class="text-xl font-medium" id="gdp-growth">2.5%</div>
+                            </div>
+                            <div class="indicator p-3 bg-gray-50 rounded-lg">
+                                <div class="text-sm text-gray-500 mb-1">Unemployment</div>
+                                <div class="text-xl font-medium" id="unemployment">4.2%</div>
+                            </div>
+                            <div class="indicator p-3 bg-gray-50 rounded-lg">
+                                <div class="text-sm text-gray-500 mb-1">Inflation</div>
+                                <div class="text-xl font-medium" id="inflation">2.1%</div>
+                            </div>
+                            <div class="indicator p-3 bg-gray-50 rounded-lg">
+                                <div class="text-sm text-gray-500 mb-1">Interest Rate</div>
+                                <div class="text-xl font-medium" id="interest-rate">3.0%</div>
+                            </div>
+                        </div>
+
+                        <!-- Debt and Tax -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="indicator p-3 bg-gray-50 rounded-lg">
+                                <div class="text-sm text-gray-500 mb-1">Debt (% of GDP)</div>
+                                <div class="text-xl font-medium" id="debt-to-gdp">78.5%</div>
+                            </div>
+                            <div class="indicator p-3 bg-gray-50 rounded-lg">
+                                <div class="text-sm text-gray-500 mb-1">Tax Rate</div>
+                                <div class="text-xl font-medium" id="tax-rate">25.0%</div>
+                            </div>
+                        </div>
+
+                        <!-- Approval Rating -->
+                        <div>
+                            <div class="text-sm text-gray-500 mb-1">Approval Rating</div>
+                            <div class="relative pt-1">
+                                <div class="overflow-hidden h-6 text-xs flex rounded bg-gray-200">
+                                    <div id="approval-bar" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600" style="width: 65%"></div>
+                                </div>
+                                <div class="text-right mt-1">
+                                    <span class="text-lg font-medium" id="approval-rating">65%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- News Ticker -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h3 class="text-xl font-semibold mb-4">Economic News</h3>
+                    <div id="news-ticker" class="space-y-3">
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <div class="text-sm text-gray-500">Latest Headlines</div>
+                            <p class="mt-1" id="news-headline">Economy shows steady growth as new administration takes office.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decision Interface and Charts -->
+            <div class="lg:col-span-2">
+                <!-- Charts -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h3 class="text-xl font-semibold mb-4">Economic Trends</h3>
+                    <div class="chart-container">
+                        <canvas id="economic-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Decision Interface -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold mb-4">Decision Center</h3>
+
+                    <!-- Interest Payment Phase -->
+                    <div id="interest-payment-phase" class="decision-panel active">
+                        <h4 class="text-lg font-medium mb-3">Interest Payment Decision</h4>
+                        <p class="mb-4">The national debt requires an interest payment of <span id="interest-amount" class="font-medium">$500B</span>. How would you like to fund this payment?</p>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Payment Method
+                            </label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span>Tax Revenue</span>
+                                        <span id="tax-funding-percent">70%</span>
+                                    </div>
+                                    <input type="range" id="tax-funding" min="0" max="100" value="70" class="w-full">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span>Money Creation</span>
+                                        <span id="money-funding-percent">30%</span>
+                                    </div>
+                                    <input type="range" id="money-funding" min="0" max="100" value="30" class="w-full">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="impact-preview p-3 bg-gray-50 rounded-md mb-6">
+                            <h5 class="font-medium mb-2">Projected Impacts</h5>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="flex items-center">
+                                    <span class="w-32">Inflation:</span>
+                                    <span class="font-medium text-yellow-600" id="interest-inflation-impact">+0.3%</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-32">Tax Burden:</span>
+                                    <span class="font-medium text-red-600" id="interest-tax-impact">+0.5%</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-32">Approval:</span>
+                                    <span class="font-medium text-red-600" id="interest-approval-impact">-1.2%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="confirm-interest-decision" class="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors">
+                            Confirm Decision
+                        </button>
+                    </div>
+
+                    <!-- Public Spending Phase -->
+                    <div id="public-spending-phase" class="decision-panel hidden">
+                        <h4 class="text-lg font-medium mb-3">Public Spending Decision</h4>
+                        <p class="mb-4">Determine the government spending level and funding sources.</p>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Spending Amount (% of GDP)
+                            </label>
+                            <div class="flex items-center">
+                                <input type="range" id="spending-amount" min="15" max="40" value="25" class="w-2/3 mr-4">
+                                <span class="text-lg font-mono" id="spending-percent">25.0%</span>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1" id="spending-absolute">
+                                Absolute amount: $500B
+                            </p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Funding Sources
+                            </label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span>Taxes</span>
+                                        <span id="spending-tax-percent">80%</span>
+                                    </div>
+                                    <input type="range" id="spending-tax-funding" min="0" max="100" value="80" class="w-full">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span>Debt</span>
+                                        <span id="spending-debt-percent">20%</span>
+                                    </div>
+                                    <input type="range" id="spending-debt-funding" min="0" max="100" value="20" class="w-full">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="impact-preview p-3 bg-gray-50 rounded-md mb-6">
+                            <h5 class="font-medium mb-2">Projected Impacts</h5>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="flex items-center">
+                                    <span class="w-32">GDP Growth:</span>
+                                    <span class="font-medium text-green-600" id="spending-gdp-impact">+0.8%</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-32">Unemployment:</span>
+                                    <span class="font-medium text-green-600" id="spending-unemployment-impact">-0.3%</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-32">Debt Change:</span>
+                                    <span class="font-medium text-red-600" id="spending-debt-impact">+1.5%</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-32">Approval:</span>
+                                    <span class="font-medium text-green-600" id="spending-approval-impact">+2.1%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="confirm-spending-decision" class="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors">
+                            Confirm Decision
+                        </button>
+                    </div>
+
+                    <!-- Tax Policy Phase -->
+                    <div id="tax-policy-phase" class="decision-panel hidden">
+                        <h4 class="text-lg font-medium mb-3">Tax Policy Decision</h4>
+                        <p class="mb-4">Set the tax rate and structure to generate government revenue.</p>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Overall Tax Rate (% of GDP)
+                            </label>
+                            <div class="flex items-center">
+                                <input type="range" id="tax-rate-slider" min="15" max="40" value="25" class="w-2/3 mr-4">
+                                <span class="text-lg font-mono" id="tax-rate-percent">25.0%</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Tax Structure
+                            </label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="p-3 border rounded-lg cursor-pointer tax-structure-option selected" data-value="progressive">
+                                    <div class="font-medium mb-1">Progressive</div>
+                                    <p class="text-sm text-gray-600">Higher rates on higher incomes. More equitable but may reduce growth incentives.</p>
+                                </div>
+                                <div class="p-3 border rounded-lg cursor-pointer tax-structure-option" data-value="flat">
+                                    <div class="font-medium mb-1">Flat</div>
+                                    <p class="text-sm text-gray-600">Same rate for all incomes. Simpler but may increase inequality.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="impact-preview p-3 bg-gray-50 rounded-md mb-6">
+                            <h5 class="font-medium mb-2">Projected Impacts</h5>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="flex items-center">
+                                    <span class="w-32">GDP Growth:</span>
+                                    <span class="font-medium text-red-600" id="tax-gdp-impact">-0.4%</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-32">Revenue:</span>
+                                    <span class="font-medium text-green-600" id="tax-revenue-impact">+$50B</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-32">Inequality:</span>
+                                    <span class="font-medium text-green-600" id="tax-inequality-impact">-0.5</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-32">Approval:</span>
+                                    <span class="font-medium text-red-600" id="tax-approval-impact">-1.8%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="confirm-tax-decision" class="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors">
+                            Confirm Decision
+                        </button>
+                    </div>
+
+                    <!-- Election Phase -->
+                    <div id="election-phase" class="decision-panel hidden">
+                        <h4 class="text-lg font-medium mb-3">Election Results</h4>
+                        <div id="election-pending">
+                            <p class="mb-4">The election is approaching. Your economic policies will be judged by the voters.</p>
+
+                            <div class="mb-6">
+                                <div class="text-sm text-gray-500 mb-1">Current Approval Rating</div>
+                                <div class="relative pt-1">
+                                    <div class="overflow-hidden h-8 text-xs flex rounded bg-gray-200">
+                                        <div id="election-approval-bar" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600" style="width: 65%">
+                                            <span id="election-approval-text">65%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-2">You need at least 50% approval to win re-election.</p>
+                            </div>
+
+                            <!-- Election Animation Container -->
+                            <div id="election-animation-container" class="hidden mb-6 p-4 bg-gray-50 rounded-lg text-center">
+                                <h5 class="font-medium mb-3">Election in Progress</h5>
+                                <div class="flex justify-center items-center space-x-2 mb-3">
+                                    <div class="w-4 h-4 bg-blue-600 rounded-full animate-pulse"></div>
+                                    <div class="w-4 h-4 bg-blue-600 rounded-full animate-pulse delay-100"></div>
+                                    <div class="w-4 h-4 bg-blue-600 rounded-full animate-pulse delay-200"></div>
+                                </div>
+                                <div class="text-lg font-medium mb-2">Counting Votes: <span id="vote-count">0</span>%</div>
+                                <div class="relative pt-1 mb-4">
+                                    <div class="overflow-hidden h-4 text-xs flex rounded bg-gray-200">
+                                        <div id="vote-progress" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600 transition-all duration-300" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600">The nation awaits the results...</p>
+                            </div>
+
+                            <div class="mb-6">
+                                <h5 class="font-medium mb-2">Economic Performance Summary</h5>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="p-3 bg-gray-50 rounded-lg">
+                                        <div class="text-sm text-gray-500">GDP Growth</div>
+                                        <div class="text-xl font-medium" id="summary-gdp">2.5%</div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-lg">
+                                        <div class="text-sm text-gray-500">Unemployment</div>
+                                        <div class="text-xl font-medium" id="summary-unemployment">4.2%</div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-lg">
+                                        <div class="text-sm text-gray-500">Inflation</div>
+                                        <div class="text-xl font-medium" id="summary-inflation">2.1%</div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-lg">
+                                        <div class="text-sm text-gray-500">Debt-to-GDP</div>
+                                        <div class="text-xl font-medium" id="summary-debt">78.5%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button id="run-election" class="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors">
+                                Run Election
+                            </button>
+                        </div>
+
+                        <div id="election-results" class="hidden">
+                            <div id="victory-message" class="p-6 bg-green-50 border border-green-200 rounded-lg mb-6 hidden">
+                                <h5 class="text-xl font-medium text-green-800 mb-2">Victory!</h5>
+                                <p class="text-green-700">Congratulations! You have been re-elected for another term. The people have confidence in your economic leadership.</p>
+                                <p class="mt-2 text-green-700">Final Vote: <span id="victory-percent" class="font-medium">58%</span></p>
+                            </div>
+
+                            <div id="defeat-message" class="p-6 bg-red-50 border border-red-200 rounded-lg mb-6 hidden">
+                                <h5 class="text-xl font-medium text-red-800 mb-2">Defeat</h5>
+                                <p class="text-red-700">Unfortunately, you have lost the election. The voters were not satisfied with the economic situation.</p>
+                                <p class="mt-2 text-red-700">Final Vote: <span id="defeat-percent" class="font-medium">42%</span></p>
+                            </div>
+
+                            <!-- Leaderboard Name Entry -->
+                            <div id="leaderboard-entry" class="p-4 bg-gray-50 rounded-lg mb-6">
+                                <h5 class="font-medium mb-2">Enter Your Name for the Leaderboard</h5>
+                                <div class="flex space-x-2 mb-2">
+                                    <input type="text" id="player-name" placeholder="Your Name" maxlength="20" class="flex-grow px-3 py-2 border rounded-md">
+                                    <button id="save-name" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors">
+                                        Save
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-600">Your name will appear on the leaderboard if you make it to the top 5.</p>
+                            </div>
+
+                            <div class="mt-6">
+                                <button id="continue-game" class="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors">
+                                    Continue to Next Term
+                                </button>
+
+                                <button id="end-game" class="w-full mt-4 py-2 px-4 bg-gray-600 text-white font-medium rounded-md hover:bg-gray-700 transition-colors">
+                                    End Game & View Analysis
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Step -->
+    <div id="step-analysis" class="step-content container mx-auto px-4 hidden">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold mb-4">Game Analysis</h2>
+
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold mb-3">Performance Summary</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <div class="text-sm text-gray-500">Terms Served</div>
+                            <div class="text-3xl font-medium" id="analysis-terms">3</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <div class="text-sm text-gray-500">Final Approval Rating</div>
+                            <div class="text-3xl font-medium" id="analysis-approval">42%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold mb-3">Economic Trends</h3>
+                <div class="chart-container">
+                    <canvas id="analysis-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold mb-3">Key Decisions</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-2 text-left">Year</th>
+                                <th class="px-4 py-2 text-left">Spending</th>
+                                <th class="px-4 py-2 text-left">Tax Rate</th>
+                                <th class="px-4 py-2 text-left">Debt Funding</th>
+                                <th class="px-4 py-2 text-left">GDP Growth</th>
+                                <th class="px-4 py-2 text-left">Approval</th>
+                            </tr>
+                        </thead>
+                        <tbody id="decisions-table">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xl font-semibold">Leaderboard</h3>
+                    <div class="flex items-center space-x-2">
+                        <label for="leaderboard-section" class="text-sm font-medium">View Section:</label>
+                        <select id="leaderboard-section" class="px-2 py-1 text-sm border rounded-md">
+                            <option value="all">All Sections</option>
+                            <option value="section1">Section 1</option>
+                            <option value="section2">Section 2</option>
+                            <option value="section3">Section 3</option>
+                            <option value="section4">Section 4</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Terms Served Leaderboard -->
+                    <div>
+                        <h4 class="font-medium mb-2">Most Terms Served</h4>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div id="terms-leaderboard" class="space-y-2">
+                                <p class="text-gray-500 text-center">No data yet</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Highest Approval Leaderboard -->
+                    <div>
+                        <h4 class="font-medium mb-2">Highest Approval Rating</h4>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div id="approval-leaderboard" class="space-y-2">
+                                <p class="text-gray-500 text-center">No data yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-xl font-semibold mb-3">Economic Insights</h3>
+                <div id="economic-insights" class="space-y-4">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <button id="play-again" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Play Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/index.js"></script>
+</body>
+</html>

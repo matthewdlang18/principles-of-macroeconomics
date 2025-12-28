@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Setting up localStorage for testing</title>
+  <script>
+    // Set values in localStorage
+    const classWeights = [
+      { id: '10Y2Y_Yield', label: 'Yield Curve (10Y-2Y)', weight: 15 },
+      { id: 'ISM_NewOrders', label: 'ISM New Orders', weight: 12 },
+      { id: 'Building_Permits', label: 'Building Permits', weight: 11 },
+      { id: 'Consumer_Confidence', label: 'Consumer Confidence', weight: 14 },
+      { id: 'PMI', label: 'PMI', weight: 11 },
+      { id: 'Initial_Claims', label: 'Initial Claims', weight: 12 },
+      { id: 'Avg_WeeklyHours', label: 'CLI', weight: 10 },
+      { id: 'SP500', label: 'S&P 500', weight: 15 }
+    ];
+    
+    // Set class weights in localStorage
+    localStorage.setItem('classWeights', JSON.stringify(classWeights));
+    
+    // Generate some sample index data
+    const startDate = new Date('2000-01-01');
+    const classIndexData = [];
+    
+    for (let i = 0; i < 300; i++) {
+      const date = new Date(startDate);
+      date.setMonth(startDate.getMonth() + i);
+      
+      // Generate a sinusoidal pattern with some noise
+      const value = Math.sin(i * 0.1) + (Math.random() * 0.5 - 0.25);
+      
+      classIndexData.push({
+        date: date.toISOString(),
+        value: value
+      });
+    }
+    
+    // Set class index data in localStorage
+    localStorage.setItem('classIndexData', JSON.stringify(classIndexData));
+    
+    // Sample analysis data
+    const classAnalysis = {
+      truePositives: 3,
+      falsePositives: 1,
+      coincidentSignals: 2,
+      missedRecessions: 1,
+      avgLeadTime: 6.5,
+      detectionRate: 75.0,
+      accuracy: 60.0
+    };
+    
+    // Set class analysis in localStorage
+    localStorage.setItem('classAnalysis', JSON.stringify(classAnalysis));
+    
+    // Redirect to the actual page
+    window.onload = function() {
+      console.log('LocalStorage data set up successfully. Redirecting to ai-weights.html...');
+      setTimeout(function() {
+        window.location.href = 'ai-weights.html';
+      }, 1000);
+    };
+  </script>
+</head>
+<body>
+  <h1>Setting up data in localStorage...</h1>
+  <p>This page is setting up the necessary data in localStorage and will automatically redirect to the AI weights page in 1 second.</p>
+</body>
+</html>

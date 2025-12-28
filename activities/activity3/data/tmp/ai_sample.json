@@ -1,0 +1,24 @@
+[
+  {
+    "model_name": "GPT-4 Model",
+    "10Y2Y_Yield": 15,
+    "ISM_NewOrders": 12,
+    "Building_Permits": 10,
+    "Consumer_Confidence": 14,
+    "PMI": 11,
+    "Initial_Claims": 12,
+    "Avg_WeeklyHours": 10,
+    "SP500": 14
+  },
+  {
+    "model_name": "BERT Model",
+    "10Y2Y_Yield": 13,
+    "ISM_NewOrders": 14,
+    "Building_Permits": 12,
+    "Consumer_Confidence": 15,
+    "PMI": 10,
+    "Initial_Claims": 11,
+    "Avg_WeeklyHours": 9,
+    "SP500": 13
+  }
+]

@@ -1,0 +1,21 @@
+term,definition,hint,category,difficulty
+DEMAND,The willingness and ability to purchase goods and services at various prices during a given period of time.,What consumers want to buy,concept,1
+SUPPLY,The willingness and ability of producers to offer goods and services for sale at various prices during a given period of time.,What producers want to sell,concept,1
+INFLATION,A general increase in prices and fall in the purchasing value of money.,When prices rise over time,variable,1
+GDP,The total value of goods and services produced within a country in a specific time period.,Measures a country's economic output,variable,1
+RECESSION,A period of temporary economic decline during which trade and industrial activity are reduced.,Economic downturn,concept,2
+FISCAL,Relating to government revenue, especially taxes.,Government money matters,policy,2
+MONETARY,Relating to money or currency.,Central bank policy area,policy,2
+ELASTICITY,A measure of how responsive quantity is to a change in price.,How sensitive buyers are to price changes,concept,2
+UTILITY,The satisfaction or pleasure that consumers derive from consuming a good or service.,Consumer satisfaction,concept,1
+EQUILIBRIUM,A state in which economic forces are balanced.,When supply equals demand,concept,1
+CAPITAL,Wealth in the form of money or assets that can be used to produce more wealth.,Productive resources,variable,1
+LABOR,The work performed by humans in the production process.,Human work input,variable,1
+INTEREST,The cost of borrowing money or the return for lending it.,Price of borrowing money,variable,1
+DEFICIT,The amount by which spending exceeds revenue.,When expenses exceed income,variable,2
+SURPLUS,The amount by which revenue exceeds spending.,Extra resources or goods,variable,1
+TARIFF,A tax imposed on imported goods and services.,Import tax,policy,2
+SUBSIDY,A sum of money granted to support an industry or business.,Government financial support,policy,2
+MONOPOLY,A market structure with a single supplier.,One seller controls the market,concept,2
+OLIGOPOLY,A market structure with a small number of firms.,Few sellers dominate,concept,3
+STAGFLATION,A period of high inflation combined with economic stagnation.,Inflation during slow growth,variable,3

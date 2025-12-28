@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Housing Market Analysis Map</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Leaflet for maps -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<!-- SheetJS for Excel Parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- D3.js for Color Scales -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<!-- Custom Map Loader -->
+<script src="js/mapLoader.js"></script>
+<!-- Custom Dashboard -->
+<script src="js/dashboard.js"></script>
+<style>
+  .banner-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 25%; /* This sets the aspect ratio of the container */
+    min-height: 150px; /* Slightly taller minimum height to accommodate nav links */
+    max-height: 320px; /* Maximum height on large screens */
+    overflow: hidden;
+    background-color: #1d4ed8; /* bg-blue-700 as fallback */
+  }
+
+  .banner-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.9; /* Make the image slightly transparent */
+  }
+
+  .banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.75rem;
+  }
+
+  .nav-link {
+    color: #bfdbfe; /* text-blue-100 */
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .nav-link:hover {
+    color: white;
+  }
+
+  .activity-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    line-height: 1.2;
+  }
+
+  .activity-date {
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    color: #bfdbfe; /* text-blue-100 */
+  }
+
+  /* Medium screens */
+  @media (min-width: 640px) {
+    .banner-overlay {
+      padding: 1.5rem 2rem;
+    }
+
+    .nav-links {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .nav-link {
+      font-size: 1rem;
+      margin-bottom: 0;
+    }
+
+    .nav-link:not(:first-child) {
+      margin-left: 1rem;
+    }
+
+    .activity-title {
+      font-size: 2rem;
+    }
+
+    .activity-date {
+      font-size: 1rem;
+    }
+  }
+
+  /* Large screens */
+  @media (min-width: 1024px) {
+    .banner-overlay {
+      padding: 1.5rem 3rem;
+    }
+
+    .activity-title {
+      font-size: 2.25rem;
+    }
+  }
+
+  /* Map and Excel preview styles */
+  .map-container {
+    height: 600px;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+  }
+
+  .info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+  }
+
+  .legend {
+    line-height: 18px;
+    color: #555;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    width: 100%;
+  }
+
+  .legend i {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    margin-right: 8px;
+    opacity: 0.7;
+    vertical-align: middle;
+  }
+
+  .legend h4 {
+    margin: 0 0 5px;
+    color: #777;
+  }
+
+  .legend div {
+    display: block;
+    margin-bottom: 5px;
+    clear: both;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  .legend-item span {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  /* Add some table styling for the Excel preview */
+  .excel-preview table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .excel-preview th, .excel-preview td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .excel-preview th {
+    background-color: #f2f2f2;
+  }
+
+  .excel-preview tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  /* Make the map container responsive */
+  @media (max-width: 640px) {
+    .map-container {
+      height: 400px;
+    }
+  }
+</style>
+</head>
+<body class="bg-gray-50">
+<!-- Header -->
+<header>
+  <div class="banner-container">
+    <img src="../../images/banner8.png" alt="Housing Market Analysis Map Banner" class="banner-image">
+    <div class="banner-overlay">
+      <div class="container mx-auto">
+        <div class="nav-links">
+          <a href="../index.html" class="nav-link">← Back to Course Home</a>
+          <a href="../index.html" class="nav-link">← Back to Activities</a>
+        </div>
+        <h1 class="activity-title">Discussion Activity 1: Housing Market Analysis</h1>
+        <p class="activity-date">April 1-4, 2025</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+    <main class="container mx-auto py-8 px-4">
+        <!-- Student File Upload Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 class="text-xl font-bold mb-3 text-blue-800">Upload Student Assessment Data</h2>
+
+            <div class="mb-4">
+                <label for="fileUpload" class="block text-sm font-medium text-gray-700 mb-2">Upload Excel file:</label>
+                <input type="file" id="fileUpload" accept=".xlsx,.xls" class="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100
+                ">
+            </div>
+
+            <div id="status" class="mt-4 p-3 rounded-md hidden"></div>
+        </div>
+
+        <!-- Column Mapping (appears after upload) -->
+        <div id="columnMappingSection" class="bg-white rounded-lg shadow p-6 mb-8 hidden">
+            <h2 class="text-xl font-bold mb-3 text-blue-800">Column Mapping</h2>
+            <p class="mb-4 text-gray-700">Select which columns contain your data:</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">State Column:</label>
+                    <select id="stateColumn" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select column...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Value Column:</label>
+                    <select id="valueColumn" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select column...</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="applyMapping" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Apply Mapping</button>
+
+        </div>
+
+        <!-- AI File Upload Section -->
+        <div id="aiDataContainer" class="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 class="text-xl font-bold mb-3 text-blue-800">Upload AI Assessment Data</h2>
+            <p class="text-gray-600 mb-4">After uploading student data, upload the AI assessment data to enable comparison.</p>
+
+            <div class="mb-4">
+                <label for="aiFileUpload" class="block text-sm font-medium text-gray-700 mb-2">Upload AI Excel file:</label>
+                <input type="file" id="aiFileUpload" accept=".xlsx,.xls" class="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100
+                ">
+            </div>
+
+            <div id="aiStatus" class="mt-4 p-3 rounded-md hidden"></div>
+        </div>
+
+        <!-- Map and Data View Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-blue-800">Housing Market Map</h2>
+                <div class="space-x-2">
+                    <button id="studentViewBtn" class="px-4 py-2 rounded focus:ring-2 focus:ring-opacity-50 bg-blue-600 text-white">Student Assessment</button>
+                    <button id="aiViewBtn" class="px-4 py-2 rounded focus:ring-2 focus:ring-opacity-50 bg-gray-200 text-gray-700" disabled>AI Assessment</button>
+                    <button id="comparisonViewBtn" class="px-4 py-2 rounded focus:ring-2 focus:ring-opacity-50 bg-gray-200 text-gray-700" disabled>Comparison</button>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-4">
+                <!-- Map Container -->
+                <div class="flex-grow">
+                    <div id="mapContainer" class="map-container"></div>
+                </div>
+
+                <!-- Legend and Stats Container -->
+                <div class="lg:w-1/4 space-y-4">
+                    <div id="legend" class="legend"></div>
+                    <div id="summaryStats" class="bg-white p-4 rounded-lg border border-gray-200"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-100 border-t mt-12 py-6 px-4">
+        <div class="container mx-auto">
+            <p class="text-gray-600">© 2025 Economics Department</p>
+        </div>
+    </footer>
+
+    <!-- Load the JavaScript code -->
+    <script>
+        // Initialize the dashboard when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            dashboard.initDashboard();
+        });
+    </script>
+</body>
+</html>

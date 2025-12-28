@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economics Games - Home</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Custom styles for tab visibility */
+        .nav-tabs .nav-link {
+            color: white !important;
+            font-weight: bold !important;
+            opacity: 0.8;
+        }
+        .nav-tabs .nav-link.active {
+            color: #495057 !important;
+            background-color: #fff !important;
+            font-weight: bold !important;
+        }
+        .nav-tabs .nav-link:hover {
+            opacity: 1;
+        }
+
+        .game-card {
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .game-image {
+            height: 180px;
+            object-fit: cover;
+        }
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .games-container {
+            margin-top: 30px;
+        }
+        /* Banner styles */
+        .banner-container {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            padding: 2rem;
+        }
+        .nav-links {
+            margin-bottom: 2rem;
+        }
+        .nav-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            margin-right: 1.5rem;
+            font-weight: 300;
+        }
+        .nav-links a:hover {
+            color: white;
+        }
+        .nav-links a.active {
+            color: white;
+            font-weight: bold;
+        }
+        .banner-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+        .banner-subtitle {
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: rgba(255,255,255,0.8);
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .banner-container {
+                height: 200px;
+            }
+            .banner-title {
+                font-size: 1.8rem;
+            }
+            .banner-subtitle {
+                font-size: 0.9rem;
+            }
+            .nav-links a {
+                font-size: 0.9rem;
+                margin-right: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Banner -->
+    <div class="banner-container">
+        <img src="images/banner15.png" alt="Economics Games Banner" class="banner-image">
+        <div class="banner-overlay">
+            <div class="container mx-auto">
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="games.html" class="active">Games</a>
+                    <a href="activities/index.html">Activities</a>
+                    <a href="materials.html">Materials</a>
+                </div>
+                <h1 class="banner-title">Economics Games</h1>
+                <p class="banner-subtitle">Interactive learning experiences for economics students</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Navigation is now in the banner -->
+        <!-- Removed redundant navigation -->
+
+
+        <!-- Authentication Section -->
+        <div id="auth-section" class="mb-5">
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    <div class="card">
+                        <div class="card-header bg-primary">
+                            <ul class="nav nav-tabs card-header-tabs" id="auth-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active font-weight-bold" id="student-tab" data-toggle="tab" href="#student-auth" role="tab" aria-controls="student-auth" aria-selected="true">Student</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white font-weight-bold" id="ta-tab" data-toggle="tab" href="#ta-auth" role="tab" aria-controls="ta-auth" aria-selected="false">Teaching Assistant</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <!-- Authentication Status -->
+                            <div id="auth-status" class="alert alert-success mb-3 d-none">
+                                <div class="mb-2">
+                                    <h5 class="mb-1">Welcome, <span id="current-user-name">Student Name</span>!</h5>
+                                    <div id="section-info" class="mb-2">
+                                        <!-- Section info will be displayed here -->
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <button id="change-name-btn" class="btn btn-sm btn-outline-primary">Change Display Name</button>
+                                    <button id="logout-btn" class="btn btn-sm btn-outline-secondary">Logout</button>
+                                </div>
+                            </div>
+
+                            <!-- TA Authentication Status -->
+                            <div id="ta-auth-status" class="alert alert-info mb-3 d-none">
+                                <div class="mb-2">
+                                    <h5 class="mb-1">Welcome, <span id="ta-name">TA Name</span>!</h5>
+                                    <p class="mb-0">You are signed in as a Teaching Assistant.</p>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <a href="activities/investment-odyssey/ta-controls.html" class="btn btn-sm btn-primary">Go to TA Controls</a>
+                                    <button id="ta-logout-btn" class="btn btn-sm btn-outline-secondary">Logout</button>
+                                </div>
+                            </div>
+
+                            <!-- Authentication Forms -->
+                            <div class="tab-content" id="auth-tab-content">
+                                <!-- Student Authentication Form -->
+                                <div class="tab-pane fade show active" id="student-auth" role="tabpanel" aria-labelledby="student-tab">
+                                    <div id="auth-form">
+                                        <div class="alert alert-info">
+                                            <p class="mb-0"><strong>Students:</strong> Sign in to access the games. You'll be able to select your TA section after signing in.</p>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="student-name">User/Net ID</label>
+                                                    <input type="text" id="student-name" class="form-control" placeholder="Enter your User/Net ID">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="student-passcode">Passcode</label>
+                                                    <input type="password" id="student-passcode" class="form-control" placeholder="Enter your passcode">
+                                                    <small class="form-text text-muted">Provided by your instructor</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+
+                                        <div class="d-flex justify-content-between mt-4">
+                                            <button id="login-btn" class="btn btn-primary">Sign In</button>
+                                            <button id="guest-btn" class="btn btn-secondary">Continue as Guest</button>
+                                        </div>
+
+                                        <div id="auth-error" class="text-danger mt-3"></div>
+                                    </div>
+                                </div>
+
+                                <!-- TA Authentication Form -->
+                                <div class="tab-pane fade" id="ta-auth" role="tabpanel" aria-labelledby="ta-tab">
+                                    <div id="ta-auth-form">
+                                        <div class="alert alert-info">
+                                            <p class="mb-0"><strong>Teaching Assistants:</strong> Sign in to access the class game controls.</p>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="ta-name-input">TA Name</label>
+                                                    <input type="text" id="ta-name-input" class="form-control" placeholder="Enter your name">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="ta-passcode">Passcode</label>
+                                                    <input type="password" id="ta-passcode" class="form-control" placeholder="Enter your passcode">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between mt-4">
+                                            <button id="ta-login-btn" class="btn btn-primary">Sign In as TA</button>
+                                        </div>
+
+                                        <div id="ta-auth-error" class="text-danger mt-3"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Games Section -->
+        <div id="games-section" class="d-none">
+            <h2 class="mb-4">Available Games</h2>
+            <div class="row justify-content-center">
+                <!-- Investment Odyssey -->
+                <div class="col-md-4">
+                    <div class="card game-card">
+                        <img src="images/banner21.png" class="card-img-top game-image" alt="Investment Odyssey">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Investment Odyssey</h5>
+                            <p class="card-text">Navigate financial markets and build your investment portfolio in this interactive simulation game. Learn about different asset classes, risk management, and investment strategies.</p>
+                            <div class="mt-3">
+                                <a href="activities/investment-odyssey/about.html" class="btn btn-primary btn-lg">Play Investment Odyssey</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fiscal Balance Game -->
+                <div class="col-md-4">
+                    <div class="card game-card">
+                        <img src="images/banner22.png" class="card-img-top game-image" alt="Fiscal Balance Game">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Fiscal Balance Game</h5>
+                            <p class="card-text">Take on the role of an economic leader making critical decisions about taxation, spending, and debt management while trying to maintain public approval to get re-elected.</p>
+                            <div class="mt-3">
+                                <a href="activities/fiscal-balance/index.html" class="btn btn-primary btn-lg">Play Fiscal Balance Game</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Econ Words -->
+                <div class="col-md-4">
+                    <div class="card game-card">
+                        <img src="images/banner23.png" class="card-img-top game-image" alt="Econ Words">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Econ Words</h5>
+                            <p class="card-text">Test your economics knowledge with this word puzzle game based on your textbook. Guess economic terms, concepts, policies, and variables in six attempts or less.</p>
+                            <div class="mt-3">
+                                <a href="activities/econ-words/index.html" class="btn btn-primary btn-lg">Play Econ Words</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p>Economics Games &copy; 2026 | <a href="index.html">Course Home</a></p>
+        </div>
+    </footer>
+
+    <!-- Supabase Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2.38.4/dist/umd/supabase.js"></script>
+    <script src="js/env.js"></script>
+    <script src="js/supabase-init.js"></script>
+
+    <!-- Authentication Scripts -->
+    <script src="activities/investment-odyssey/js/service-adapter.js"></script>
+    <script src="activities/investment-odyssey/js/supabase-auth.js"></script>
+    <script src="js/ta-auth-service.js"></script>
+    <script src="js/games.js"></script>
+
+    <!-- Name Change Modal -->
+    <div class="modal fade" id="nameChangeModal" tabindex="-1" role="dialog" aria-labelledby="nameChangeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nameChangeModalLabel">Choose Your Display Name</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Enter the name you'd like to display on the leaderboard. Only your highest score will be shown.</p>
+                    <form id="nameChangeForm">
+                        <div class="form-group">
+                            <label for="displayName">Display Name:</label>
+                            <input type="text" class="form-control" id="displayName" placeholder="Enter your name" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveNameBtn">Save Name</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

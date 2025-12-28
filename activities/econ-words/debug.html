@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Econ Words Supabase Debug</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        body {
+                       if (!window.SupabaseDiagnostics?.testAuthentication) {
+                        throw new Error('Supabase diagnostics module not loaded');
+                    }
+
+                    const results = await window.SupabaseDiagnostics.testAuthentication();
+                    showResults('auth-results', results);
+
+                    // If successful, verify with a quick database test
+                    if (results.success) {
+                        setTimeout(async () => {
+                            try {
+                                // Test with a simple database queryt-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .debug-panel {
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button.warning {
+            background-color: #ff9800;
+        }
+        button.danger {
+            background-color: #f44336;
+        }
+        code {
+            font-family: Consolas, monospace;
+            background-color: #e0e0e0;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .code-block {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: Consolas, monospace;
+            white-space: pre;
+        }
+        .results {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .error { color: #f44336; }
+        .success { color: #4CAF50; }
+        .warning { color: #ff9800; }
+        .hidden { display: none; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Econ Words Supabase Debug Tool</h1>
+
+    <div class="debug-panel">
+        <h2>Supabase Connection Status</h2>
+        <button id="check-connection" title="Check if Supabase client is properly initialized">Check Connection</button>
+        <button id="run-diagnostics" title="Run a comprehensive diagnostic check on all Supabase components">Run Full Diagnostics</button>
+        <div id="connection-results" class="results hidden">Loading...</div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>Authentication</h2>
+        <button id="check-auth" title="Check current authentication status">Check Auth Status</button>
+        <button id="refresh-token" title="Force refresh the auth token">Refresh Token</button>
+        <button id="test-auth" title="Test authentication">Test Authentication</button>
+        <button id="sign-in-email" class="warning" title="Sign in with test email">Sign in with Email</button>
+        <button id="sign-out" class="warning" title="Sign out current user">Sign Out</button>
+        <div id="auth-results" class="results hidden">Loading...</div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>Database Operations</h2>
+        <button id="test-select" title="Test a SELECT operation on the leaderboard table">Test SELECT</button>
+        <button id="test-insert" title="Test an INSERT operation on the leaderboard table">Test INSERT</button>
+        <button id="recover-failed-scores" title="Try to recover scores saved in localStorage">Recover Failed Scores</button>
+        <div id="db-results" class="results hidden">Loading...</div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>RLS Policy Tests</h2>
+        <button id="test-rls" title="Test if RLS policies are working correctly">Test RLS Policies</button>
+        <button id="fix-rls-issues" class="warning" title="Try to fix common RLS permission issues">Fix RLS Issues</button>
+        <div id="rls-results" class="results hidden">Loading...</div>
+    </div>
+
+    <div class="debug-panel">
+        <h2>LocalStorage Data</h2>
+        <button id="view-localstorage" title="View all Econ Words data in localStorage">View LocalStorage</button>
+        <button id="clear-localstorage" class="danger" title="Clear all Econ Words data from localStorage">Clear LocalStorage</button>
+        <div id="storage-results" class="results hidden">Loading...</div>
+    </div>
+
+    <!-- Include required scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <script src="js/env.js"></script>
+
+    <!-- Global Supabase client initialization for shared and legacy code -->
+    <script src="js/supabase-init-global.js"></script>
+
+    <!-- Shared Auth System from Investment Odyssey (must come after global client init) -->
+    <script src="../investment-odyssey/js/service-adapter.js"></script>
+    <script src="../investment-odyssey/js/supabase-auth.js"></script>
+
+    <!-- Removed deprecated supabase-client.js and auth.js -->
+    <script src="js/auth-bridge.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/supabase-diagnostics.js"></script>
+
+    <script>
+        // Wait for all scripts to load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Debug tool initialized');
+
+            // Helper function to show results
+            function showResults(elementId, content, isError = false) {
+                const element = document.getElementById(elementId);
+                element.classList.remove('hidden');
+
+                if (typeof content === 'object') {
+                    // Format JSON nicely
+                    element.innerHTML = `<pre>${JSON.stringify(content, null, 2)}</pre>`;
+                } else {
+                    element.innerHTML = content;
+                }
+
+                if (isError) {
+                    element.classList.add('error');
+                } else {
+                    element.classList.remove('error');
+                }
+            }
+
+            // Check connection button
+            document.getElementById('check-connection').addEventListener('click', function() {
+                try {
+                    const results = {
+                        supabaseJSLoaded: typeof supabase !== 'undefined',
+                        supabaseUrlDefined: !!window.supabaseUrl,
+                        supabaseKeyDefined: !!window.supabaseKey,
+                        clientInitialized: !!window.supabaseClient
+                    };
+
+                    showResults('connection-results', results);
+                } catch (error) {
+                    showResults('connection-results', { error: error.message }, true);
+                }
+            });
+
+            // Run full diagnostics
+            document.getElementById('run-diagnostics').addEventListener('click', async function() {
+                if (!window.SupabaseDiagnostics) {
+                    showResults('connection-results', { error: 'Supabase diagnostics module not loaded' }, true);
+                    return;
+                }
+
+                showResults('connection-results', 'Running diagnostics, please wait...');
+                try {
+                    const results = await window.SupabaseDiagnostics.runFullDiagnostics();
+                    showResults('connection-results', results);
+                } catch (error) {
+                    showResults('connection-results', { error: error.message }, true);
+                }
+            });
+
+            // Check auth status
+            document.getElementById('check-auth').addEventListener('click', async function() {
+                showResults('auth-results', 'Checking authentication status...');
+
+                try {
+                    if (!window.supabaseClient) {
+                        throw new Error('Supabase client not initialized');
+                    }
+
+                    const { data, error } = await supabaseClient.auth.getSession();
+
+                    if (error) {
+                        showResults('auth-results', { error: error.message }, true);
+                        return;
+                    }
+
+                    // Get user info from EconWordsAuth if available
+                    let userInfo = { fromAuthModule: 'Not available' };
+                    if (window.EconWordsAuth) {
+                        const currentUser = window.EconWordsAuth.getCurrentUser();
+                        if (currentUser) {
+                            userInfo = {
+                                id: currentUser.id,
+                                name: currentUser.name,
+                                isGuest: currentUser.isGuest,
+                                email: currentUser.email,
+                                sectionId: currentUser.sectionId
+                            };
+                        }
+                    }
+
+                    showResults('auth-results', {
+                        fromSupabase: {
+                            hasSession: !!data?.session,
+                            userId: data?.session?.user?.id || 'None',
+                            email: data?.session?.user?.email || 'None',
+                            expiresAt: data?.session ? new Date(data.session.expires_at * 1000).toISOString() : 'N/A'
+                        },
+                        fromAuthModule: userInfo
+                    });
+                } catch (error) {
+                    showResults('auth-results', { error: error.message }, true);
+                }
+            });
+
+            // Refresh token
+            document.getElementById('refresh-token').addEventListener('click', async function() {
+                showResults('auth-results', 'Refreshing auth token...');
+
+                try {
+                    if (!window.supabaseClient) {
+                        throw new Error('Supabase client not initialized');
+                    }
+
+                    const { data, error } = await supabaseClient.auth.refreshSession();
+
+                    if (error) {
+                        showResults('auth-results', { error: error.message }, true);
+                        return;
+                    }
+
+                    showResults('auth-results', {
+                        success: !!data?.session,
+                        newExpiresAt: data?.session ? new Date(data.session.expires_at * 1000).toISOString() : 'N/A'
+                    });
+                } catch (error) {
+                    showResults('auth-results', { error: error.message }, true);
+                }
+            });
+
+            // Test authentication
+            document.getElementById('test-auth').addEventListener('click', async function() {
+                showResults('auth-results', 'Testing authentication...');
+
+                try {
+                    if (!window.SupabaseDiagnostics) {
+                        throw new Error('Supabase diagnostics module not loaded');
+                    }
+
+                    const results = await window.SupabaseDiagnostics.testAuthentication();
+                    showResults('auth-results', results);
+
+                    // If successful, verify with a quick database test
+                    if (results.success) {
+                        setTimeout(async () => {
+                            try {
+                                // Test with a simple database query
+                                const testResult = await supabaseClient
+                                    .from('econ_terms_leaderboard')
+                                    .select('*', { count: 'exact' })
+                                    .limit(1);
+
+                                const dbResults = {
+                                    dbTestSuccess: !testResult.error,
+                                    count: testResult.count || 0,
+                                    error: testResult.error?.message
+                                };
+
+                                showResults('auth-results', {
+                                    ...results,
+                                    dbAccessTest: dbResults
+                                });
+                            } catch (e) {
+                                console.error('Error during database test after anon auth:', e);
+                            }
+                        }, 1000);
+                    }
+                } catch (error) {
+                    showResults('auth-results', { error: error.message }, true);
+                }
+            });
+
+            // Sign in with email
+            document.getElementById('sign-in-email').addEventListener('click', async function() {
+                showResults('auth-results', 'Signing in with test email...');
+
+                try {
+                    if (!window.supabaseClient) {
+                        throw new Error('Supabase client not initialized');
+                    }
+
+                    // Use a test email for debugging - should be changed for a real implementation
+                    const testEmail = 'test@example.com';
+                    const testPassword = 'password123';
+
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({
+                        email: testEmail,
+                        password: testPassword
+                    });
+
+                    if (error) {
+                        showResults('auth-results', {
+                            error: error.message,
+                            note: "If this shows an authentication error, you need to create this test user in your Supabase authentication settings"
+                        }, true);
+                        return;
+                    }
+
+                    showResults('auth-results', {
+                        success: true,
+                        userId: data.user?.id || 'Unknown',
+                        email: data.user?.email || 'Unknown',
+                        sessionExpires: data.session ? new Date(data.session.expires_at * 1000).toISOString() : 'N/A'
+                    });
+                } catch (error) {
+                    showResults('auth-results', { error: error.message }, true);
+                }
+            });
+
+            // Sign out
+            document.getElementById('sign-out').addEventListener('click', async function() {
+                showResults('auth-results', 'Signing out...');
+
+                try {
+                    if (!window.supabaseClient) {
+                        throw new Error('Supabase client not initialized');
+                    }
+
+                    const { error } = await supabaseClient.auth.signOut();
+
+                    if (error) {
+                        showResults('auth-results', { error: error.message }, true);
+                        return;
+                    }
+
+                    showResults('auth-results', {
+                        success: true,
+                        message: 'Signed out successfully'
+                    });
+
+                    // Also use EconWordsAuth if available
+                    if (window.EconWordsAuth) {
+                        await window.EconWordsAuth.signOut();
+                    }
+                } catch (error) {
+                    showResults('auth-results', { error: error.message }, true);
+                }
+            });
+
+            // Test SELECT
+            document.getElementById('test-select').addEventListener('click', async function() {
+                showResults('db-results', 'Testing SELECT operation...');
+
+                try {
+                    if (!window.supabaseClient) {
+                        throw new Error('Supabase client not initialized');
+                    }
+
+                    const { data, error, count } = await supabaseClient
+                        .from('econ_terms_leaderboard')
+                        .select('*', { count: 'exact' })
+                        .order('score', { ascending: false })
+                        .limit(5);
+
+                    if (error) {
+                        showResults('db-results', {
+                            success: false,
+                            error: error.message,
+                            code: error.code,
+                            details: error.details,
+                            hint: error.hint,
+                            isRLSError: error.code === '42501' || error.message.includes('policy')
+                        }, true);
+                        return;
+                    }
+
+                    showResults('db-results', {
+                        success: true,
+                        totalRecords: count,
+                        sampleData: data
+                    });
+                } catch (error) {
+                    showResults('db-results', { error: error.message }, true);
+                }
+            });
+
+            // Test INSERT
+            document.getElementById('test-insert').addEventListener('click', async function() {
+                showResults('db-results', 'Testing INSERT operation...');
+
+                try {
+                    if (!window.supabaseClient) {
+                        throw new Error('Supabase client not initialized');
+                    }
+
+                    // Get auth status first
+                    const { data: authData } = await supabaseClient.auth.getSession();
+
+                    // Get user ID from auth or EconWordsAuth
+                    let userId = authData?.session?.user?.id;
+                    if (!userId && window.EconWordsAuth) {
+                        const currentUser = window.EconWordsAuth.getCurrentUser();
+                        userId = currentUser?.id;
+                    }
+
+                    if (!userId) {
+                        showResults('db-results', {
+                            success: false,
+                            error: 'No user ID available - authentication required'
+                        }, true);
+                        return;
+                    }
+
+                    // Create test record
+                    const testRecord = {
+                        user_id: userId,
+                        user_name: 'Debug Test',
+                        score: Math.floor(Math.random() * 1000),
+                        term: 'DEBUG-TEST',
+                        attempts: Math.floor(Math.random() * 6) + 1,
+                        won: Math.random() > 0.5,
+                        time_taken: Math.floor(Math.random() * 60000) + 10000
+                    };
+
+                    const { data, error } = await supabaseClient
+                        .from('econ_terms_leaderboard')
+                        .insert(testRecord)
+                        .select();
+
+                    if (error) {
+                        showResults('db-results', {
+                            success: false,
+                            error: error.message,
+                            code: error.code,
+                            details: error.details,
+                            hint: error.hint,
+                            isRLSError: error.code === '42501' || error.message.includes('policy'),
+                            testRecord: testRecord
+                        }, true);
+                        return;
+                    }
+
+                    showResults('db-results', {
+                        success: true,
+                        message: 'Insert successful',
+                        insertedData: data[0]
+                    });
+                } catch (error) {
+                    showResults('db-results', { error: error.message }, true);
+                }
+            });
+
+            // Recover failed scores
+            document.getElementById('recover-failed-scores').addEventListener('click', async function() {
+                showResults('db-results', 'Attempting to recover failed scores...');
+
+                try {
+                    if (!window.EconWordsDB) {
+                        throw new Error('EconWordsDB module not available');
+                    }
+
+                    const results = await window.EconWordsDB.recoverFailedScores();
+                    showResults('db-results', results);
+                } catch (error) {
+                    showResults('db-results', { error: error.message }, true);
+                }
+            });
+
+            // Test RLS policies
+            document.getElementById('test-rls').addEventListener('click', async function() {
+                showResults('rls-results', 'Testing RLS policies...');
+
+                try {
+                    if (typeof window.testRLSPolicyAccess === 'function') {
+                        const results = await window.testRLSPolicyAccess();
+                        showResults('rls-results', results);
+                    } else {
+                        throw new Error('RLS policy test function not available');
+                    }
+                } catch (error) {
+                    showResults('rls-results', { error: error.message }, true);
+                }
+            });
+
+            // Fix RLS issues
+            document.getElementById('fix-rls-issues').addEventListener('click', async function() {
+                showResults('rls-results', 'Attempting to fix RLS issues...');
+
+                try {
+                    // Step 1: Check auth
+                    const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+
+                    if (sessionError) {
+                        throw new Error('Error getting auth session: ' + sessionError.message);
+                    }
+
+                    if (!sessionData?.session) {
+                        // Alert that authentication is needed
+                        throw new Error('No active session found. Please sign in first using the "Sign in with Email" button.');
+                    } else {
+                        showResults('rls-results', {
+                            step1: 'Using existing session',
+                            userId: sessionData.session.user.id
+                        });
+                    }
+
+                    // Step 2: Refresh token
+                    const { data: refreshData, error: refreshError } = await supabaseClient.auth.refreshSession();
+
+                    if (refreshError) {
+                        showResults('rls-results', {
+                            step1: 'Success',
+                            step2: 'Token refresh failed: ' + refreshError.message
+                        }, true);
+                        return;
+                    }
+
+                    // Final RLS test
+                    if (typeof window.testRLSPolicyAccess === 'function') {
+                        const rlsTest = await window.testRLSPolicyAccess();
+
+                        showResults('rls-results', {
+                            step1: 'Authentication check successful',
+                            step2: 'Token refreshed successfully',
+                            step3: 'Final RLS test',
+                            rlsTestResults: rlsTest
+                        });
+                    } else {
+                        showResults('rls-results', {
+                            step1: 'Authentication check successful',
+                            step2: 'Token refreshed successfully',
+                            step3: 'RLS test function not available'
+                        });
+                    }
+                } catch (error) {
+                    showResults('rls-results', { error: error.message }, true);
+                }
+            });
+
+            // View LocalStorage
+            document.getElementById('view-localstorage').addEventListener('click', function() {
+                try {
+                    const econWordsKeys = [];
+                    const econWordsData = {};
+
+                    // Find all Econ Words related keys
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && (key.includes('econWords') || key.includes('supabase'))) {
+                            econWordsKeys.push(key);
+                            try {
+                                econWordsData[key] = JSON.parse(localStorage.getItem(key));
+                            } catch (e) {
+                                econWordsData[key] = localStorage.getItem(key);
+                            }
+                        }
+                    }
+
+                    if (econWordsKeys.length === 0) {
+                        showResults('storage-results', 'No Econ Words data found in localStorage');
+                        return;
+                    }
+
+                    showResults('storage-results', {
+                        totalItems: econWordsKeys.length,
+                        keys: econWordsKeys,
+                        data: econWordsData
+                    });
+                } catch (error) {
+                    showResults('storage-results', { error: error.message }, true);
+                }
+            });
+
+            // Clear LocalStorage
+            document.getElementById('clear-localstorage').addEventListener('click', function() {
+                try {
+                    const econWordsKeys = [];
+
+                    // Find all Econ Words related keys
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && (key.includes('econWords') || key.includes('supabase'))) {
+                            econWordsKeys.push(key);
+                        }
+                    }
+
+                    // Remove each key
+                    econWordsKeys.forEach(key => localStorage.removeItem(key));
+
+                    showResults('storage-results', {
+                        success: true,
+                        message: `Cleared ${econWordsKeys.length} items from localStorage`,
+                        clearedKeys: econWordsKeys
+                    });
+                } catch (error) {
+                    showResults('storage-results', { error: error.message }, true);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

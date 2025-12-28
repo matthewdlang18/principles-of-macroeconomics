@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Odyssey</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/header-styles.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="../../styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- Redirect to game modes page -->
+    <script>
+        // Check if this is a direct access to the page
+        // No longer redirecting to game-modes.html as it's been removed
+        // if (document.referrer.indexOf('about.html') === -1) {
+        //     window.location.href = 'about.html';
+        // }
+    </script>
+
+    <!-- Chart.js and Chart.js Zoom plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+
+    <style>
+        /* Sticky Next Round Button */
+        .sticky-button-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999; /* Ensure it's above everything else */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            pointer-events: auto; /* Ensure clicks are registered */
+        }
+
+        .sticky-button {
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background-color: #ffc107; /* Warning color */
+            border: 2px solid #e0a800; /* Darker border */
+            color: #212529;
+        }
+
+        .sticky-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            background-color: #ffca2c; /* Lighter on hover */
+            border-color: #ffc107;
+        }
+
+        .sticky-button i {
+            margin-left: 8px;
+        }
+
+        /* Full-width container styles */
+        .container-fluid-xl {
+            width: 100%;
+            padding-right: 15px;
+            padding-left: 15px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        /* No max-width to allow true full-width layout */
+
+        /* Card height matching for side-by-side containers */
+        .card-equal-height {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-equal-height .card-body {
+            flex: 1;
+        }
+
+        /* Responsive spacing adjustments */
+        @media (min-width: 992px) {
+            .container-fluid-xl .row > [class*="col-"] {
+                padding-right: 10px;
+                padding-left: 10px;
+            }
+        }
+
+        /* Hide the sticky button on small screens */
+        @media (max-width: 576px) {
+            .sticky-button-container {
+                bottom: 10px;
+                right: 10px;
+            }
+
+            .sticky-button {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+
+    <!-- Other Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
+</head>
+<body class="bg-gray-50" style="padding-top: 50px;">
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner15.png" alt="Investment Odyssey Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container-fluid-xl">
+                    <div class="nav-links">
+                        <div class="nav-links-left">
+                            <a href="../../index.html" class="nav-link">Home</a>
+                            <a href="../../games.html" class="nav-link">Games</a>
+                            <a href="index.html" class="nav-link active">Play Game</a>
+                            <a href="leaderboard.html" class="nav-link">Leaderboard</a>
+                        </div>
+                        <div class="nav-links-right">
+                            <!-- User info (shown when logged in) -->
+                            <div class="user-info" id="user-info-container">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <span class="user-name" id="user-name-display">Guest</span>
+                                <button class="sign-out-btn" id="sign-out-btn">Sign Out</button>
+                            </div>
+
+                            <!-- Sign in link (shown when not logged in) -->
+                            <a href="../../games.html" class="nav-link" id="sign-in-link">Sign In</a>
+
+                            <!-- Guest link (shown when not logged in) -->
+                            <a href="#" class="nav-link" id="guest-link">Continue as Guest</a>
+                        </div>
+                    </div>
+                    <h1 class="activity-title"><a href="about.html" style="color: inherit; text-decoration: none;">Investment Odyssey</a></h1>
+                    <p class="activity-date">Practice your investment skills in this simulation</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Asset Price Ticker (Always visible at the top) -->
+    <div class="ticker-container" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; border-bottom: 2px solid #007bff;">
+        <div class="ticker-wrap">
+            <div class="ticker" id="price-ticker">
+                <!-- Asset prices will be populated here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid-xl">
+
+        <!-- Section Selection Status -->
+        <!-- Section Selection Link -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <a href="select-section.html" class="btn btn-outline-primary">Select or Change TA Section</a>
+            </div>
+        </div>
+
+        <div class="row mb-3" id="current-section-display">
+            <!-- Current section will be displayed here by section-selector.js -->
+        </div>
+
+        <!-- Asset Price Ticker moved outside the container to be fixed at the top -->
+
+        <!-- Game Progress -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">Game Progress: Round <span id="current-round-display">0</span> of 20</h5>
+                            </div>
+                            <div>
+                                <button id="start-game" class="btn btn-success">Start Game</button>
+                                <button id="restart-game" class="btn btn-danger ml-2">Start Over <i class="fas fa-redo"></i></button>
+                            </div>
+                        </div>
+                        <div class="progress mt-2">
+                            <div id="round-progress" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Data - Full Width on Small Screens -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card market-data-card card-equal-height">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center" style="padding: 1rem; border-bottom: 3px solid #dc3545;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-chart-line mr-2" style="font-size: 1.8rem;"></i>
+                            <h3 class="mb-0" style="font-size: 1.5rem;">Market Data & Portfolio</h3>
+                        </div>
+                        <div>
+                            <span class="badge badge-danger" style="font-size: 1rem; padding: 0.5rem;">
+                                <i class="fas fa-clock mr-1"></i> Round <span id="market-round-display">0</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0" id="market-data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Asset</th>
+                                        <th>Price</th>
+                                        <th>Change</th>
+                                        <th>Quantity</th>
+                                        <th>Value</th>
+                                        <th>%</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="asset-prices-table">
+                                    <!-- Asset prices will be populated here dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Performance and Game Controls - Rebalanced Layout -->
+        <div class="row mb-3 mt-3">
+            <!-- Portfolio Performance - Full Width on Small Screens, Left Side on Large Screens -->
+            <div class="col-lg-6 mb-3 mb-lg-0">
+                <div class="card card-equal-height">
+                    <div class="card-header bg-warning text-white">
+                        <h3>Portfolio Performance</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-12" style="height: 300px;">
+                                <canvas id="portfolio-chart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <h5 class="mb-3">Portfolio Allocation</h5>
+                                <div id="portfolio-allocation-chart-container" style="height: 300px; max-width: 300px; margin: 0 auto;">
+                                    <canvas id="portfolio-allocation-chart" width="300" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Controls & Trading - Right Side on Large Screens, Full Width on Small Screens -->
+            <div class="col-lg-6">
+                <div class="card card-equal-height">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0" style="font-size: 1.5rem;">Game Controls & Trading</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0.75rem;">
+                        <div class="mb-2">
+                            <div class="row no-gutters">
+                                <div class="col-md-3">
+                                    <h5 style="font-size: 0.85rem; margin-bottom: 0.5rem;">Cash: $<span id="cash-display">10000.00</span></h5>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5 style="font-size: 0.85rem; margin-bottom: 0.5rem;">Portfolio: $<span id="portfolio-value-display">0.00</span></h5>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5 style="font-size: 0.85rem; margin-bottom: 0.5rem;">Total: $<span id="total-value-display">10000.00</span></h5>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5 style="font-size: 0.85rem; margin-bottom: 0.5rem;">CPI: <span id="cpi-display">100.00</span></h5>
+                                </div>
+                            </div>
+                            <div id="cash-injection-alert" class="alert alert-success py-1 px-2 mb-2" style="display: none; font-size: 0.85rem;">
+                                <strong>Cash Injection!</strong> You received $<span id="cash-injection-amount">0</span> this round.
+                            </div>
+                        </div>
+
+                        <!-- Trade Assets Section (Full Width) -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h5 class="mb-2" style="font-size: 0.9rem;">Trade Assets</h5>
+                                <form id="trade-form">
+                                    <div class="row mb-2">
+                                        <!-- Asset Selection and Action -->
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-2">
+                                                <label for="asset-select" style="font-size: 0.85rem; margin-bottom: 0.25rem;">Select Asset</label>
+                                                <select class="form-control form-control-sm" id="asset-select" required>
+                                                    <option value="">-- Select Asset --</option>
+                                                    <option value="Bitcoin">Bitcoin</option>
+                                                    <option value="Bonds">Bonds</option>
+                                                    <option value="Commodities">Commodities</option>
+                                                    <option value="Gold">Gold</option>
+                                                    <option value="Real Estate">Real Estate</option>
+                                                    <option value="S&P 500">S&P 500</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group mb-2">
+                                                <label for="action-select" style="font-size: 0.85rem; margin-bottom: 0.25rem;">Action</label>
+                                                <select class="form-control form-control-sm" id="action-select" required>
+                                                    <option value="buy">Buy</option>
+                                                    <option value="sell">Sell</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label style="font-size: 0.85rem;">Current Price: $<span id="current-price-display">0.00</span></label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Trade Summary -->
+                                        <div class="col-md-6">
+                                            <div class="card bg-light mb-2">
+                                                <div class="card-body p-2">
+                                                    <h6 class="card-title mb-2" style="font-size: 0.85rem;">Trade Summary</h6>
+                                                    <div class="d-flex justify-content-between mb-1">
+                                                        <span style="font-size: 0.85rem;">Quantity:</span>
+                                                        <span style="font-size: 0.85rem;" id="quantity-display">0.00</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mb-1">
+                                                        <span style="font-size: 0.85rem;">Total Cost:</span>
+                                                        <span style="font-size: 0.85rem;">$<span id="total-cost-display">0.00</span></span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span style="font-size: 0.85rem;">Available Cash:</span>
+                                                        <span style="font-size: 0.85rem;">$<span id="available-cash-display">0.00</span></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary btn-sm btn-block">Execute Trade</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Amount and Quantity Inputs (Both Visible) -->
+                                    <div class="row">
+                                        <!-- Dollar Amount Input -->
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body p-2">
+                                                    <h6 class="card-title" style="font-size: 0.85rem;">Amount ($)</h6>
+                                                    <div class="form-group mb-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">$</span>
+                                                            </div>
+                                                            <input type="number" class="form-control form-control-sm" id="amount-input" min="0.01" step="0.01" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group mb-2">
+                                                        <input type="range" class="form-control-range" id="amount-slider" min="0" max="100" value="0" step="1">
+                                                        <div class="d-flex justify-content-between" style="font-size: 0.7rem;">
+                                                            <span>0%</span>
+                                                            <span>25%</span>
+                                                            <span>50%</span>
+                                                            <span>75%</span>
+                                                            <span>100%</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group mb-0">
+                                                        <label for="amount-percentage" style="font-size: 0.8rem;">Percentage:</label>
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="number" class="form-control form-control-sm" id="amount-percentage" min="0" max="100" value="0" step="1">
+                                                            <div class="input-group-append">
+                                                                <span class="input-group-text">%</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="btn-group btn-group-sm w-100 mt-1">
+                                                            <button type="button" class="btn btn-outline-secondary amount-percent-btn" data-percent="25">25%</button>
+                                                            <button type="button" class="btn btn-outline-secondary amount-percent-btn" data-percent="50">50%</button>
+                                                            <button type="button" class="btn btn-outline-secondary amount-percent-btn" data-percent="75">75%</button>
+                                                            <button type="button" class="btn btn-outline-secondary amount-percent-btn" data-percent="100">100%</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Quantity Input -->
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body p-2">
+                                                    <h6 class="card-title" style="font-size: 0.85rem;">Quantity (<span id="quantity-unit">units</span>)</h6>
+                                                    <div class="form-group mb-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="number" class="form-control form-control-sm" id="quantity-input" min="0.000001" step="0.000001" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group mb-2">
+                                                        <input type="range" class="form-control-range" id="quantity-slider" min="0" max="100" value="0" step="1">
+                                                        <div class="d-flex justify-content-between" style="font-size: 0.7rem;">
+                                                            <span>0%</span>
+                                                            <span>25%</span>
+                                                            <span>50%</span>
+                                                            <span>75%</span>
+                                                            <span>100%</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group mb-0">
+                                                        <label for="quantity-percentage" style="font-size: 0.8rem;">Percentage:</label>
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="number" class="form-control form-control-sm" id="quantity-percentage" min="0" max="100" value="0" step="1">
+                                                            <div class="input-group-append">
+                                                                <span class="input-group-text">%</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="btn-group btn-group-sm w-100 mt-1">
+                                                            <button type="button" class="btn btn-outline-secondary quantity-percent-btn" data-percent="25">25%</button>
+                                                            <button type="button" class="btn btn-outline-secondary quantity-percent-btn" data-percent="50">50%</button>
+                                                            <button type="button" class="btn btn-outline-secondary quantity-percent-btn" data-percent="75">75%</button>
+                                                            <button type="button" class="btn btn-outline-secondary quantity-percent-btn" data-percent="100">100%</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Portfolio Actions (Bottom Row) -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="mb-2" style="font-size: 0.9rem;">Portfolio Actions</h5>
+                                <div class="card mb-3">
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title mb-2" style="font-size: 0.85rem;">Select Assets for Diversification</h6>
+                                        <div class="row mb-2">
+                                            <div class="col-6">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input diversify-asset" id="diversify-bitcoin" value="Bitcoin" checked>
+                                                    <label class="custom-control-label" for="diversify-bitcoin" style="font-size: 0.85rem;">Bitcoin</label>
+                                                </div>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input diversify-asset" id="diversify-bonds" value="Bonds" checked>
+                                                    <label class="custom-control-label" for="diversify-bonds" style="font-size: 0.85rem;">Bonds</label>
+                                                </div>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input diversify-asset" id="diversify-commodities" value="Commodities" checked>
+                                                    <label class="custom-control-label" for="diversify-commodities" style="font-size: 0.85rem;">Commodities</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input diversify-asset" id="diversify-gold" value="Gold" checked>
+                                                    <label class="custom-control-label" for="diversify-gold" style="font-size: 0.85rem;">Gold</label>
+                                                </div>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input diversify-asset" id="diversify-real-estate" value="Real Estate" checked>
+                                                    <label class="custom-control-label" for="diversify-real-estate" style="font-size: 0.85rem;">Real Estate</label>
+                                                </div>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input diversify-asset" id="diversify-sp500" value="S&P 500" checked>
+                                                    <label class="custom-control-label" for="diversify-sp500" style="font-size: 0.85rem;">S&P 500</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <button id="select-all-assets-btn" class="btn btn-outline-secondary btn-sm">Select All</button>
+                                            <button id="deselect-all-assets-btn" class="btn btn-outline-secondary btn-sm">Deselect All</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <button id="buy-all-btn" class="btn btn-success btn-sm">Distribute Cash Evenly</button>
+                                    <button id="buy-selected-btn" class="btn btn-success btn-sm">Distribute to Selected</button>
+                                    <button id="sell-all-btn" class="btn btn-danger btn-sm">Sell All Assets</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparative Asset Performance - Full Width -->
+        <div class="row mt-4">
+            <!-- Comparative Asset Performance - Full Width -->
+            <div class="col-12">
+                <div class="card card-equal-height">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h3>Comparative Asset Performance</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="height: 450px; width: 100%; position: relative;">
+                            <canvas id="comparative-returns-chart"></canvas>
+                            <button id="reset-comparative-zoom" class="btn btn-sm btn-secondary" style="position: absolute; top: 10px; right: 10px;">Reset Zoom</button>
+                        </div>
+                        <div class="mt-4 asset-toggle-container">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="show-sp500" checked>
+                                        <label class="form-check-label" for="show-sp500">S&P 500</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="show-bonds" checked>
+                                        <label class="form-check-label" for="show-bonds">Bonds</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="show-real-estate" checked>
+                                        <label class="form-check-label" for="show-real-estate">Real Estate</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="show-gold" checked>
+                                        <label class="form-check-label" for="show-gold">Gold</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="show-commodities" checked>
+                                        <label class="form-check-label" for="show-commodities">Commodities</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="show-bitcoin" checked>
+                                        <label class="form-check-label" for="show-bitcoin">Bitcoin</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="show-cpi" checked>
+                                        <label class="form-check-label" for="show-cpi">CPI</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Asset Price History -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h3>Asset Price History</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Real Estate & Gold Price History</h5>
+                                <div style="height: 250px;">
+                                    <canvas id="real-estate-gold-chart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Bonds, Commodities & S&P Price History</h5>
+                                <div style="height: 250px;">
+                                    <canvas id="bonds-commodities-sp-chart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <h5>Bitcoin Price History</h5>
+                                <div style="height: 250px;">
+                                    <canvas id="bitcoin-chart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>CPI History</h5>
+                                <div style="height: 250px;">
+                                    <canvas id="cpi-chart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trade History -->
+        <div class="row mt-4 mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h3>Trade History</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group" id="trade-history-list" style="max-height: 300px; overflow-y: auto;">
+                            <!-- Trade history will be populated here dynamically -->
+                            <div class="list-group-item text-center text-muted">
+                                No trades yet
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery and Bootstrap Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"></script>
+
+    <!-- Supabase Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="js/supabase.js?v=5"></script>
+    <script src="js/supabase-auth.js?v=5"></script>
+
+    <!-- Service Adapter -->
+    <script src="js/service-adapter.js?v=1"></script>
+
+    <!-- Header Authentication Script -->
+    <script src="js/header-auth.js?v=5"></script>
+
+    <!-- Section Selector -->
+    <script src="js/section-selector.js?v=4"></script>
+
+    <!-- Supabase Services -->
+    <script src="js/supabase-leaderboard.js?v=3"></script>
+    <script src="js/supabase-scores.js?v=3"></script>
+
+    <!-- No longer using local storage scores -->
+
+    <!-- Game Scripts -->
+    <script src="js/game-core.js?v=14"></script>
+    <script src="js/game-ui.js?v=12"></script>
+    <script src="js/game-trading.js?v=12"></script>
+    <script>
+        // Make sure functions are available globally
+        window.updateUI = typeof updateUI !== 'undefined' ? updateUI : function() {
+            console.log('Fallback updateUI function called');
+            // Update asset prices table
+            if (typeof updateAssetPricesTable === 'function') updateAssetPricesTable();
+
+            // Update portfolio table
+            if (typeof updatePortfolioTable === 'function') updatePortfolioTable();
+
+            // Update price ticker
+            if (typeof updatePriceTicker === 'function') updatePriceTicker();
+
+            // Update cash display
+            const cashDisplay = document.getElementById('cash-display');
+            if (cashDisplay && playerState) {
+                cashDisplay.textContent = playerState.cash.toFixed(2);
+            }
+
+            // Update portfolio value display
+            const portfolioValueDisplay = document.getElementById('portfolio-value-display');
+            const portfolioValueBadge = document.getElementById('portfolio-value-badge');
+            if ((portfolioValueDisplay || portfolioValueBadge) && typeof calculatePortfolioValue === 'function') {
+                const portfolioValue = calculatePortfolioValue();
+                if (portfolioValueDisplay) portfolioValueDisplay.textContent = portfolioValue.toFixed(2);
+                if (portfolioValueBadge) portfolioValueBadge.textContent = '$' + portfolioValue.toFixed(2);
+            }
+
+            // Update total value display
+            const totalValueDisplay = document.getElementById('total-value-display');
+            if (totalValueDisplay && playerState && typeof calculatePortfolioValue === 'function') {
+                const portfolioValue = calculatePortfolioValue();
+                const totalValue = playerState.cash + portfolioValue;
+                totalValueDisplay.textContent = totalValue.toFixed(2);
+            }
+        };
+
+        window.buySelectedAssets = typeof buySelectedAssets !== 'undefined' ? buySelectedAssets : function() {
+            console.log('buySelectedAssets not found');
+            alert('This feature is not available. Please try again later.');
+        };
+    </script>
+
+    <!-- Sticky Next Round Button -->
+    <div class="sticky-button-container">
+        <button id="sticky-next-round" class="sticky-button">Next Round <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <script>
+        // Ensure the sticky button is properly initialized
+        document.addEventListener('DOMContentLoaded', function() {
+            const stickyBtn = document.getElementById('sticky-next-round');
+            if (stickyBtn) {
+                // Initially hide the button
+                stickyBtn.style.display = 'none';
+
+                // Show the button when the game starts
+                const startBtn = document.getElementById('start-game');
+                if (startBtn) {
+                    startBtn.addEventListener('click', function() {
+                        stickyBtn.style.display = 'flex';
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>

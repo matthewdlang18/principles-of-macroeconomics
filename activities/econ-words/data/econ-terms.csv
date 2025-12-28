@@ -1,0 +1,127 @@
+Word,Hint 1 (Chapter Title),Hint 2 (General Related Word),Hint 3 (Stronger Hint)
+ECONOMICS,Introduction to Economics,Decisions,The study of how choices are made given that decision makers face constraints.
+SCARCITY,Introduction to Economics,Limited,Wants and needs of decision makers are greater than the limited resources available.
+OPPORTUNITY COST,Introduction to Economics,Forgone,What is given up when a choice is made.
+MICROECONOMICS,Introduction to Economics,Individual,Studies how specific individuals and firms interact and make decisions.
+MACROECONOMICS,Introduction to Economics,Aggregate,Examines the economy as a whole.
+POSITIVE STATEMENT,Introduction to Economics,Objective,A statement about how things objectively are.
+NORMATIVE STATEMENT,Introduction to Economics,Subjective,A statement about how we think things should be.
+MARGINAL ANALYSIS,Introduction to Economics,Additional,Comparing the marginal benefit and marginal cost of a decision.
+RATIONAL DECISION MAKERS,Introduction to Economics,Information,Individuals who use all available information to achieve their goals.
+EXPLICIT COST,Introduction to Economics,Payment,A direct monetary payment associated with a choice.
+IMPLICIT COST,Introduction to Economics,Non-financial,"A non-monetary cost of a decision, often the value of the next best option forgone."
+SLOPE,Introduction to Economics (Appendix),Steepness,Change in the Y-variable divided by the change in the X-variable on a graph.
+Y INTERCEPT,Introduction to Economics (Appendix),Starting Point,The value of the Y-variable when the X-variable is zero.
+DEMAND,Supply and Demand,Consumer,The amount of a good or service that consumers purchase at a particular price.
+SUPPLY,Supply and Demand,Producer,The amount of a good that a firm is willing and able to produce at a given price.
+EQUILIBRIUM,Supply and Demand,Balance,The point where quantity demanded equals quantity supplied.
+LAW OF DEMAND,Supply and Demand,Inverse,Price and quantity demanded of a good or service move in the opposite direction.
+LAW OF SUPPLY,Supply and Demand,Direct,"When the price of a good increases, the quantity supplied increases."
+COMPLEMENT GOODS,Supply and Demand,Together,"When the price of one good decreases, it causes an increase in demand for another."
+SUBSTITUTE GOODS,Supply and Demand,Alternative,"When the price of one good decreases, the demand for the other good also decreases."
+PERFECTLY COMPETITIVE MARKET,Supply and Demand,Identical Products,"A market with many buyers and sellers, identical products, and easy entry/exit."
+DEMAND SCHEDULE,Supply and Demand,Table,A table showing the quantity demanded of a good at various prices.
+SUPPLY SCHEDULE,Supply and Demand,List,A table showing the quantity supplied of a good at various prices.
+NORMAL GOOD,Supply and Demand,"Income Rises, Buy More",A good for which demand increases as consumer income rises.
+INFERIOR GOOD,Supply and Demand,"Income Rises, Buy Less",A good for which demand decreases as consumer income rises.
+MARKET EQUILIBRIUM,Supply and Demand,Intersection,Occurs where the supply and demand curves intersect.
+SHORTAGE,Supply and Demand,Not Enough,Occurs when the quantity demanded exceeds the quantity supplied at the current price. (Also Excess Demand)
+SURPLUS,Supply and Demand,Too Much,Occurs when the quantity supplied exceeds the quantity demanded at the current price. (Also Excess Supply)
+CETERIS PARIBUS,Supply and Demand,All Else Equal,"Latin phrase meaning ""all other things held constant."""
+QUANTITY DEMANDED,Supply and Demand,Amount Wanted,The amount of a good or service that consumers purchase at a particular price.
+QUANTITY SUPPLIED,Supply and Demand,Amount Offered,The amount of a good that a firm is willing and able to produce at a given price.
+PRICE CEILING,Supply and Demand,Max Price,A government-imposed maximum price that can be charged for a good or service.
+PRICE FLOOR,Supply and Demand,Min Price,A government-imposed minimum price that can be charged for a good or service.
+MARKET FAILURE,Supply and Demand,Inefficient,A situation where the market on its own fails to allocate resources efficiently.
+EXTERNALITY,Supply and Demand,Side Effect,A cost or benefit caused by a producer that is not financially incurred or received by that producer.
+GDP,Measuring the Macroeconomy,Production,Gross Domestic Product; The total value of all final goods and services produced within a country's borders.
+INFLATION,Measuring the Macroeconomy,Prices,The rate at which the general level of prices for goods and services is rising.
+UNEMPLOYMENT,Measuring the Macroeconomy,Jobless,The state of being without a paid job but available to work and actively seeking.
+CPI,Measuring the Macroeconomy,Basket,Consumer Price Index; the average price of all goods and services that a household consumes.
+GDP DEFLATOR,Measuring the Macroeconomy,Nominal vs Real,(Nominal GDP / Real GDP) x 100.
+REAL GDP,Measuring the Macroeconomy,Constant Prices,GDP holding prices fixed at the prices in the base year.
+NOMINAL GDP,Measuring the Macroeconomy,Current Prices,"Market value of goods and services produced, calculated using current year prices."
+FRICTIONAL UNEMPLOYMENT,Measuring the Macroeconomy,Job Search,Unemployment caused by the time-lag involved in workers moving from one job to another.
+STRUCTURAL UNEMPLOYMENT,Measuring the Macroeconomy,Mismatch,Occurs when there is a mismatch between worker skills and employer needs.
+CYCLICAL UNEMPLOYMENT,Measuring the Macroeconomy,Downturn,Occurs when individuals lose their job because of changes in production (business cycles).
+LABOR FORCE,Measuring the Macroeconomy,Employed+Unemployed,The number of employed plus the number of unemployed individuals.
+INTERMEDIATE GOODS,Measuring the Macroeconomy,Components,Goods produced and then used in the production of another good.
+FINAL GOODS,Measuring the Macroeconomy,End User,Goods and services purchased by the actual user of the product.
+EXPENDITURE APPROACH,Measuring the Macroeconomy,Spending Groups,"Method of calculating GDP by summing spending by households, firms, government, and foreigners."
+DURABLE GOODS,Measuring the Macroeconomy,Long-lasting,Goods that last a long time (longer than 3 years) and are bought infrequently.
+NONDURABLE GOODS,Measuring the Macroeconomy,Consumable,Goods that do not have a long useful life and are purchased frequently.
+VALUE ADDED,Measuring the Macroeconomy,Production Stages,The market value a firm adds to a product.
+STANDARD OF LIVING,Measuring the Macroeconomy,Well-being,The degree of wealth and material comfort available to a person or community.
+FULL EMPLOYMENT,Measuring the Macroeconomy,No Cyclical,An economic state where all available labor resources are being used efficiently.
+NATURAL UNEMPLOYMENT,Measuring the Macroeconomy,Frictional+Structural,The sum of frictional and structural unemployment.
+LABOR FORCE PARTICIPATION RATE,Measuring the Macroeconomy,Active Workers,(Labor Force / Civilian Population) x 100.
+DISCOURAGED WORKERS,Measuring the Macroeconomy,Given Up,Individuals who want a job but have stopped looking because they believe no jobs are available.
+AGGREGATE EXPENDITURES,Short-Run Macroeconomic Equilibrium,Total Spending,Total spending in the economy (C + I^P + G + NX).
+CONSUMPTION FUNCTION,Short-Run Macroeconomic Equilibrium,Households,Shows the relationship between disposable income (Y−T) and consumption (C).
+AUTONOMOUS CONSUMPTION,Short-Run Macroeconomic Equilibrium,Independent,Level of consumption that does not depend on disposable income. (AC)
+MPC,Short-Run Macroeconomic Equilibrium,Slope,Marginal Propensity to Consume: The fraction of an additional dollar of disposable income that is spent on consumption.
+PLANNED INVESTMENT,Short-Run Macroeconomic Equilibrium,Business Spending,"Spending by firms on new capital and new homes, excluding inventory changes. (IP)"
+EXPENDITURE MULTIPLIER,Short-Run Macroeconomic Equilibrium,Ripple Effect,1/(1−MPC); shows how an initial change in spending leads to a larger change in Y.
+TAX MULTIPLIER,Short-Run Macroeconomic Equilibrium,Tax Impact,−MPC/(1−MPC); shows how a change in taxes affects equilibrium output.
+DISPOSABLE INCOME,Short-Run Macroeconomic Equilibrium,After-Tax Income,Income remaining after deduction of taxes (Y-T).
+WEALTH,Short-Run Macroeconomic Equilibrium,Assets - Liabilities,The total value of assets minus the total value of liabilities.
+BUSINESS CYCLE,Short-Run Macroeconomic Equilibrium,Fluctuations,The natural tendency of the economy to move towards and away from full-employment output.
+RECESSION,Short-Run Macroeconomic Equilibrium,Decline,"A significant decline in economic activity spread across the economy, lasting months."
+TROUGH,Short-Run Macroeconomic Equilibrium,Low Point,The lowest point of economic activity in a business cycle before recovery begins.
+EXPANSION,Short-Run Macroeconomic Equilibrium,Growth,A period when the economy moves from a trough to a peak.
+PEAK,Short-Run Macroeconomic Equilibrium,High Point,The highest point of economic activity in a business cycle before a recession.
+DEPRESSION,Short-Run Macroeconomic Equilibrium,Severe Recession,"A sustained, long-term downturn in economic activity."
+MARGINAL PROPENSITY TO SAVE,Short-Run Macroeconomic Equilibrium,Fraction Saved,MPS: The fraction of an additional dollar of disposable income that is saved. (1-MPC)
+EQUILIBRIUM LINE,Short-Run Macroeconomic Equilibrium,45 Degree,The line on the Aggregate Expenditure model where Y = AE.
+INVENTORY,Short-Run Macroeconomic Equilibrium,Unsold Goods,Goods that have been produced but not yet sold.
+FISCAL POLICY,Fiscal Policy,Government,Changes in government spending (G) or taxation (T) to influence the economy.
+COUNTER CYCLICAL POLICY,Fiscal Policy,Stabilize,Government actions to move the economy closer to full-employment output.
+BUDGET DEFICIT,Fiscal Policy,Spending>Taxes,Occurs when government spending (G) is greater than tax revenue (T).
+NATIONAL DEBT,Fiscal Policy,Accumulated Deficits,The total amount of money that the government owes to lenders.
+AUTOMATIC STABILIZERS,Fiscal Policy,Built-in,Fiscal policies that automatically enact in response to changes in production level.
+GOVERNMENT PURCHASES,Fiscal Policy,Public Spending,"Spending by the government on goods and services, like defense and infrastructure. (G)"
+NET EXPORTS,Fiscal Policy,Exports - Imports,The value of a country's total exports minus its total imports. (NX)
+DISCRETIONARY FISCAL POLICY,Fiscal Policy,Intentional,Changes in government spending or taxation decided upon by the government annually.
+PUBLIC DEBT,Fiscal Policy,Government Owing,The total amount that the US Government owes to private lenders.
+DEBT TO GDP RATIO,Fiscal Policy,Debt Burden,A measure comparing a country's total debt to its total economic output.
+ARRA,Fiscal Policy,Recovery Act,American Reinvestment and Recovery Act (Stimulus Package) aimed to speed recovery from the Great Recession.
+BUDGET SURPLUS,Fiscal Policy,Taxes>Spending,Occurs when tax revenue (T) is greater than government spending (G).
+TRANSFER PAYMENTS,Fiscal Policy,No Good/Service,"Payments made by the government to individuals for which no good or service is received in return (e.g., welfare)."
+MONETARY POLICY,Monetary Policy,Central Bank,Actions by the central bank involving altering the money supply to change interest rates.
+FEDERAL RESERVE,Monetary Policy,US Central Bank,The Fed; the central bank of the United States responsible for monetary policy.
+OPEN MARKET OPERATIONS,Monetary Policy,Bond Trading,The buying and selling of Treasury bonds by the Fed to alter the money supply.
+FEDERAL FUNDS RATE,Monetary Policy,Interbank Rate,The interest rate that banks charge one another for short-term (overnight) loans.
+RRR,Monetary Policy,Bank Reserves,Required Reserve Ratio: The fraction of deposits that banks are required to keep on reserve.
+BARTER ECONOMY,Monetary Policy,Trade without Money,An economy involving trading goods and services directly for other goods and services.
+MEDIUM OF EXCHANGE,Monetary Policy,Payment Method,A function of money; accepted by sellers for goods and services.
+UNIT OF ACCOUNT,Monetary Policy,Value Measure,A function of money; used as a way to measure the value of goods and services.
+STORE OF VALUE,Monetary Policy,Holds Worth,A function of money; its value does not deteriorate quickly.
+FIAT MONEY,Monetary Policy,Government-backed,Money that has no intrinsic value other than being a means of exchange.
+COMMODITY MONEY,Monetary Policy,Intrinsic Value,"Goods that have intrinsic value but can also serve as money (e.g., gold)."
+LIQUIDITY,Monetary Policy,Easily Spent,The ability for money to be used as a form of payment quickly.
+BOND,Monetary Policy,IOU,"A promise to pay back a specified amount of money at a future date, often with interest."
+MONEY DEMAND,Monetary Policy,Desire for Cash,The relationship between the amount of M1 money demanded and the interest rate.
+MONEY SUPPLY,Monetary Policy,Available Cash,"The total amount of M1 money in circulation, controlled by the Federal Reserve."
+NOMINAL RETURN,Monetary Policy,Bond Profit,The monetary gain from purchasing a bond (Value of Bond - Price of Bond).
+FOMC,Monetary Policy,Fed Committee,Federal Open Market Committee; the Fed body that determines monetary policy.
+BANK RUN,Monetary Policy,Mass Withdrawal,When many depositors withdraw their funds from a bank simultaneously due to fears of insolvency.
+QUANTITATIVE EASING,Monetary Policy,QE,Unconventional monetary policy where a central bank purchases assets to inject liquidity.
+AGGREGATE DEMAND,Aggregate Demand and Aggregate Supply,Total Demand,AD Curve: Curve showing equilibrium level of spending at every price level.
+AGGREGATE SUPPLY,Aggregate Demand and Aggregate Supply,Total Production,AS Curve: Curve showing the amount firms are willing to produce at various price levels.
+STAGFLATION,Macroeconomic Shocks and Policy Responses,Stagnant Inflation,A period of stagnant economic growth accompanied by high inflation.
+DEMAND SHOCK,Macroeconomic Shocks and Policy Responses,AD Shift,Anything that changes the Aggregate Expenditure curve other than price.
+SUPPLY SHOCK,Macroeconomic Shocks and Policy Responses,AS Shift,"An event that suddenly changes the price of a commodity or service, affecting AS."
+DOVE POLICY,Macroeconomic Shocks and Policy Responses,Prioritize Jobs,Policy response to a negative supply shock that saves jobs at the cost of higher prices.
+HAWK POLICY,Macroeconomic Shocks and Policy Responses,Prioritize Prices,Policy response to a negative supply shock that keeps prices stable at the expense of jobs.
+INTEREST RATE EFFECT,Aggregate Demand and Aggregate Supply,Borrowing Cost,"On AD: Changes in this affect autonomous consumption and planned investment, shifting AD."
+FISCAL POLICY EFFECT,Aggregate Demand and Aggregate Supply,Gov. Spending/Taxes,On AD: Changes in G or T directly influence the AE curve and thus shift the AD curve.
+MONETARY POLICY EFFECT,Aggregate Demand and Aggregate Supply,Money Supply Change,On AD: Changes in the money supply by the Fed alter interest rates and shift the AD curve.
+COST OF INPUTS,Aggregate Demand and Aggregate Supply,Production Expenses,AS Shifter: Changes in costs of labor or capital shift the AS curve.
+TECHNOLOGY,Aggregate Demand and Aggregate Supply,Efficiency,AS Shifter: Improvements in technology increase the AS curve.
+YBAR,Macroeconomic Shocks and Policy Responses,Potential GDP,Full-Employment Output: The level of output when all resources are utilized efficiently.
+AUTONOMOUS SPENDING,Aggregate Demand and Aggregate Supply,Non-Income Driven,Components of aggregate expenditure that do not depend on the level of national income.
+WEALTH EFFECT,Aggregate Demand and Aggregate Supply,Price Level Impact,A change in the price level affecting purchasing power and thus consumption.
+INTERNATIONAL TRADE EFFECT,Aggregate Demand and Aggregate Supply,Exports/Imports Impact,A change in the domestic price level affecting net exports.
+NATURAL DISASTER,Aggregate Demand and Aggregate Supply,Supply Shock,As an AS Shifter: Can reduce the stock of capital and shift the Aggregate Supply curve left.
+EXCESS DEMAND,Complete Macroeconomic Equilibrium,AD > AS,"In AD-AS Model: At a given price level, the aggregate quantity demanded exceeds aggregate quantity supplied."
+EXCESS SUPPLY,Complete Macroeconomic Equilibrium,AS > AD,"In AD-AS Model: At a given price level, the aggregate quantity supplied exceeds aggregate quantity demanded."

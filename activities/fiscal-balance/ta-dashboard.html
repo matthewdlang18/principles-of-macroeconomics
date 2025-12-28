@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TA Dashboard - Fiscal Balance Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 40vh;
+            min-height: 300px;
+        }
+        .banner-container {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 2rem;
+        }
+        .nav-links {
+            margin-bottom: 2rem;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            margin-right: 1.5rem;
+            font-weight: 300;
+        }
+        .nav-link:hover {
+            color: white;
+        }
+        .activity-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+        .activity-date {
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: rgba(255,255,255,0.8);
+        }
+        .step-nav {
+            font-weight: medium;
+            padding: 0.5rem 1rem;
+            border-bottom: 2px solid transparent;
+            color: #6c757d;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            cursor: pointer;
+        }
+        .step-nav.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+        }
+        .step-nav:hover {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner14.png" alt="Fiscal Balance Game Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container mx-auto">
+                    <div class="nav-links">
+                        <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+                        <a href="../index.html" class="nav-link">← Back to Activities</a>
+                        <a href="index.html" class="nav-link">← Back to Game</a>
+                    </div>
+                    <h1 class="activity-title">TA Dashboard: Fiscal Balance Game</h1>
+                    <p class="activity-date">Monitor student progress and performance</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Links -->
+    <div class="flex mb-8 border-b">
+        <a href="index.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Game</a>
+        <a href="ta-dashboard.html" class="step-nav font-medium px-4 py-2 border-b-2 border-blue-600 text-blue-600">TA Dashboard</a>
+        <button id="reset-data" class="ml-auto font-medium px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700">Reset Data</button>
+    </div>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Summary Statistics -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h2 class="text-xl font-semibold mb-4">Class Summary</h2>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <div class="text-sm text-gray-500">Students Participated</div>
+                            <div class="text-3xl font-medium" id="student-count">0</div>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <div class="text-sm text-gray-500">Average Terms Served</div>
+                            <div class="text-3xl font-medium" id="avg-terms">0.0</div>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <div class="text-sm text-gray-500">Highest Terms Served</div>
+                            <div class="text-3xl font-medium" id="max-terms">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">Policy Trends</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="font-medium mb-2">Average Tax Rate</h3>
+                            <div class="chart-container h-40">
+                                <canvas id="tax-chart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-medium mb-2">Average Spending</h3>
+                            <div class="chart-container h-40">
+                                <canvas id="spending-chart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-medium mb-2">Debt Funding Preference</h3>
+                            <div class="chart-container h-40">
+                                <canvas id="debt-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Performance -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h2 class="text-xl font-semibold mb-4">Student Performance</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-2 text-left">Student ID</th>
+                                    <th class="px-4 py-2 text-left">Terms Served</th>
+                                    <th class="px-4 py-2 text-left">Avg. GDP Growth</th>
+                                    <th class="px-4 py-2 text-left">Final Debt/GDP</th>
+                                    <th class="px-4 py-2 text-left">Tax Strategy</th>
+                                    <th class="px-4 py-2 text-left">Spending Strategy</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-table">
+                                <tr>
+                                    <td colspan="6" class="px-4 py-4 text-center text-gray-500">No student data available yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">Economic Outcomes</h2>
+                    <div class="chart-container">
+                        <canvas id="outcomes-chart"></canvas>
+                    </div>
+                    <div class="mt-4 text-sm text-gray-500">
+                        This chart shows the distribution of economic outcomes across all student games.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Common Policy Patterns</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-medium mb-2">High Tax / High Spend</h3>
+                    <p class="text-sm text-gray-600 mb-2">Students using this strategy: <span id="high-tax-count">0</span></p>
+                    <p class="text-sm text-gray-600">Average terms served: <span id="high-tax-terms">0.0</span></p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-medium mb-2">Low Tax / Low Spend</h3>
+                    <p class="text-sm text-gray-600 mb-2">Students using this strategy: <span id="low-tax-count">0</span></p>
+                    <p class="text-sm text-gray-600">Average terms served: <span id="low-tax-terms">0.0</span></p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-medium mb-2">Balanced Approach</h3>
+                    <p class="text-sm text-gray-600 mb-2">Students using this strategy: <span id="balanced-count">0</span></p>
+                    <p class="text-sm text-gray-600">Average terms served: <span id="balanced-terms">0.0</span></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Sample data - in a real implementation, this would come from a database
+        const sampleData = [
+            {
+                studentId: "S12345",
+                termsServed: 3,
+                avgGdpGrowth: 2.8,
+                finalDebtToGdp: 72.5,
+                taxStrategy: "Progressive (25.3%)",
+                spendingStrategy: "Moderate (24.1%)"
+            },
+            {
+                studentId: "S23456",
+                termsServed: 2,
+                avgGdpGrowth: 1.9,
+                finalDebtToGdp: 65.2,
+                taxStrategy: "Flat (22.7%)",
+                spendingStrategy: "Low (19.8%)"
+            },
+            {
+                studentId: "S34567",
+                termsServed: 4,
+                avgGdpGrowth: 3.2,
+                finalDebtToGdp: 85.6,
+                taxStrategy: "Progressive (28.4%)",
+                spendingStrategy: "High (31.2%)"
+            }
+        ];
+
+        // Initialize charts and tables
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update summary statistics
+            document.getElementById('student-count').textContent = sampleData.length;
+            document.getElementById('avg-terms').textContent = (sampleData.reduce((sum, student) => sum + student.termsServed, 0) / sampleData.length).toFixed(1);
+            document.getElementById('max-terms').textContent = Math.max(...sampleData.map(student => student.termsServed));
+
+            // Populate student table
+            const tableBody = document.getElementById('student-table');
+            tableBody.innerHTML = '';
+
+            sampleData.forEach(student => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-4 py-2 border-b">${student.studentId}</td>
+                    <td class="px-4 py-2 border-b">${student.termsServed}</td>
+                    <td class="px-4 py-2 border-b">${student.avgGdpGrowth.toFixed(1)}%</td>
+                    <td class="px-4 py-2 border-b">${student.finalDebtToGdp.toFixed(1)}%</td>
+                    <td class="px-4 py-2 border-b">${student.taxStrategy}</td>
+                    <td class="px-4 py-2 border-b">${student.spendingStrategy}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Initialize charts
+            initTaxChart();
+            initSpendingChart();
+            initDebtChart();
+            initOutcomesChart();
+
+            // Update policy patterns
+            document.getElementById('high-tax-count').textContent = "1";
+            document.getElementById('high-tax-terms').textContent = "4.0";
+            document.getElementById('low-tax-count').textContent = "1";
+            document.getElementById('low-tax-terms').textContent = "2.0";
+            document.getElementById('balanced-count').textContent = "1";
+            document.getElementById('balanced-terms').textContent = "3.0";
+        });
+
+        function initTaxChart() {
+            const ctx = document.getElementById('tax-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Low (<20%)', 'Medium (20-30%)', 'High (>30%)'],
+                    datasets: [{
+                        label: 'Number of Students',
+                        data: [1, 2, 0],
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function initSpendingChart() {
+            const ctx = document.getElementById('spending-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Low (<20%)', 'Medium (20-30%)', 'High (>30%)'],
+                    datasets: [{
+                        label: 'Number of Students',
+                        data: [1, 1, 1],
+                        backgroundColor: 'rgba(34, 197, 94, 0.5)',
+                        borderColor: 'rgb(34, 197, 94)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function initDebtChart() {
+            const ctx = document.getElementById('debt-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Low Debt (<10%)', 'Medium Debt (10-30%)', 'High Debt (>30%)'],
+                    datasets: [{
+                        data: [1, 1, 1],
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.5)',
+                            'rgba(249, 115, 22, 0.5)',
+                            'rgba(239, 68, 68, 0.5)'
+                        ],
+                        borderColor: [
+                            'rgb(34, 197, 94)',
+                            'rgb(249, 115, 22)',
+                            'rgb(239, 68, 68)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+
+        function initOutcomesChart() {
+            const ctx = document.getElementById('outcomes-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Student Outcomes',
+                        data: [
+                            { x: 2.8, y: 72.5, r: 3 },
+                            { x: 1.9, y: 65.2, r: 2 },
+                            { x: 3.2, y: 85.6, r: 4 }
+                        ],
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1,
+                        pointRadius: 10,
+                        pointHoverRadius: 12
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Average GDP Growth (%)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Final Debt-to-GDP Ratio (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    return `Student: Terms=${point.r}, GDP=${point.x}%, Debt=${point.y}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Reset Data Button
+        document.getElementById('reset-data').addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset all TA dashboard data? This will clear all student statistics.')) {
+                // Clear localStorage data related to the dashboard
+                localStorage.removeItem('fiscalGameLeaderboard');
+                localStorage.removeItem('fiscalGameStats');
+
+                // Show confirmation
+                alert('TA dashboard data has been reset successfully!');
+
+                // Reload the page
+                window.location.reload();
+            }
+        });
+    </script>
+</body>
+</html>

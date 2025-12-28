@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Prompt Generator - Principles of Macroeconomics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4/dist/umd/supabase.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50">
+
+<!-- Header -->
+<header>
+  <div class="banner-container">
+    <img src="../../images/banner32.png" alt="AI Study Prompt Generator Banner" class="banner-image">
+    <div class="banner-overlay">
+      <div class="container mx-auto">
+        <div class="nav-links">
+          <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+          <a href="../index.html" class="nav-link">← Back to Activities</a>
+        </div>
+        <h1 class="activity-title">Discussion Activity 5: AI Study Prompt Generator</h1>
+        <p class="activity-date">March 10-14, 2026 (Week 10)</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<div class="container mx-auto py-8 px-4">
+    <style>
+        .ai-platform-btn {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        .ai-platform-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .copy-success {
+            animation: flash 1s ease-in-out;
+        }
+        @keyframes flash {
+            0% { background-color: #10b981; }
+            50% { background-color: #059669; }
+            100% { background-color: #10b981; }
+        }
+        .tab-button {
+            transition: all 0.2s ease;
+        }
+        .tab-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+    </style>
+
+    <!-- Tab Selection -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Choose Your Activity</h2>
+        <div class="flex flex-col sm:flex-row gap-4">
+            <button id="teachingTab" class="tab-button flex-1 py-3 px-6 rounded-lg border-2 border-blue-600 text-blue-600 font-medium hover:bg-blue-50 active">
+                <div class="flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253z"></path>
+                    </svg>
+                    Teaching Practice
+                </div>
+                <p class="text-sm mt-1 opacity-75">Practice explaining concepts to an AI student</p>
+            </button>
+            
+            <button id="mcqTab" class="tab-button flex-1 py-3 px-6 rounded-lg border-2 border-green-600 text-green-600 font-medium hover:bg-green-50">
+                <div class="flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Multiple Choice Creator
+                </div>
+                <p class="text-sm mt-1 opacity-75">Create and verify difficult multiple choice questions</p>
+            </button>
+        </div>
+    </div>
+
+    <!-- Teaching Practice Section -->
+    <div id="teachingSection" class="activity-section">
+        <!-- Instructions -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+            <h2 class="text-lg font-semibold text-blue-900 mb-3">Teaching Practice - How This Works</h2>
+            <ol class="list-decimal list-inside space-y-2 text-blue-800">
+                <li>Enter a macroeconomics question below</li>
+                <li>Click "Generate Teaching Prompt" to create a customized AI prompt</li>
+                <li>Copy the prompt and paste it into your preferred AI platform</li>
+                <li>The AI will act as a confused student - teach them the concept!</li>
+                <li>Receive a grade (1-10) and feedback on your explanation</li>
+            </ol>
+        </div>
+
+        <!-- Form Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <form id="teachingForm" class="space-y-6">
+                <!-- Question Input -->
+                <div>
+                    <label for="teachingQuestionText" class="block text-sm font-medium text-gray-700 mb-1">
+                        Macroeconomics Question *
+                    </label>
+                    <textarea 
+                        id="teachingQuestionText" 
+                        name="teachingQuestionText"
+                        required
+                        rows="4"
+                        class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter a macroeconomics question from your practice exam or textbook..."
+                    ></textarea>
+                    <p class="text-sm text-gray-500 mt-2"><strong>Example:</strong> "Explain how the Federal Reserve uses open market operations to influence interest rates and control inflation."</p>
+                </div>
+
+                <!-- Generate Button -->
+                <div class="text-center">
+                    <button 
+                        type="submit" 
+                        id="generateTeachingBtn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition duration-200 transform hover:scale-105"
+                    >
+                        Generate Teaching Prompt
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Generated Teaching Prompt Section -->
+        <div id="teachingPromptSection" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-900">Your Teaching Practice Prompt</h2>
+                <button 
+                    id="copyTeachingBtn"
+                    class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center gap-2"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    Copy Prompt
+                </button>
+            </div>
+            
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                <pre id="generatedTeachingPrompt" class="whitespace-pre-wrap text-sm text-gray-800 font-mono"></pre>
+            </div>
+
+            <!-- AI Platform Buttons -->
+            <div class="border-t pt-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Choose Your AI Platform</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    <button onclick="openAiPlatform('claude')" class="ai-platform-btn bg-purple-100 hover:bg-purple-200 text-purple-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Claude
+                    </button>
+                    <button onclick="openAiPlatform('chatgpt')" class="ai-platform-btn bg-green-100 hover:bg-green-200 text-green-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        ChatGPT
+                    </button>
+                    <button onclick="openAiPlatform('gemini')" class="ai-platform-btn bg-blue-100 hover:bg-blue-200 text-blue-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Gemini
+                    </button>
+                    <button onclick="openAiPlatform('bing')" class="ai-platform-btn bg-teal-100 hover:bg-teal-200 text-teal-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Bing Chat
+                    </button>
+                    <button onclick="openAiPlatform('perplexity')" class="ai-platform-btn bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Perplexity
+                    </button>
+                    <button onclick="openAiPlatform('mistral')" class="ai-platform-btn bg-red-100 hover:bg-red-200 text-red-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Mistral
+                    </button>
+                    <button onclick="openAiPlatform('deepseek')" class="ai-platform-btn bg-cyan-100 hover:bg-cyan-200 text-cyan-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        DeepSeek
+                    </button>
+                    <button onclick="openAiPlatform('grok')" class="ai-platform-btn bg-blue-100 hover:bg-blue-200 text-blue-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Grok
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multiple Choice Creator Section -->
+    <div id="mcqSection" class="activity-section hidden">
+        <!-- Instructions -->
+        <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
+            <h2 class="text-lg font-semibold text-green-900 mb-3">Multiple Choice Creator - How This Works</h2>
+            <ol class="list-decimal list-inside space-y-2 text-green-800">
+                <li>Enter a macroeconomics question as conceptual inspiration</li>
+                <li>Click "Generate MCQ Prompt" to create a specialized prompt</li>
+                <li>Copy and paste the prompt into your preferred AI platform</li>
+                <li>The AI will create a new question exploring a different angle of the same concept</li>
+                <li>Explain your answer choice to the AI</li>
+                <li>The AI will provide the correct answer with a detailed explanation</li>
+                <li>Copy the final question and answer to submit to the course Google Form</li>
+            </ol>
+        </div>
+
+        <!-- Form Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <form id="mcqForm" class="space-y-6">
+                <!-- Question Input -->
+                <div>
+                    <label for="mcqQuestionText" class="block text-sm font-medium text-gray-700 mb-1">
+                        Original Macroeconomics Question (for inspiration) *
+                    </label>
+                    <textarea 
+                        id="mcqQuestionText" 
+                        name="mcqQuestionText"
+                        required
+                        rows="4"
+                        class="w-full p-3 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                        placeholder="Enter a macroeconomics question that will serve as conceptual inspiration for creating a new MCQ..."
+                    ></textarea>
+                    <p class="text-sm text-gray-500 mt-2"><strong>Example:</strong> "Explain how an increase in autonomous consumption affects equilibrium GDP through the multiplier effect." This would inspire a new question exploring a different angle of autonomous consumption.</p>
+                </div>
+
+                <!-- Generate Button -->
+                <div class="text-center">
+                    <button 
+                        type="submit" 
+                        id="generateMcqBtn"
+                        class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-8 rounded-lg transition duration-200 transform hover:scale-105"
+                    >
+                        Generate MCQ Prompt
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Generated MCQ Prompt Section -->
+        <div id="mcqPromptSection" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-900">Your Multiple Choice Question Prompt</h2>
+                <button 
+                    id="copyMcqBtn"
+                    class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center gap-2"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    Copy Prompt
+                </button>
+            </div>
+            
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                <pre id="generatedMcqPrompt" class="whitespace-pre-wrap text-sm text-gray-800 font-mono"></pre>
+            </div>
+
+            <!-- AI Platform Buttons -->
+            <div class="border-t pt-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Choose Your AI Platform</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    <button onclick="openAiPlatform('claude')" class="ai-platform-btn bg-purple-100 hover:bg-purple-200 text-purple-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Claude
+                    </button>
+                    <button onclick="openAiPlatform('chatgpt')" class="ai-platform-btn bg-green-100 hover:bg-green-200 text-green-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        ChatGPT
+                    </button>
+                    <button onclick="openAiPlatform('gemini')" class="ai-platform-btn bg-blue-100 hover:bg-blue-200 text-blue-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Gemini
+                    </button>
+                    <button onclick="openAiPlatform('bing')" class="ai-platform-btn bg-teal-100 hover:bg-teal-200 text-teal-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Bing Chat
+                    </button>
+                    <button onclick="openAiPlatform('perplexity')" class="ai-platform-btn bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Perplexity
+                    </button>
+                    <button onclick="openAiPlatform('mistral')" class="ai-platform-btn bg-red-100 hover:bg-red-200 text-red-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Mistral
+                    </button>
+                    <button onclick="openAiPlatform('deepseek')" class="ai-platform-btn bg-cyan-100 hover:bg-cyan-200 text-cyan-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        DeepSeek
+                    </button>
+                    <button onclick="openAiPlatform('grok')" class="ai-platform-btn bg-blue-100 hover:bg-blue-200 text-blue-800 py-2 px-3 rounded-lg text-sm font-medium">
+                        Grok
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- What to Expect Section -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">What to Expect</h2>
+        
+        <!-- Teaching Practice Expectations -->
+        <div id="teachingExpectations" class="expectations-section space-y-4">
+            <h3 class="font-semibold text-blue-800">Teaching Practice Mode:</h3>
+            <div class="space-y-4">
+                <div>
+                    <h4 class="font-medium text-gray-800">1. AI Student Response</h4>
+                    <p class="text-gray-600 text-sm">The AI will attempt to answer your question but make realistic mistakes, like confusing concepts or getting the direction of effects wrong.</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-800">2. Your Teaching Moment</h4>
+                    <p class="text-gray-600 text-sm">Correct the AI's mistakes with clear explanations. Use examples, explain cause-and-effect relationships, and connect to other economic concepts.</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-800">3. AI Feedback</h4>
+                    <p class="text-gray-600 text-sm">Receive a grade (1-10) and specific feedback on what you explained well and what could be improved.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MCQ Expectations -->
+        <div id="mcqExpectations" class="expectations-section space-y-4 hidden">
+            <h3 class="font-semibold text-green-800">Multiple Choice Creator Mode:</h3>
+            <div class="space-y-4">
+                <div>
+                    <h4 class="font-medium text-gray-800">1. Conceptual Inspiration</h4>
+                    <p class="text-gray-600 text-sm">The AI uses your original question to identify core concepts, then creates a new question exploring a different angle or application of those concepts.</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-800">2. Your Answer & Explanation</h4>
+                    <p class="text-gray-600 text-sm">Choose your answer and explain your reasoning. This helps reinforce your understanding and identifies any knowledge gaps.</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-800">3. Verified Answer & Explanation</h4>
+                    <p class="text-gray-600 text-sm">The AI provides the correct answer with a detailed explanation that you can copy and submit to the course Google Form.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://bvvkevmqnnlecghyraao.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dmtldm1xbm5sZWNnaHlyYWFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTM5MDI0MDAsImV4cCI6MjAyOTQ3ODQwMH0.aMUGXc0xQxdMYDpOxe5Xf-OeVdQP5LcKvuQgL9p7Wjw';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // AI Platform URLs
+    const aiPlatforms = {
+        claude: 'https://claude.ai/',
+        chatgpt: 'https://chat.openai.com/',
+        gemini: 'https://gemini.google.com/',
+        bing: 'https://www.bing.com/chat',
+        perplexity: 'https://www.perplexity.ai/',
+        mistral: 'https://chat.mistral.ai/',
+        deepseek: 'https://chat.deepseek.com/',
+        grok: 'https://grok.x.ai/'
+    };
+
+    // Tab switching functionality
+    document.getElementById('teachingTab').addEventListener('click', function() {
+        switchTab('teaching');
+    });
+
+    document.getElementById('mcqTab').addEventListener('click', function() {
+        switchTab('mcq');
+    });
+
+    function switchTab(tab) {
+        // Update tab buttons
+        document.getElementById('teachingTab').classList.remove('active');
+        document.getElementById('mcqTab').classList.remove('active');
+        
+        // Update sections
+        document.getElementById('teachingSection').classList.add('hidden');
+        document.getElementById('mcqSection').classList.add('hidden');
+        
+        // Update expectations
+        document.getElementById('teachingExpectations').classList.add('hidden');
+        document.getElementById('mcqExpectations').classList.add('hidden');
+
+        if (tab === 'teaching') {
+            document.getElementById('teachingTab').classList.add('active');
+            document.getElementById('teachingSection').classList.remove('hidden');
+            document.getElementById('teachingExpectations').classList.remove('hidden');
+        } else {
+            document.getElementById('mcqTab').classList.add('active');
+            document.getElementById('mcqSection').classList.remove('hidden');
+            document.getElementById('mcqExpectations').classList.remove('hidden');
+        }
+    }
+
+    // Teaching form submission
+    document.getElementById('teachingForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const questionText = document.getElementById('teachingQuestionText').value.trim();
+        
+        if (!questionText) {
+            alert('Please enter a macroeconomics question.');
+            return;
+        }
+        
+        // Generate the teaching prompt
+        const prompt = generateTeachingPrompt(questionText);
+        
+        // Display the prompt
+        document.getElementById('generatedTeachingPrompt').textContent = prompt;
+        document.getElementById('teachingPromptSection').classList.remove('hidden');
+        
+        // Scroll to the prompt section
+        document.getElementById('teachingPromptSection').scrollIntoView({ behavior: 'smooth' });
+        
+        // Log the activity to Supabase
+        try {
+            await logActivity('teaching', questionText, prompt);
+        } catch (error) {
+            console.error('Error logging activity:', error);
+        }
+    });
+
+    // MCQ form submission
+    document.getElementById('mcqForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const questionText = document.getElementById('mcqQuestionText').value.trim();
+        
+        if (!questionText) {
+            alert('Please enter a macroeconomics question for inspiration.');
+            return;
+        }
+        
+        // Generate the MCQ prompt
+        const prompt = generateMcqPrompt(questionText);
+        
+        // Display the prompt
+        document.getElementById('generatedMcqPrompt').textContent = prompt;
+        document.getElementById('mcqPromptSection').classList.remove('hidden');
+        
+        // Scroll to the prompt section
+        document.getElementById('mcqPromptSection').scrollIntoView({ behavior: 'smooth' });
+        
+        // Log the activity to Supabase
+        try {
+            await logActivity('mcq', questionText, prompt);
+        } catch (error) {
+            console.error('Error logging activity:', error);
+        }
+    });
+
+    // Generate the teaching prompt
+    function generateTeachingPrompt(questionText) {
+        return `I want you to role-play as a macroeconomics student who is studying for a final exam. I am a fellow student who will practice teaching concepts by explaining them to you.
+
+First, I'll share an exam question. You should:
+1. Attempt to answer it but include 2-3 specific misconceptions or errors that a student might realistically make
+2. Keep your answer brief (5-7 sentences)
+3. Show genuine confusion about key concepts
+
+After I explain the correct answer, you will:
+1. Grade my explanation on a scale of 1-10
+2. Provide 2-3 sentences of specific feedback on what I explained well
+3. Identify 1-2 areas where my explanation could improve
+4. Ask one follow-up question that would help clarify any remaining confusion
+
+Here's the question:
+
+"${questionText}"
+
+Please give your incorrect answer now, then wait for my explanation.`;
+    }
+
+    // Generate the MCQ prompt with the new format
+    function generateMcqPrompt(questionText) {
+        return `I need you to help me create and verify a challenging multiple choice question for a macroeconomics course. Here's the process:
+
+**Step 1:** Using the following question as conceptual inspiration, create a new, challenging multiple choice question. The new question should not ask about the same causal relationship or prompt the same type of reasoning. Instead, it should explore a distinct angle or application of the core concept involved in the original question. For example, if the original question is about autonomous consumption, the new question could explore its role in the aggregate expenditure model, its connection to the multiplier, or its macroeconomic implications. Here is the original question: 
+
+"${questionText}"
+
+**Step 2:** After you present the new, challenging question, I will choose my answer and explain my reasoning.
+
+**Step 3:** After I give my answer and explanation, you will:
+1. Tell me if my answer is correct or incorrect
+2. Provide the correct answer with a detailed explanation
+3. Explain why the other answer choices are incorrect
+4. Format your final response and explanation of the correct answer so I can easily copy the question and correct answer to submit to my course
+
+Please start by creating the multiple choice question now.`;
+    }
+
+    // Copy buttons functionality
+    document.getElementById('copyTeachingBtn').addEventListener('click', function() {
+        copyPrompt('generatedTeachingPrompt', this);
+    });
+
+    document.getElementById('copyMcqBtn').addEventListener('click', function() {
+        copyPrompt('generatedMcqPrompt', this);
+    });
+
+    // Copy prompt to clipboard
+    async function copyPrompt(promptId, button) {
+        const promptText = document.getElementById(promptId).textContent;
+        
+        try {
+            await navigator.clipboard.writeText(promptText);
+            
+            // Visual feedback
+            const originalText = button.innerHTML;
+            button.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg> Copied!`;
+            button.classList.add('copy-success');
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('copy-success');
+            }, 2000);
+            
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            alert('Failed to copy to clipboard. Please select and copy manually.');
+        }
+    }
+
+    // Open AI platform
+    function openAiPlatform(platform) {
+        const url = aiPlatforms[platform];
+        if (url) {
+            window.open(url, '_blank');
+        }
+    }
+
+    // Log activity to Supabase
+    async function logActivity(activityType, inputText, prompt) {
+        try {
+            const { data, error } = await supabase
+                .from('activity5_access_log')
+                .insert([
+                    {
+                        student_id: 'anonymous',
+                        section: 'ai-prompt-generator',
+                        activity_type: `prompt_generated_${activityType}`,
+                        session_data: {
+                            input_text: inputText,
+                            prompt_length: prompt.length,
+                            timestamp: new Date().toISOString()
+                        }
+                    }
+                ]);
+
+            if (error) {
+                console.error('Supabase error:', error);
+            }
+        } catch (error) {
+            console.error('Error logging to Supabase:', error);
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Database Schema</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Fix Database Schema</h1>
+        <p class="lead">This page will add the missing <code>total_cash_injected</code> column to the <code>game_participants</code> table.</p>
+        
+        <div class="alert alert-info">
+            <strong>Note:</strong> You need to be signed in as an administrator to run this fix.
+        </div>
+        
+        <button id="runFix" class="btn btn-primary">Run Database Fix</button>
+        
+        <div id="result" class="result d-none"></div>
+    </div>
+
+    <!-- Load Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Supabase client
+            const supabaseUrl = localStorage.getItem('supabase_url') || 'https://your-supabase-url.supabase.co';
+            const supabaseKey = localStorage.getItem('supabase_key') || 'your-supabase-anon-key';
+            
+            const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            
+            // Check if we're authenticated
+            async function checkAuth() {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                if (error || !user) {
+                    document.getElementById('result').textContent = 'You need to be signed in to run this fix.';
+                    document.getElementById('result').classList.add('error');
+                    document.getElementById('result').classList.remove('d-none');
+                    document.getElementById('runFix').disabled = true;
+                } else {
+                    console.log('Authenticated as:', user.id);
+                }
+            }
+            
+            checkAuth();
+            
+            // Run the fix when the button is clicked
+            document.getElementById('runFix').addEventListener('click', async function() {
+                const resultDiv = document.getElementById('result');
+                resultDiv.classList.remove('d-none', 'success', 'error');
+                resultDiv.textContent = 'Running fix...';
+                
+                try {
+                    // SQL to add the column if it doesn't exist
+                    const sql = `
+                        DO $$
+                        BEGIN
+                            IF NOT EXISTS (
+                                SELECT 1
+                                FROM information_schema.columns
+                                WHERE table_name = 'game_participants' AND column_name = 'total_cash_injected'
+                            ) THEN
+                                ALTER TABLE game_participants ADD COLUMN total_cash_injected FLOAT DEFAULT 0;
+                                RAISE NOTICE 'Added total_cash_injected column to game_participants table';
+                            ELSE
+                                RAISE NOTICE 'total_cash_injected column already exists in game_participants table';
+                            END IF;
+                        END
+                        $$;
+                    `;
+                    
+                    // Execute the SQL
+                    const { data, error } = await supabase.rpc('execute_sql', { sql_query: sql });
+                    
+                    if (error) {
+                        console.error('Error executing SQL:', error);
+                        resultDiv.textContent = `Error: ${error.message}`;
+                        resultDiv.classList.add('error');
+                    } else {
+                        console.log('SQL executed successfully:', data);
+                        resultDiv.textContent = 'Database fix completed successfully!';
+                        resultDiv.classList.add('success');
+                        
+                        // Add a note about refreshing other pages
+                        resultDiv.textContent += '\n\nPlease refresh any open Investment Odyssey pages to apply the changes.';
+                    }
+                } catch (e) {
+                    console.error('Exception:', e);
+                    resultDiv.textContent = `Error: ${e.message}`;
+                    resultDiv.classList.add('error');
+                    
+                    // Add alternative instructions
+                    resultDiv.textContent += '\n\nAlternative method: You can run the following SQL in the Supabase SQL Editor:';
+                    resultDiv.textContent += '\n\nALTER TABLE game_participants ADD COLUMN total_cash_injected FLOAT DEFAULT 0;';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

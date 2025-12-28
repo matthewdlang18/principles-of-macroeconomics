@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single Player - Investment Odyssey</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/header-styles.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="../../styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner15.png" alt="Investment Odyssey Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container mx-auto">
+                    <div class="nav-links">
+                        <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+                        <a href="../index.html" class="nav-link">← Back to Activities</a>
+                        <a href="index.html" class="nav-link">← Back to Game Home</a>
+                    </div>
+                    <h1 class="activity-title">Investment Odyssey: Single Player Mode</h1>
+                    <p class="activity-date">Practice your investment skills in this single player simulation</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Links -->
+    <div class="flex mb-8 border-b container mx-auto mt-4">
+        <a href="front-page.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Home</a>
+        <a href="single-player.html" class="step-nav font-medium px-4 py-2 border-b-2 border-blue-600 text-blue-600">Single Player</a>
+        <a href="index.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Class Game</a>
+        <a href="leaderboard.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Leaderboard</a>
+        <a href="ta-dashboard.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">TA Dashboard</a>
+    </div>
+
+    <div class="container">
+
+        <!-- Asset Price Ticker -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="ticker-container">
+                    <div class="ticker-wrap">
+                        <div class="ticker" id="price-ticker">
+                            <!-- Asset prices will be populated here dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Management Section (Compact) -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0"><i class="fas fa-gamepad mr-2"></i>Game Controls</h5>
+                            </div>
+                            <div class="btn-group">
+                                <button id="start-game" class="btn btn-sm btn-success">Start New Game</button>
+                                <button id="reset-game" class="btn btn-sm btn-danger" data-toggle="tooltip" title="Warning: This will erase all current progress">Reset Game</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Data Card (Moved to top) -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Market Data</h3>
+                        <div>
+                            <span class="badge badge-light mr-2">CPI: <span id="cpi-display">100.00</span></span>
+                            <span class="badge badge-light">Round: <span id="current-round-display">0</span></span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover" id="market-data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Asset</th>
+                                                <th>Price</th>
+                                                <th>Change</th>
+                                                <th>Chart</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="asset-prices-table-body">
+                                            <!-- Asset prices will be populated here dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0" style="font-size: 1.5rem;">Game Controls & Trading</h3>
+                        <div>
+                            <button id="next-round" class="btn btn-warning">Next Round <i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <h5 class="mb-0 mr-3" style="font-size: 0.9rem;">Current Round: <span id="current-round-display-control">0</span></h5>
+                                <div class="ml-auto">
+                                    <div class="btn-group">
+                                        <button id="prev-round-btn" class="btn btn-sm btn-outline-secondary" disabled><i class="fas fa-chevron-left"></i></button>
+                                        <button id="next-round-btn" class="btn btn-sm btn-outline-secondary" disabled><i class="fas fa-chevron-right"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h5 style="font-size: 0.9rem;">Cash: $<span id="cash-display">5000.00</span></h5>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5 style="font-size: 0.9rem;">Portfolio Value: $<span id="portfolio-value-display">5000.00</span></h5>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5 style="font-size: 0.9rem;">CPI: <span id="cpi-display-control">100.00</span></h5>
+                                </div>
+                            </div>
+                            <div id="cash-injection-alert" class="alert alert-success mt-2" style="display: none;">
+                                <strong>Cash Injection!</strong> You received $<span id="cash-injection-amount">0</span> this round.
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h4 class="mb-3" style="font-size: 1.2rem;">Trade Assets</h4>
+                        <form id="trade-form">
+                            <div class="form-group">
+                                <label for="asset-select">Select Asset:</label>
+                                <select class="form-control" id="asset-select" required>
+                                    <option value="">Select an asset</option>
+                                    <option value="S&P500">S&P 500</option>
+                                    <option value="Bonds">Bonds</option>
+                                    <option value="Real Estate">Real Estate</option>
+                                    <option value="Gold">Gold</option>
+                                    <option value="Commodities">Commodities</option>
+                                    <option value="Bitcoin">Bitcoin</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="action-select">Action:</label>
+                                <select class="form-control" id="action-select" required>
+                                    <option value="buy">Buy</option>
+                                    <option value="sell">Sell</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="quantity-input">Quantity:</label>
+                                <input type="number" class="form-control" id="quantity-input" min="0.01" step="0.01" required>
+                                <small class="form-text text-muted">Current Price: $<span id="current-price-display">0.00</span></small>
+                                <small class="form-text text-muted">Total Cost: $<span id="total-cost-display">0.00</span></small>
+                            </div>
+                            <button type="button" id="max-quantity-btn" class="btn btn-secondary btn-sm mb-2">Max Quantity</button>
+                            <button type="submit" class="btn btn-success btn-block">Execute Trade</button>
+                            <button type="button" id="distribute-cash" class="btn btn-info btn-block mt-2" style="background: linear-gradient(to right, blue, black, gold); color: white;">Distribute Cash Evenly</button>
+                            <button type="button" id="sell-all" class="btn btn-danger btn-block mt-2">Sell All Assets</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Your Portfolio</h3>
+                        <div>
+                            <span class="badge badge-light mr-2">Round: <span id="portfolio-round-display">0</span>/20</span>
+                            <span class="badge badge-light">Value: $<span id="portfolio-value-badge">5000.00</span></span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>Quantity</th>
+                                    <th>Current Price</th>
+                                    <th>Value</th>
+                                    <th>% of Portfolio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="portfolio-table-body">
+                                <!-- Portfolio data will be populated here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-warning text-white">
+                        <h3>Portfolio Performance</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <canvas id="portfolio-chart" width="400" height="200"></canvas>
+                            </div>
+                            <div class="col-md-4">
+                                <h5 class="text-center mb-3">Portfolio Allocation</h5>
+                                <canvas id="portfolio-allocation-chart" width="200" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h3>CPI History</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="cpi-chart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h3>Asset Price History</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>Real Estate & Gold Price History</h5>
+                        <canvas id="real-estate-gold-chart" width="400" height="200"></canvas>
+
+                        <h5 class="mt-4">Bonds, Commodities & S&P Price History</h5>
+                        <canvas id="bonds-commodities-sp-chart" width="400" height="200"></canvas>
+
+                        <h5 class="mt-4">Bitcoin Price History</h5>
+                        <canvas id="bitcoin-chart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+
+
+
+                <!-- Hidden Leaderboard Table for JavaScript to use -->
+                <div id="leaderboard-container" style="display: none;">
+                    <p class="text-center" id="leaderboard-message">No entries yet. Complete all 20 rounds to see your ranking!</p>
+                    <table class="table table-striped" id="leaderboard-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Name</th>
+                                <th>Date</th>
+                                <th>Final Value</th>
+                                <th>Nominal Return</th>
+                                <th>Adjusted Return</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body">
+                            <!-- Leaderboard entries will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"></script>
+    <script src="js/single-player.js"></script>
+</body>
+</html>

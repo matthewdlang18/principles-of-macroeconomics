@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TA Dashboard - Investment Odyssey</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/header-styles.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="../../styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner17.png" alt="Investment Odyssey Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container mx-auto">
+                    <div class="nav-links">
+                        <a href="../../index.html" class="nav-link">← Back to Course Home</a>
+                        <a href="../index.html" class="nav-link">← Back to Activities</a>
+                        <a href="index.html" class="nav-link">← Back to Game Home</a>
+                    </div>
+                    <h1 class="activity-title">Investment Odyssey: TA Dashboard</h1>
+                    <p class="activity-date">Manage classes and monitor student progress</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Links -->
+    <div class="flex mb-8 border-b container mx-auto mt-4">
+        <a href="front-page.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Home</a>
+        <a href="single-player.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Single Player</a>
+        <a href="index.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Class Game</a>
+        <a href="leaderboard.html" class="step-nav font-medium px-4 py-2 border-b-2 border-transparent text-gray-500">Leaderboard</a>
+        <a href="ta-dashboard.html" class="step-nav font-medium px-4 py-2 border-b-2 border-blue-600 text-blue-600">TA Dashboard</a>
+    </div>
+    <!-- Password Modal -->
+    <div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="passwordModalLabel">TA Authentication</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="ta-password">Enter Password:</label>
+                        <input type="password" class="form-control" id="ta-password" placeholder="Enter TA password">
+                        <small id="password-error" class="form-text text-danger"></small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="verify-password">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>TA Dashboard - Investment Odyssey</h1>
+                <p class="lead">Manage classes, start games, and view leaderboards</p>
+                <a href="index.html" class="btn btn-secondary mb-4">Back to Home</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3>Create New Class</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="create-class-form">
+                            <div class="form-group">
+                                <label for="new-class-number">Class Number:</label>
+                                <input type="text" class="form-control" id="new-class-number" placeholder="Enter a unique class number" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="class-description">Class Description (Optional):</label>
+                                <input type="text" class="form-control" id="class-description" placeholder="e.g., Econ 101 - Section A">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Create Class</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h3>Your Classes</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="classes-list" class="list-group">
+                            <!-- Classes will be populated here dynamically -->
+                            <div class="text-center" id="no-classes-message">
+                                <p>No classes created yet. Create a class to get started.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h3>Class Management</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="class-management" style="display: none;">
+                            <h4>Class: <span id="current-class-number"></span></h4>
+                            <p>Description: <span id="current-class-description"></span></p>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-warning">
+                                            <h5>Game Controls</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <button id="initialize-game" class="btn btn-warning btn-block mb-2">Initialize Game</button>
+                                            <button id="next-round" class="btn btn-success btn-block mb-2">Advance to Next Round</button>
+                                            <button id="end-game" class="btn btn-danger btn-block">End Game</button>
+
+                                            <div class="mt-3">
+                                                <h6>Current Round: <span id="current-round">0</span></h6>
+                                                <h6>Students Enrolled: <span id="students-count">0</span></h6>
+                                                <h6>Cash Injection per Round: $500-$1500</h6>
+                                                <h6>Total Cash Injected: $<span id="total-cash-injected">0</span></h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header bg-primary">
+                                            <h5>Class Leaderboard</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="leaderboard-container">
+                                                <table class="table table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Rank</th>
+                                                            <th>Student</th>
+                                                            <th>Portfolio Value</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="leaderboard-body">
+                                                        <!-- Leaderboard will be populated here dynamically -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mt-3">
+                                <div class="card-header bg-secondary">
+                                    <h5>Asset Prices</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="asset-prices-container">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Asset</th>
+                                                    <th>Current Price</th>
+                                                    <th>Change</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="asset-prices-body">
+                                                <!-- Asset prices will be populated here dynamically -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/ta-dashboard.js"></script>
+</body>
+</html>

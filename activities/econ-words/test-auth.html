@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Econ Words Auth Test</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            color: #333;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .status-container {
+            padding: 15px;
+            background-color: #eaeaea;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .status-success {
+            background-color: #4CAF50;
+        }
+        .status-warning {
+            background-color: #ff9800;
+        }
+        .status-error {
+            background-color: #f44336;
+        }
+        .status-inactive {
+            background-color: #9e9e9e;
+        }
+        .auth-form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        input[type="email"], input[type="password"], input[type="text"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 5px 10px 0;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button.secondary {
+            background-color: #2196F3;
+        }
+        button.warning {
+            background-color: #ff9800;
+        }
+        button.danger {
+            background-color: #f44336;
+        }
+        .result {
+            background-color: #f5f5f5;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+        .error {
+            border-left-color: #f44336;
+        }
+        .success {
+            border-left-color: #4CAF50;
+        }
+        .hidden {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .nav-buttons {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .nav-buttons a {
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,0.3);
+            border-radius: 50%;
+            border-top-color: #4CAF50;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Econ Words Authentication Test</h1>
+    
+    <div class="container">
+        <h2>Connection Status</h2>
+        <div class="status-container">
+            <div>
+                <span id="supabase-status-indicator" class="status-indicator status-inactive"></span>
+                <span id="supabase-status">Checking Supabase connection...</span>
+            </div>
+            <div>
+                <span id="auth-status-indicator" class="status-indicator status-inactive"></span>
+                <span id="auth-status">Checking authentication status...</span>
+            </div>
+            <div>
+                <span id="database-status-indicator" class="status-indicator status-inactive"></span>
+                <span id="database-status">Checking database connection...</span>
+            </div>
+        </div>
+        
+        <button id="check-connection" class="secondary">Re-check Connection Status</button>
+    </div>
+    
+    <div class="container">
+        <h2>Authentication</h2>
+        
+        <div id="current-user" class="status-container">
+            <p>Checking user status...</p>
+        </div>
+        
+        <div id="sign-in-form" class="auth-form">
+            <h3>Sign In</h3>
+            <input type="email" id="email" placeholder="Email" value="test@example.com">
+            <input type="password" id="password" placeholder="Password" value="password123">
+            <button id="sign-in" class="secondary">Sign In</button>
+            <button id="sign-up">Sign Up</button>
+            <div id="sign-in-result" class="result hidden"></div>
+        </div>
+        
+        <button id="sign-out" class="danger">Sign Out</button>
+    </div>
+    
+    <div class="container">
+        <h2>Database Tests</h2>
+        
+        <div>
+            <button id="test-select" class="secondary">Test SELECT</button>
+            <button id="test-insert">Test INSERT</button>
+            <button id="test-user-stats" class="secondary">Test User Stats</button>
+            <div id="db-test-result" class="result hidden"></div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Game Integration Test</h2>
+        
+        <div>
+            <p>Test saving a game score:</p>
+            <div class="auth-form">
+                <input type="text" id="test-term" placeholder="Term name" value="INFLATION">
+                <input type="text" id="test-score" placeholder="Score (0-100)" value="85">
+                <label><input type="checkbox" id="test-won" checked> Won the game</label>
+                <button id="test-save-score">Test Save Score</button>
+            </div>
+            <div id="save-score-result" class="result hidden"></div>
+        </div>
+    </div>
+    
+    <div class="nav-buttons">
+        <a href="index.html"><button class="secondary">Econ Words Home</button></a>
+        <a href="debug.html"><button class="secondary">Debug Tools</button></a>
+    </div>
+    
+    <!-- Include required scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/env.js"></script>
+    <!-- Removed deprecated supabase-client.js and auth.js -->
+    <script src="js/database.js"></script>
+    <script src="js/supabase-diagnostics.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Auth test page initialized');
+            
+            // Initialize auth
+            if (window.EconWordsAuth) {
+                EconWordsAuth.init().then(() => {
+                    updateCurrentUserDisplay();
+                    checkConnectionStatus();
+                });
+            } else {
+                console.error('EconWordsAuth module not loaded');
+                document.getElementById('auth-status').textContent = 'ERROR: Auth module not loaded';
+                document.getElementById('auth-status-indicator').className = 'status-indicator status-error';
+            }
+            
+            // Helper function to show results
+            function showResult(elementId, content, status = 'neutral') {
+                const element = document.getElementById(elementId);
+                element.classList.remove('hidden', 'error', 'success');
+                
+                if (typeof content === 'object') {
+                    element.textContent = JSON.stringify(content, null, 2);
+                } else {
+                    element.textContent = content;
+                }
+                
+                if (status === 'error') {
+                    element.classList.add('error');
+                } else if (status === 'success') {
+                    element.classList.add('success');
+                }
+            }
+            
+            // Update current user display
+            function updateCurrentUserDisplay() {
+                const userElement = document.getElementById('current-user');
+                
+                if (!window.EconWordsAuth) {
+                    userElement.innerHTML = '<p class="error">Auth module not loaded</p>';
+                    return;
+                }
+                
+                const user = EconWordsAuth.getCurrentUser();
+                
+                if (!user) {
+                    userElement.innerHTML = '<p><span class="status-indicator status-error"></span> Not signed in</p>';
+                    document.getElementById('sign-out').disabled = true;
+                } else if (user.isGuest) {
+                    userElement.innerHTML = `
+                        <p><span class="status-indicator status-warning"></span> Guest User</p>
+                        <p>ID: ${user.id}</p>
+                        <p>Name: ${user.name}</p>
+                        <p class="warning">Guest users can only save scores locally, not to the leaderboard</p>
+                    `;
+                    document.getElementById('sign-out').disabled = false;
+                } else {
+                    userElement.innerHTML = `
+                        <p><span class="status-indicator status-success"></span> Authenticated User</p>
+                        <p>ID: ${user.id}</p>
+                        <p>Name: ${user.name}</p>
+                        <p>Email: ${user.email || 'Not available'}</p>
+                    `;
+                    document.getElementById('sign-out').disabled = false;
+                }
+            }
+            
+            // Check all connection statuses
+            async function checkConnectionStatus() {
+                // Check Supabase client
+                if (!window.supabaseClient) {
+                    document.getElementById('supabase-status').textContent = 'ERROR: Supabase client not available';
+                    document.getElementById('supabase-status-indicator').className = 'status-indicator status-error';
+                } else {
+                    document.getElementById('supabase-status').textContent = 'Supabase client initialized';
+                    document.getElementById('supabase-status-indicator').className = 'status-indicator status-success';
+                }
+                
+                // Check authentication
+                try {
+                    if (!window.supabaseClient) {
+                        throw new Error('Supabase client not available');
+                    }
+                    
+                    const { data, error } = await supabaseClient.auth.getSession();
+                    
+                    if (error) {
+                        document.getElementById('auth-status').textContent = `Auth error: ${error.message}`;
+                        document.getElementById('auth-status-indicator').className = 'status-indicator status-error';
+                    } else if (!data?.session) {
+                        document.getElementById('auth-status').textContent = 'Not authenticated';
+                        document.getElementById('auth-status-indicator').className = 'status-indicator status-warning';
+                    } else {
+                        document.getElementById('auth-status').textContent = `Authenticated as ${data.session.user.email}`;
+                        document.getElementById('auth-status-indicator').className = 'status-indicator status-success';
+                    }
+                } catch (error) {
+                    document.getElementById('auth-status').textContent = `Auth error: ${error.message}`;
+                    document.getElementById('auth-status-indicator').className = 'status-indicator status-error';
+                }
+                
+                // Check database
+                try {
+                    if (!window.supabaseClient) {
+                        throw new Error('Supabase client not available');
+                    }
+                    
+                    const { data, error } = await supabaseClient
+                        .from('econ_terms_leaderboard')
+                        .select('*', { count: 'exact', head: true })
+                        .limit(0);
+                    
+                    if (error) {
+                        if (error.code === '42501' || error.message.includes('policy')) {
+                            document.getElementById('database-status').textContent = 'Database accessible but restricted by RLS (normal if not signed in)';
+                            document.getElementById('database-status-indicator').className = 'status-indicator status-warning';
+                        } else {
+                            document.getElementById('database-status').textContent = `Database error: ${error.message}`;
+                            document.getElementById('database-status-indicator').className = 'status-indicator status-error';
+                        }
+                    } else {
+                        document.getElementById('database-status').textContent = 'Database connection successful';
+                        document.getElementById('database-status-indicator').className = 'status-indicator status-success';
+                    }
+                } catch (error) {
+                    document.getElementById('database-status').textContent = `Database error: ${error.message}`;
+                    document.getElementById('database-status-indicator').className = 'status-indicator status-error';
+                }
+            }
+            
+            // Re-check connection status
+            document.getElementById('check-connection').addEventListener('click', function() {
+                document.getElementById('supabase-status').textContent = 'Checking Supabase connection...';
+                document.getElementById('auth-status').textContent = 'Checking authentication status...';
+                document.getElementById('database-status').textContent = 'Checking database connection...';
+                
+                document.getElementById('supabase-status-indicator').className = 'status-indicator status-inactive';
+                document.getElementById('auth-status-indicator').className = 'status-indicator status-inactive';
+                document.getElementById('database-status-indicator').className = 'status-indicator status-inactive';
+                
+                checkConnectionStatus();
+            });
+            
+            // Sign in
+            document.getElementById('sign-in').addEventListener('click', async function() {
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value.trim();
+                
+                if (!email || !password) {
+                    showResult('sign-in-result', 'Please enter both email and password', 'error');
+                    return;
+                }
+                
+                showResult('sign-in-result', 'Signing in...', 'neutral');
+                
+                try {
+                    if (!window.EconWordsAuth) {
+                        throw new Error('Auth module not loaded');
+                    }
+                    
+                    const result = await EconWordsAuth.signInWithEmail(email, password);
+                    
+                    if (!result.success) {
+                        showResult('sign-in-result', `Error signing in: ${result.error}`, 'error');
+                    } else {
+                        showResult('sign-in-result', 'Successfully signed in', 'success');
+                        updateCurrentUserDisplay();
+                        checkConnectionStatus();
+                    }
+                } catch (error) {
+                    showResult('sign-in-result', `Exception during sign-in: ${error.message}`, 'error');
+                }
+            });
+            
+            // Sign up
+            document.getElementById('sign-up').addEventListener('click', async function() {
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value.trim();
+                
+                if (!email || !password) {
+                    showResult('sign-in-result', 'Please enter both email and password', 'error');
+                    return;
+                }
+                
+                showResult('sign-in-result', 'Creating account...', 'neutral');
+                
+                try {
+                    if (!window.EconWordsAuth) {
+                        throw new Error('Auth module not loaded');
+                    }
+                    
+                    const result = await EconWordsAuth.signUp(email, password);
+                    
+                    if (!result.success) {
+                        showResult('sign-in-result', `Error creating account: ${result.error}`, 'error');
+                    } else if (result.emailConfirmation) {
+                        showResult('sign-in-result', 'Account created! Please check your email to confirm your account.', 'success');
+                    } else {
+                        showResult('sign-in-result', 'Account created and signed in successfully', 'success');
+                        updateCurrentUserDisplay();
+                        checkConnectionStatus();
+                    }
+                } catch (error) {
+                    showResult('sign-in-result', `Exception during sign-up: ${error.message}`, 'error');
+                }
+            });
+            
+            // Sign out
+            document.getElementById('sign-out').addEventListener('click', async function() {
+                showResult('sign-in-result', 'Signing out...', 'neutral');
+                
+                try {
+                    if (!window.EconWordsAuth) {
+                        throw new Error('Auth module not loaded');
+                    }
+                    
+                    await EconWordsAuth.signOut();
+                    showResult('sign-in-result', 'Successfully signed out', 'success');
+                    updateCurrentUserDisplay();
+                    checkConnectionStatus();
+                } catch (error) {
+                    showResult('sign-in-result', `Exception during sign-out: ${error.message}`, 'error');
+                }
+            });
+            
+            // Test SELECT
+            document.getElementById('test-select').addEventListener('click', async function() {
+                showResult('db-test-result', 'Testing SELECT operation...', 'neutral');
+                
+                try {
+                    if (!window.supabaseClient) {
+                        throw new Error('Supabase client not initialized');
+                    }
+                    
+                    // Try the query
+                    const { data, error, count } = await supabaseClient
+                        .from('econ_terms_leaderboard')
+                        .select('*', { count: 'exact' })
+                        .limit(5);
+                    
+                    if (error) {
+                        const result = {
+                            success: false,
+                            error: error.message,
+                            errorCode: error.code,
+                            isRLSError: error.code === '42501' || error.message.includes('policy') || error.message.includes('permission')
+                        };
+                        
+                        if (result.isRLSError) {
+                            result.message = "This is a Row Level Security (RLS) policy error - you need to be signed in to access this table.";
+                        }
+                        
+                        showResult('db-test-result', result, 'error');
+                    } else {
+                        const result = {
+                            success: true,
+                            message: `Successfully queried leaderboard table. Found ${count || 0} records.`,
+                            sampleData: data && data.length > 0 ? data.slice(0, 2) : []
+                        };
+                        showResult('db-test-result', result, 'success');
+                    }
+                } catch (error) {
+                    showResult('db-test-result', { error: error.message }, 'error');
+                }
+            });
+            
+            // Test INSERT
+            document.getElementById('test-insert').addEventListener('click', async function() {
+                showResult('db-test-result', 'Testing INSERT operation...', 'neutral');
+                
+                try {
+                    if (!window.supabaseClient) {
+                        throw new Error('Supabase client not initialized');
+                    }
+                    
+                    // First check auth status
+                    const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                    
+                    if (sessionError || !sessionData?.session) {
+                        showResult('db-test-result', {
+                            success: false,
+                            error: 'Not authenticated - please sign in first',
+                            authenticated: false
+                        }, 'error');
+                        return;
+                    }
+                    
+                    // Create test data
+                    const testRecord = {
+                        user_id: sessionData.session.user.id,
+                        user_name: 'Test User',
+                        score: 50,
+                        term: 'TEST-AUTH-PAGE',
+                        attempts: 3,
+                        won: true,
+                        time_taken: 30000
+                    };
+                    
+                    // Try the insert
+                    const { data, error } = await supabaseClient
+                        .from('econ_terms_leaderboard')
+                        .insert(testRecord)
+                        .select()
+                        .single();
+                    
+                    if (error) {
+                        const result = {
+                            success: false,
+                            error: error.message,
+                            errorCode: error.code,
+                            isRLSError: error.code === '42501' || error.message.includes('policy') || error.message.includes('permission'),
+                            attemptedRecord: testRecord
+                        };
+                        
+                        if (result.isRLSError) {
+                            result.hint = "This is an RLS policy error. Make sure the user_id in the record matches your authenticated user ID.";
+                        }
+                        
+                        showResult('db-test-result', result, 'error');
+                    } else {
+                        const result = {
+                            success: true,
+                            message: 'Record inserted successfully!',
+                            insertedRecord: data
+                        };
+                        showResult('db-test-result', result, 'success');
+                    }
+                } catch (error) {
+                    showResult('db-test-result', { error: error.message }, 'error');
+                }
+            });
+            
+            // Test User Stats
+            document.getElementById('test-user-stats').addEventListener('click', async function() {
+                showResult('db-test-result', 'Getting user stats...', 'neutral');
+                
+                try {
+                    if (!window.EconWordsDB) {
+                        throw new Error('EconWords DB module not loaded');
+                    }
+                    
+                    const result = await EconWordsDB.getUserStats();
+                    showResult('db-test-result', result, result.success ? 'success' : 'error');
+                } catch (error) {
+                    showResult('db-test-result', { error: error.message }, 'error');
+                }
+            });
+            
+            // Test Save Score
+            document.getElementById('test-save-score').addEventListener('click', async function() {
+                const term = document.getElementById('test-term').value.trim() || 'TEST-TERM';
+                const score = parseInt(document.getElementById('test-score').value.trim() || '50');
+                const won = document.getElementById('test-won').checked;
+                
+                showResult('save-score-result', 'Saving test score...', 'neutral');
+                
+                try {
+                    if (!window.EconWordsDB) {
+                        throw new Error('EconWords DB module not loaded');
+                    }
+                    
+                    // Create score data
+                    const scoreData = {
+                        term: term,
+                        score: score,
+                        attempts: 3,
+                        won: won,
+                        timeTaken: 45000  // 45 seconds
+                    };
+                    
+                    const result = await EconWordsDB.saveScore(scoreData);
+                    
+                    if (result.success && result.savedToLeaderboard) {
+                        showResult('save-score-result', {
+                            success: true,
+                            message: 'Score saved successfully to the leaderboard!',
+                            savedScore: result.score
+                        }, 'success');
+                    } else if (result.success && result.savedToLocalStorage) {
+                        showResult('save-score-result', {
+                            success: true,
+                            savedToLeaderboard: false,
+                            message: 'Score saved to localStorage (not leaderboard)',
+                            reason: result.error,
+                            hint: 'Sign in with a valid account to save to the leaderboard'
+                        }, 'warning');
+                    } else {
+                        showResult('save-score-result', {
+                            success: false,
+                            error: result.error || 'Unknown error saving score'
+                        }, 'error');
+                    }
+                } catch (error) {
+                    showResult('save-score-result', { error: error.message }, 'error');
+                }
+            });
+            
+            // Listen for auth change events
+            document.addEventListener('econWordsAuthReady', function(event) {
+                console.log('Auth state changed:', event.detail);
+                updateCurrentUserDisplay();
+                checkConnectionStatus();
+            });
+        });
+    </script>
+</body>
+</html>
