@@ -313,6 +313,21 @@
       <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
         <div class="flex items-start justify-between gap-4">
           <div>
+            <h3 class="text-lg font-semibold">CPI vs PCE (index level)</h3>
+            <p class="text-sm text-slate-600">Price level paths (not growth rates). Useful for cumulated inflation discussions.</p>
+          </div>
+          <div class="text-xs text-slate-500 text-right">
+            <div><span class="font-medium">CPI:</span> CPIAUCSL</div>
+            <div><span class="font-medium">PCE:</span> PCEPI</div>
+          </div>
+        </div>
+        <div class="mt-4 h-[380px]"><canvas id="chart-inflation-levels"></canvas></div>
+        <div id="stats-inflation-levels" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
             <h3 class="text-lg font-semibold">CPI drivers (YoY %)</h3>
             <p class="text-sm text-slate-600">Big-picture components that move inflation.</p>
           </div>
@@ -325,7 +340,7 @@
         <div id="stats-inflation-deep" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 xl:col-span-2">
         <div class="flex items-start justify-between gap-4">
           <div>
             <h3 class="text-lg font-semibold">Inflation heatmap</h3>
@@ -389,6 +404,43 @@
         </div>
         <div class="mt-4 h-[380px]"><canvas id="chart-jolts"></canvas></div>
         <div id="stats-jolts" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+      </div>
+
+      <!-- NEW: Latest-month levels table -->
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 xl:col-span-2">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+          <div>
+            <h3 class="text-lg font-semibold">Labor market levels</h3>
+            <p class="text-sm text-slate-600">Raw CPS levels: population, labor force, employed/unemployed, and broader underutilization measures.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs text-slate-500">Units: persons (thousands)</span>
+            <span class="mx-1 text-slate-300">•</span>
+            <label class="text-xs text-slate-500">Month</label>
+            <select id="labor-levels-month" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"></select>
+            <label class="text-xs text-slate-500">Year</label>
+            <select id="labor-levels-year" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"></select>
+            <button id="labor-levels-latest" class="rt-subtab" type="button">Latest</button>
+          </div>
+        </div>
+
+        <div class="mt-4 overflow-auto">
+          <table class="min-w-full text-sm">
+            <thead class="text-xs text-slate-500">
+              <tr>
+                <th class="text-left py-2 pr-3">Series</th>
+                <th class="text-right py-2 pr-3">Selected</th>
+                <th class="text-right py-2 pr-3">Prev available</th>
+                <th class="text-right py-2 pr-3">Change</th>
+                <th class="text-right py-2">As of</th>
+              </tr>
+            </thead>
+            <tbody id="labor-levels-rows" class="align-top"></tbody>
+          </table>
+        </div>
+        <div class="mt-3 text-xs text-slate-500">
+          Note: “Working-age population” here is the Civilian Noninstitutional Population (16+). “Discouraged” is a subset of “Marginally attached.”
+        </div>
       </div>
     </div>
   </section>
@@ -498,7 +550,57 @@
     DGS5: { id: 'DGS5', label: '5Y Treasury (%)', units: null, freq: 'd' },
     DGS30: { id: 'DGS30', label: '30Y Treasury (%)', units: null, freq: 'd' },
     MORT30: { id: 'MORTGAGE30US', label: '30Y Mortgage (%)', units: null, freq: 'w' },
+
+    // Labor market levels
+    POP: { id: 'CNP16OV', label: 'Working-age population', units: null, freq: 'm' },
+    LF: { id: 'CLF16OV', label: 'Labor force', units: null, freq: 'm' },
+    EMP: { id: 'CE16OV', label: 'Employed', units: null, freq: 'm' },
+    NILF: { id: 'LNS15000000', label: 'Not in labor force', units: null, freq: 'm' },
+    MARG: { id: 'LNU05026645', label: 'Marginally attached', units: null, freq: 'm' },
+    DISC: { id: 'LNU05026642', label: 'Discouraged', units: null, freq: 'm' },
+    PART: { id: 'LNS12032194', label: 'Part-time for economic reasons', units: null, freq: 'm' },
+
+    WORKING_AGE_POP: { id: 'CNP16OV', label: 'Civilian noninstitutional population (16+)', units: null, freq: 'm' },
+    LABOR_FORCE: { id: 'CLF16OV', label: 'Labor force', units: null, freq: 'm' },
+    EMPLOYED: { id: 'CE16OV', label: 'Employed', units: null, freq: 'm' },
+    UNEMPLOYED: { id: 'UNEMPLOY', label: 'Unemployed', units: null, freq: 'm' },
+    NOT_IN_LABOR_FORCE: { id: 'NILFWJN', label: 'Not in labor force', units: null, freq: 'm' },
+    PART_TIME_ECON: { id: 'LNS12032194', label: 'Part time for economic reasons', units: null, freq: 'm' },
+    MARG_ATTACHED: { id: 'LNU05026642', label: 'Marginally attached', units: null, freq: 'm' },
+    DISCOURAGED: { id: 'LNU05026645', label: 'Discouraged workers', units: null, freq: 'm' },
   };
+
+  // -----------------------------
+  // Latest-month labor levels table
+  // -----------------------------
+  const laborLevelsRowsEl = document.getElementById('labor-levels-rows');
+  const laborLevelsMonthEl = document.getElementById('labor-levels-month');
+  const laborLevelsYearEl = document.getElementById('labor-levels-year');
+  const laborLevelsLatestBtn = document.getElementById('labor-levels-latest');
+
+  function laborSelectedMonthKey() {
+    if (!laborLevelsMonthEl || !laborLevelsYearEl) return null;
+    const y = Number(laborLevelsYearEl.value);
+    const m0 = Number(laborLevelsMonthEl.value);
+    return makeMonthKey(y, m0);
+  }
+
+  function populateMonthYearSelectors() {
+    if (!laborLevelsMonthEl || !laborLevelsYearEl) return;
+
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    laborLevelsMonthEl.innerHTML = monthNames.map((m, i) => `<option value="${i}">${m}</option>`).join('');
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const startYear = 1990;
+    const years = [];
+    for (let y = currentYear; y >= startYear; y--) years.push(y);
+    laborLevelsYearEl.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+
+    laborLevelsMonthEl.value = String(now.getMonth());
+    laborLevelsYearEl.value = String(currentYear);
+  }
 
   // UI state
   const STATE = {
@@ -512,6 +614,8 @@
     fromCache: false,
     inflationHeatmapMonth: null,
     inflationHeatmapYear: null,
+    laborLevelsMonth: null,
+    laborLevelsYear: null,
   };
 
   // DOM helpers
@@ -735,6 +839,7 @@
     cpiBreakdown: null,
     yieldCurve: null,
     spreads: null,
+    inflationLevels: null,
   };
 
   // Base Chart.js options shared by all charts
@@ -956,12 +1061,19 @@
   }
 
   async function renderLaborTab(startISO, recessionPeriods) {
-    const [u3, u6, u2, openings, unempLevel] = await Promise.all([
+    const [u3, u6, u2, openings, unempLevel, pop, lf, emp, nilf, marg, disc, part] = await Promise.all([
       safeFetchSeriesObservations(SERIES.UNRATE, startISO),
       safeFetchSeriesObservations(SERIES.U6, startISO),
       safeFetchSeriesObservations(SERIES.U2, startISO),
       safeFetchSeriesObservations(SERIES.JOLTS_OPENINGS, startISO),
       safeFetchSeriesObservations(SERIES.UNEMP_LEVEL, startISO),
+      safeFetchSeriesObservations(SERIES.POP, startISO),
+      safeFetchSeriesObservations(SERIES.LF, startISO),
+      safeFetchSeriesObservations(SERIES.EMP, startISO),
+      safeFetchSeriesObservations(SERIES.NILF, startISO),
+      safeFetchSeriesObservations(SERIES.MARG, startISO),
+      safeFetchSeriesObservations(SERIES.DISC, startISO),
+      safeFetchSeriesObservations(SERIES.PART, startISO),
     ]);
 
     const openingsPerUnemp = computeRatioSeries(openings, unempLevel);
@@ -1024,6 +1136,43 @@
         valueChipHTML('Latest U6', `${numberFmt(lastPoint(u6)?.y, 2)}%`, lastPoint(u6) ? `as of ${lastPoint(u6).x.toISOString().slice(0,10)}` : ''),
       ].join('');
     }
+
+    const levelsRows = [
+      { name: SERIES.POP.label, points: pop },
+      { name: SERIES.LF.label, points: lf },
+      { name: SERIES.EMP.label, points: emp },
+      { name: SERIES.UNEMP_LEVEL.label, points: unempLevel },
+      { name: SERIES.NILF.label, points: nilf },
+      { name: SERIES.MARG.label, points: marg },
+      { name: SERIES.DISC.label, points: disc },
+      { name: SERIES.PART.label, points: part },
+    ].map(r => {
+      const latest = lastPoint(r.points);
+      const prev = r.points.length > 1 ? r.points[r.points.length - 2] : null;
+      const delta = (latest && prev) ? (latest.y - prev.y) : null;
+      return {
+        name: r.name,
+        latest: latest ? latest.y : null,
+        prev: prev ? prev.y : null,
+        delta: delta,
+        date: latest ? latest.x.toISOString().slice(0, 10) : '—',
+      };
+    });
+
+    const tbody = document.getElementById('labor-levels-rows');
+    if (tbody) {
+      tbody.innerHTML = levelsRows
+        .map(r => `
+          <tr class="border-t border-slate-100">
+            <td class="py-2 pr-3 font-medium">${r.name}</td>
+            <td class="py-2 pr-3 text-right tabular-nums">${numberFmt(r.latest, 0)}</td>
+            <td class="py-2 pr-3 text-right tabular-nums">${numberFmt(r.prev, 0)}</td>
+            <td class="py-2 pr-3 text-right tabular-nums">${numberFmt(r.delta, 0)}</td>
+            <td class="py-2 text-right text-slate-600">${r.date}</td>
+          </tr>
+        `)
+        .join('');
+    }
   }
 
   function setRecessionAnnotations(chart, recessionPeriods) {
@@ -1042,14 +1191,43 @@
   }
 
   async function renderInflationTab(startISO, recessionPeriods) {
-    const [all, core, food, energy, shelter, services] = await Promise.all([
+    const [all, core, food, energy, shelter, services, cpiLevel, pceLevel] = await Promise.all([
       safeFetchSeriesObservations(SERIES.CPI, startISO),
       safeFetchSeriesObservations(SERIES.CPI_CORE, startISO),
       safeFetchSeriesObservations(SERIES.CPI_FOOD, startISO),
       safeFetchSeriesObservations(SERIES.CPI_ENERGY, startISO),
       safeFetchSeriesObservations(SERIES.CPI_SHELTER, startISO),
       safeFetchSeriesObservations(SERIES.CPI_SERVICES, startISO),
+      // index levels (raw)
+      safeFetchSeriesObservations({ id: SERIES.CPI.id, label: 'CPI (index)', units: null, freq: 'm' }, startISO),
+      safeFetchSeriesObservations({ id: SERIES.PCE.id, label: 'PCE (index)', units: null, freq: 'm' }, startISO),
     ]);
+
+    // New: CPI vs PCE level chart
+    updateOrCreateExtra(
+      'inflationLevels',
+      'chart-inflation-levels',
+      [
+        { label: 'CPI (index)', data: cpiLevel, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.10)', tension: 0.2, pointRadius: 0 },
+        { label: 'PCE (index)', data: pceLevel, borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.10)', tension: 0.2, pointRadius: 0 },
+      ],
+      'Index',
+      recessionPeriods
+    );
+
+    const statsLevels = document.getElementById('stats-inflation-levels');
+    if (statsLevels) {
+      const cpiLast = lastPoint(cpiLevel);
+      const pceLast = lastPoint(pceLevel);
+      const cpi12m = pctChange(cpiLevel, 12);
+      const pce12m = pctChange(pceLevel, 12);
+
+      statsLevels.innerHTML = [
+        valueChipHTML('CPI level', numberFmt(cpiLast?.y, 1), cpiLast ? `as of ${cpiLast.x.toISOString().slice(0,10)}` : ''),
+        valueChipHTML('PCE level', numberFmt(pceLast?.y, 1), pceLast ? `as of ${pceLast.x.toISOString().slice(0,10)}` : ''),
+        valueChipHTML('12-month change', `CPI ${numberFmt(cpi12m, 2)}% • PCE ${numberFmt(pce12m, 2)}%`, 'computed from index levels'),
+      ].join('');
+    }
 
     updateOrCreateExtra(
       'cpiBreakdown',
@@ -1084,49 +1262,73 @@
 
       renderMonthYearSelectors({ year: chosenYear, month: chosenMonth, minYear, maxYear });
 
-      const yyyymm = `${chosenYear}-${chosenMonth}`;
+      await renderInflationHeatmap({ startISO, chosenYear, chosenMonth });
+    }
+  }
 
-      const seriesRows = [
-        { name: 'All items', points: all },
-        { name: 'Core', points: core },
-        { name: 'Food', points: food },
-        { name: 'Energy', points: energy },
-        { name: 'Shelter', points: shelter },
-        { name: 'Services', points: services },
-      ].map(r => {
-        const pt = getMonthlyPoint(r.points, yyyymm);
-        // Compare to same month 1 year earlier if available (YoY in "YoY %" series changes in pp)
-        const prior = getMonthlyPoint(r.points, `${chosenYear - 1}-${chosenMonth}`);
-        const delta = (pt && prior) ? (pt.y - prior.y) : null;
-        return {
-          name: r.name,
-          value: pt ? pt.y : null,
-          delta: Number.isFinite(delta) ? delta : null,
-          date: pt ? pt.x.toISOString().slice(0, 10) : '—',
-        };
-      }).filter(r => r.value !== null);
+  async function renderInflationHeatmap({ startISO, chosenYear, chosenMonth }) {
+    const yyyymmSel = `${chosenYear}-${chosenMonth}`;
 
-      const vals = seriesRows.map(r => r.value).filter(Number.isFinite);
-      const min = Math.min(...vals);
-      const max = Math.max(...vals);
+    const seriesRows = await Promise.all([
+      { name: 'All items CPI', def: SERIES.CPI },
+      { name: 'Core CPI', def: SERIES.CPI_CORE },
+      { name: 'Food', def: SERIES.CPI_FOOD },
+      { name: 'Energy', def: SERIES.CPI_ENERGY },
+      { name: 'Shelter', def: SERIES.CPI_SHELTER },
+      { name: 'Services', def: SERIES.CPI_SERVICES },
+    ].map(async (s) => {
+      const pts = await safeFetchSeriesObservations(s.def, startISO);
+      const map = new Map(pts.map(p => [p.x.toISOString().slice(0, 7), p]));
+      const cur = map.get(yyyymmSel) || null;
 
-      const tbody = document.getElementById('inflation-heatmap');
-      if (tbody) {
-        tbody.innerHTML = seriesRows
-          .sort((a, b) => (b.value ?? -Infinity) - (a.value ?? -Infinity))
-          .map(r => {
-            const bg = heatColor(r.value, min, max);
-            return `
-              <tr class="border-t border-slate-100">
-                <td class="py-2 pr-3 font-medium" style="background:${bg}">${r.name}</td>
-                <td class="py-2 pr-3 text-right tabular-nums" style="background:${bg}">${numberFmt(r.value, 2)}%</td>
-                <td class="py-2 pr-3 text-right tabular-nums" style="background:${bg}">${numberFmt(r.delta, 2)} pp</td>
-                <td class="py-2 text-right text-slate-600" style="background:${bg}">${r.date}</td>
-              </tr>
-            `;
-          })
-          .join('');
-      }
+      // previous year same month (for delta)
+      const prevYearKey = `${chosenYear - 1}-${chosenMonth}`;
+      const prevYear = map.get(prevYearKey) || null;
+
+      const value = cur ? cur.y : null;
+      const delta = (cur && prevYear && Number.isFinite(cur.y) && Number.isFinite(prevYear.y)) ? (cur.y - prevYear.y) : null;
+      const date = cur ? cur.x.toISOString().slice(0, 10) : '—';
+
+      return { name: s.name, value, delta, date };
+    }));
+
+    const vals = seriesRows.map(r => r.value).filter(Number.isFinite);
+    const min = vals.length ? Math.min(...vals) : 0;
+    const max = vals.length ? Math.max(...vals) : 1;
+
+    const tbody = document.getElementById('inflation-heatmap');
+    if (tbody) {
+      tbody.innerHTML = seriesRows
+        .sort((a, b) => (b.value ?? -Infinity) - (a.value ?? -Infinity))
+        .map(r => {
+          const bg = heatColor(r.value, min, max);
+          return `
+            <tr class="border-t border-slate-100">
+              <td class="py-2 pr-3 font-medium" style="background:${bg}">${r.name}</td>
+              <td class="py-2 pr-3 text-right tabular-nums" style="background:${bg}">${numberFmt(r.value, 2)}%</td>
+              <td class="py-2 pr-3 text-right tabular-nums" style="background:${bg}">${numberFmt(r.delta, 2)} pp</td>
+              <td class="py-2 text-right text-slate-600" style="background:${bg}">${r.date}</td>
+            </tr>
+          `;
+        })
+        .join('');
+    }
+
+    // Wire selectors (idempotent)
+    const monthSel = document.getElementById('inflation-heatmap-month');
+    const yearSel = document.getElementById('inflation-heatmap-year');
+    if (monthSel && yearSel && !monthSel.dataset.wired) {
+      monthSel.dataset.wired = 'true';
+      monthSel.addEventListener('change', () => {
+        STATE.inflationHeatmapMonth = monthSel.value;
+        STATE.inflationHeatmapYear = Number(yearSel.value);
+        renderInflationHeatmap({ startISO, chosenYear: STATE.inflationHeatmapYear, chosenMonth: STATE.inflationHeatmapMonth }).catch(() => void 0);
+      });
+      yearSel.addEventListener('change', () => {
+        STATE.inflationHeatmapMonth = monthSel.value;
+        STATE.inflationHeatmapYear = Number(yearSel.value);
+        renderInflationHeatmap({ startISO, chosenYear: STATE.inflationHeatmapYear, chosenMonth: STATE.inflationHeatmapMonth }).catch(() => void 0);
+      });
     }
   }
 
@@ -1179,6 +1381,191 @@
         valueChipHTML('Mortgage (30Y)', `${numberFmt(lastPoint(mort)?.y, 2)}%`, lastPoint(mort) ? `as of ${lastPoint(mort).x.toISOString().slice(0,10)}` : ''),
       ].join('');
     }
+  }
+
+  async function loadLaborLevelsTable({ forceLatest = false } = {}) {
+    if (!laborLevelsRowsEl) return; // not on page
+
+    laborLevelsRowsEl.innerHTML = '';
+
+    let selectedMonthKey = laborSelectedMonthKey();
+    if (!selectedMonthKey) {
+      // selectors not ready; default to current month
+      const now = new Date();
+      selectedMonthKey = makeMonthKey(now.getFullYear(), now.getMonth());
+    }
+
+    const items = [
+      { key: 'WORKING_AGE_POP', label: 'Working-age population (16+)' },
+      { key: 'LABOR_FORCE', label: 'Labor force' },
+      { key: 'EMPLOYED', label: 'Employed' },
+      { key: 'UNEMPLOYED', label: 'Unemployed' },
+      { key: 'NOT_IN_LABOR_FORCE', label: 'Not in the labor force' },
+      { key: 'PART_TIME_ECON', label: 'Part-time for economic reasons' },
+      { key: 'MARG_ATTACHED', label: 'Marginally attached' },
+      { key: 'DISCOURAGED', label: 'Discouraged (subset of marginally attached)' },
+    ].map(x => ({ ...x, seriesId: SERIES[x.key]?.id }));
+
+    // Lightweight loading skeleton
+    for (let i = 0; i < items.length; i++) {
+      const tr = document.createElement('tr');
+      tr.className = 'border-t border-slate-100';
+      tr.innerHTML = `
+        <td class="py-2 pr-3"><div class="h-4 w-56 rounded skeleton"></div><div class="mt-2 h-3 w-28 rounded skeleton"></div></td>
+        <td class="py-2 pr-3 text-right"><div class="h-4 w-24 ml-auto rounded skeleton"></div></td>
+        <td class="py-2 pr-3 text-right"><div class="h-4 w-24 ml-auto rounded skeleton"></div></td>
+        <td class="py-2 pr-3 text-right"><div class="h-4 w-24 ml-auto rounded skeleton"></div></td>
+        <td class="py-2 text-right"><div class="h-4 w-24 ml-auto rounded skeleton"></div></td>
+      `;
+      laborLevelsRowsEl.appendChild(tr);
+    }
+
+    // If forceLatest, pick monthKey based on the workforce population series latest obs
+    if (forceLatest && SERIES.WORKING_AGE_POP?.id) {
+      const json = await fredGet('/series/observations', {
+        series_id: SERIES.WORKING_AGE_POP.id,
+        sort_order: 'desc',
+        limit: 1,
+      });
+      const latestDate = json?.observations?.[0]?.date;
+      if (latestDate) {
+        selectedMonthKey = yyyymm(latestDate);
+        // update selectors to match
+        if (laborLevelsMonthEl && laborLevelsYearEl) {
+          const [yy, mm] = selectedMonthKey.split('-').map(Number);
+          laborLevelsYearEl.value = String(yy);
+          laborLevelsMonthEl.value = String(mm - 1);
+        }
+      }
+    }
+
+    const results = await Promise.all(items.map(async (it) => {
+      if (!it.seriesId) return { ...it, selected: null, prev: null };
+      const { selected, prev } = await getSelectedAndPrevAvailable(it.seriesId, selectedMonthKey);
+      return { ...it, selected, prev };
+    }));
+
+    laborLevelsRowsEl.innerHTML = '';
+    for (const r of results) {
+      laborLevelsRowsEl.appendChild(renderLaborLevelsRow({
+        label: r.label,
+        seriesId: r.seriesId,
+        selected: r.selected,
+        prev: r.prev,
+      }));
+    }
+  }
+
+  function renderLaborLevelsRow({ label, seriesId, selected, prev }) {
+    const latestVal = selected?.value;
+    const prevVal = prev?.value;
+    const delta = (Number.isFinite(latestVal) && Number.isFinite(prevVal)) ? (latestVal - prevVal) : NaN;
+    const asOf = selected?.date || '—';
+
+    const tr = document.createElement('tr');
+    tr.className = 'border-t border-slate-100';
+    tr.innerHTML = `
+      <td class="py-2 pr-3">
+        <div class="font-medium text-slate-800">${label}</div>
+        <div class="text-xs text-slate-500 font-mono">${seriesId}</div>
+      </td>
+      <td class="py-2 pr-3 text-right tabular-nums">${formatThousands(latestVal)}</td>
+      <td class="py-2 pr-3 text-right tabular-nums text-slate-600">${formatThousands(prevVal)}</td>
+      <td class="py-2 pr-3 text-right tabular-nums ${delta > 0 ? 'text-emerald-700' : (delta < 0 ? 'text-rose-700' : 'text-slate-600')}">${formatDelta(delta)}</td>
+      <td class="py-2 text-right tabular-nums text-slate-600">${asOf}</td>
+    `;
+    return tr;
+  }
+
+  function formatThousands(v) {
+    if (v === null || v === undefined || Number.isNaN(v)) return '—';
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(v);
+  }
+
+  function formatDelta(v) {
+    if (v === null || v === undefined || Number.isNaN(v)) return '—';
+    const sign = v > 0 ? '+' : '';
+    return sign + formatThousands(v);
+  }
+
+  function yyyymm(dateStr) {
+    // dateStr: YYYY-MM-DD
+    return (dateStr || '').slice(0, 7);
+  }
+
+  function makeMonthKey(year, monthIndex0) {
+    const mm = String(monthIndex0 + 1).padStart(2, '0');
+    return `${year}-${mm}`;
+  }
+
+  function laborSelectedMonthKey() {
+    if (!laborLevelsMonthEl || !laborLevelsYearEl) return null;
+    const y = Number(laborLevelsYearEl.value);
+    const m0 = Number(laborLevelsMonthEl.value);
+    return makeMonthKey(y, m0);
+  }
+
+  async function getSelectedAndPrevAvailable(seriesId, selectedMonthKey /* YYYY-MM */) {
+    // Pull a small window around the selected month, then choose:
+    // - Selected: last obs within selected YYYY-MM (if present)
+    // - Prev: nearest prior obs (any prior month) from the returned window
+    const [y, m] = selectedMonthKey.split('-').map(Number);
+    const center = new Date(y, (m - 1), 15);
+
+    const start = new Date(center);
+    start.setMonth(start.getMonth() - 18);
+    const end = new Date(center);
+    end.setMonth(end.getMonth() + 1);
+
+    const fmt = (d) => d.toISOString().slice(0, 10);
+
+    const json = await fredGet('/series/observations', {
+      series_id: seriesId,
+      observation_start: fmt(start),
+      observation_end: fmt(end),
+      sort_order: 'asc',
+    });
+
+    const obs = (json?.observations || [])
+      .map(o => ({ date: o.date, value: (o.value === '.' ? NaN : Number(o.value)) }))
+      .filter(o => o.date);
+
+    // find selected month obs (take last in that month)
+    const selectedCandidates = obs.filter(o => yyyymm(o.date) === selectedMonthKey);
+    const selected = selectedCandidates.length ? selectedCandidates[selectedCandidates.length - 1] : null;
+
+    if (!selected) {
+      // Month missing entirely. Return latest <= selected month if available.
+      const fallback = obs.filter(o => yyyymm(o.date) <= selectedMonthKey).pop() || null;
+      if (!fallback) return { selected: null, prev: null };
+      const prevIdx = obs.findIndex(o => o.date === fallback.date) - 1;
+      const prev = prevIdx >= 0 ? obs[prevIdx] : null;
+      return { selected: fallback, prev };
+    }
+
+    // previous available = observation immediately before selected
+    const selectedIdx = obs.findIndex(o => o.date === selected.date);
+    const prev = selectedIdx > 0 ? obs[selectedIdx - 1] : null;
+    return { selected, prev };
+  }
+
+  function populateMonthYearSelectors() {
+    if (!laborLevelsMonthEl || !laborLevelsYearEl) return;
+
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    laborLevelsMonthEl.innerHTML = monthNames.map((m, i) => `<option value="${i}">${m}</option>`).join('');
+
+    // Reasonable range (can extend later)
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const startYear = 1990;
+    const years = [];
+    for (let y = currentYear; y >= startYear; y--) years.push(y);
+    laborLevelsYearEl.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+
+    // default to current month/year
+    laborLevelsMonthEl.value = String(now.getMonth());
+    laborLevelsYearEl.value = String(currentYear);
   }
 
   async function loadAndRender({ force = false } = {}) {
@@ -1433,6 +1820,17 @@
         if (!el) return;
         el.addEventListener('dblclick', () => clearZoom());
       });
+
+    // Labor levels month/year selectors (new)
+    if (typeof populateMonthYearSelectors === 'function') {
+      populateMonthYearSelectors();
+    }
+
+    if (laborLevelsMonthEl) laborLevelsMonthEl.addEventListener('change', () => loadLaborLevelsTable());
+    if (laborLevelsYearEl) laborLevelsYearEl.addEventListener('change', () => loadLaborLevelsTable());
+    if (laborLevelsLatestBtn) laborLevelsLatestBtn.addEventListener('click', () => loadLaborLevelsTable({ forceLatest: true }));
+
+    // NOTE: removed older labor-levels onchange/onclick wiring that forced latest.
   }
 
   function monthOptions() {
@@ -1608,6 +2006,9 @@
     try {
       await healthCheck();
       await loadAndRender();
+      loadLaborLevelsTable().catch((e) => {
+        console.error('Failed to load labor levels table', e);
+      });
       // Do not show the user tip alert.
       setAlert(null, null);
     } catch (err) {
