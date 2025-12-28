@@ -364,7 +364,7 @@ class CanvasIntegrator:
     def delete_module(self, module_id: str, module_name: str) -> None:
         """Delete a module from Canvas if it's one we manage."""
         # List of modules we manage automatically
-        managed_modules = ["Lecture Materials", "Discussion Activities", "Review Sessions"]
+        managed_modules = ["Lecture Materials"]
 
         if module_name in managed_modules:
             print(f"Deleting module: {module_name}...")
@@ -392,7 +392,7 @@ class CanvasIntegrator:
         self.get_files_in_folder("lecture_slides")
         self.get_files_in_folder("lecture_notes")
         self.get_files_in_folder("course_materials")
-        self.get_files_in_folder("review_session")
+        # NOTE: review_session syncing disabled
 
         # Get existing modules instead of deleting them
         url = f"{self.base_url}/api/v1/courses/{self.course_id}/modules"
@@ -425,13 +425,7 @@ class CanvasIntegrator:
         lecture_materials = existing_modules.get("Lecture Materials") or self.get_or_create_module("Lecture Materials", position=2)
         print("Found/Created Lecture Materials module")
 
-        # Discussion Activities Module (position 3)
-        discussion_activities = existing_modules.get("Discussion Activities") or self.get_or_create_module("Discussion Activities", position=3)
-        print("Found/Created Discussion Activities module")
-
-        # Review Session Module (position 4)
-        review_sessions = existing_modules.get("Review Sessions") or self.get_or_create_module("Review Sessions", position=4)
-        print("Found/Created Review Sessions module")
+        # NOTE: Discussion Activities + Review Sessions syncing disabled
 
         # Track processed lecture numbers to prevent duplicates
         processed_lecture_slides = set()
@@ -570,52 +564,11 @@ class CanvasIntegrator:
                     print(f"Error processing {note.name}: {e}")
 
         # Upload and organize activities (excluding node_modules)
-        activities_dir = Path("activities")
-        processed_activities = set()  # Keep track of processed activity numbers
-        if activities_dir.exists():
-            if not self.public_site_base_url:
-                print("WARNING: PUBLIC_SITE_BASE_URL is not set; skipping creation of external activity links.")
-            else:
-                for activity in sorted(activities_dir.glob("activity*/index.html")):
-                    try:
-                        activity_num = int(activity.parent.name.replace('activity', ''))
-                        if activity_num not in processed_activities:  # Only process each activity number once
-                            processed_activities.add(activity_num)
-                            # Create external URL to public site
-                            public_url = f"{self.public_site_base_url}/activities/activity{activity_num}/index.html"
-                            item_title = f"Activity {activity_num}"
-
-                            self.create_module_item(
-                                discussion_activities['id'],
-                                item_title,
-                                external_url=public_url,
-                                position=activity_num
-                            )
-                    except Exception as e:
-                        print(f"Error processing activity {activity.parent.name}: {e}")
+        # NOTE: Discussion Activities syncing disabled
 
         # Upload and organize review sessions
-        review_dir = Path("review_session")
-        processed_weeks = set()  # Keep track of processed week numbers
-        if review_dir.exists():
-            for review in sorted(review_dir.glob("Week*ReviewSession.pdf")):
-                try:
-                    print(f"Processing {review.name}...")
-                    # Extract week number from "Week1ReviewSession.pdf" format
-                    week_num = int(''.join(filter(str.isdigit, review.stem.split('Week')[1].split('Review')[0])))
-                    if week_num not in processed_weeks and week_num != 5:  # Skip week 5 and duplicates
-                        processed_weeks.add(week_num)
-                        file_data = self.upload_file(str(review), "review_session")
-                        item_title = f"Week {week_num} Review Questions"
+        # NOTE: Review Sessions syncing disabled
 
-                        self.create_module_item(
-                            review_sessions['id'],
-                            item_title,
-                            file_id=file_data['id'],
-                            position=week_num
-                        )
-                except Exception as e:
-                    print(f"Error processing {review.name}: {e}")
 
 def main():
     # Load .env if python-dotenv is installed

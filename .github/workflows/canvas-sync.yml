@@ -8,9 +8,7 @@ on:
     paths:
       - 'lecture_slides/**'
       - 'lecture_notes/**'
-      - 'review_session/**'
       - 'course_materials/**'
-      - 'activities/**'
       - 'canvas_integration.py'
       - 'requirements.txt'
 
