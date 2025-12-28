@@ -1,0 +1,51 @@
+name: Canvas Sync
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'lecture_slides/**'
+      - 'lecture_notes/**'
+      - 'review_session/**'
+      - 'course_materials/**'
+      - 'activities/**'
+      - 'canvas_integration.py'
+      - 'requirements.txt'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canvas-sync-main
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Canvas sync
+        env:
+          CANVAS_API_TOKEN: ${{ secrets.CANVAS_API_TOKEN }}
+          CANVAS_COURSE_ID: ${{ secrets.CANVAS_COURSE_ID }}
+          CANVAS_BASE_URL: ${{ secrets.CANVAS_BASE_URL }}
+          PUBLIC_SITE_BASE_URL: ${{ secrets.PUBLIC_SITE_BASE_URL }}
+          SYLLABUS_FILENAME: ${{ secrets.SYLLABUS_FILENAME }}
+        run: |
+          python canvas_integration.py
