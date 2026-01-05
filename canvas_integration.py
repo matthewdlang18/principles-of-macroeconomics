@@ -525,9 +525,28 @@ class CanvasIntegrator:
             for note in sorted(notes_dir.glob("*.pdf")):
                 try:
                     print(f"Processing {note.name}...")
-                    # Extract lecture number from "Econ 2 Lecture 1 S25.pdf" format
-                    parts = note.stem.split()
-                    lecture_num = int(parts[parts.index("Lecture") + 1])
+
+                    stem = note.stem
+
+                    # Support multiple filename formats:
+                    # - "Econ 2 Lecture 1 W26.pdf"
+                    # - "Lecture1notes_updated.pdf" / "Lecture1_notes.pdf"
+                    lecture_num = None
+
+                    parts = stem.split()
+                    if "Lecture" in parts:
+                        lecture_num = int(parts[parts.index("Lecture") + 1])
+                    else:
+                        # Fallback: extract digits from first token that starts with "Lecture"
+                        tokens = stem.replace('_', ' ').split()
+                        lecture_token = next((t for t in tokens if t.lower().startswith('lecture')), None)
+                        if lecture_token:
+                            digits = ''.join(ch for ch in lecture_token if ch.isdigit())
+                            if digits:
+                                lecture_num = int(digits)
+
+                    if lecture_num is None:
+                        raise ValueError("Could not parse lecture number from filename")
 
                     is_lecture6 = lecture_num == 6
                     if is_lecture6:
