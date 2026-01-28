@@ -439,7 +439,40 @@
           </table>
         </div>
         <div class="mt-3 text-xs text-slate-500">
-          Note: “Working-age population” here is the Civilian Noninstitutional Population (16+). “Discouraged” is a subset of “Marginally attached.”
+          Note: "Working-age population" here is the Civilian Noninstitutional Population (16+). "Discouraged" is a subset of "Marginally attached."
+        </div>
+      </div>
+
+      <!-- U1-U6 Unemployment Heatmap -->
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 xl:col-span-2">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+          <div>
+            <h3 class="text-lg font-semibold">Unemployment measures (U1–U6)</h3>
+            <p class="text-sm text-slate-600">Monthly heatmap of all BLS unemployment measures over a custom date range.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <label class="text-xs text-slate-500">From</label>
+            <select id="u-heatmap-start-month" class="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm"></select>
+            <select id="u-heatmap-start-year" class="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm"></select>
+            <label class="text-xs text-slate-500">To</label>
+            <select id="u-heatmap-end-month" class="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm"></select>
+            <select id="u-heatmap-end-year" class="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm"></select>
+          </div>
+        </div>
+
+        <div class="mt-4 overflow-auto">
+          <table class="min-w-full text-sm">
+            <thead id="u-heatmap-header" class="text-xs text-slate-500">
+              <tr>
+                <th class="text-left py-2 pr-3 sticky left-0 bg-white z-10">Measure</th>
+                <!-- Month columns dynamically inserted -->
+              </tr>
+            </thead>
+            <tbody id="u-heatmap-body" class="align-top"></tbody>
+          </table>
+        </div>
+        <div class="mt-3 text-xs text-slate-500">
+          <strong>U1:</strong> 15+ weeks unemployed; <strong>U2:</strong> Job losers; <strong>U3:</strong> Headline (UNRATE); <strong>U4:</strong> +discouraged; <strong>U5:</strong> +marginally attached; <strong>U6:</strong> +part-time for economic reasons. Colors show relative heat (red = higher, blue = lower).
         </div>
       </div>
     </div>
@@ -525,8 +558,11 @@
 
     UNRATE: { id: 'UNRATE', label: 'Unemployment Rate (%)', units: null, freq: 'm' },
     LFP: { id: 'CIVPART', label: 'Labor Force Participation (%)', units: null, freq: 'm' },
-    U6: { id: 'U6RATE', label: 'U6 Underutilization (%)', units: null, freq: 'm' },
-    U2: { id: 'U2RATE', label: 'U2 Unemployment (%)', units: null, freq: 'm' },
+    U1: { id: 'U1RATE', label: 'U1 (15+ weeks)', units: null, freq: 'm' },
+    U2: { id: 'U2RATE', label: 'U2 (job losers)', units: null, freq: 'm' },
+    U4: { id: 'U4RATE', label: 'U4 (+ discouraged)', units: null, freq: 'm' },
+    U5: { id: 'U5RATE', label: 'U5 (+ marginally attached)', units: null, freq: 'm' },
+    U6: { id: 'U6RATE', label: 'U6 (+ part-time for econ)', units: null, freq: 'm' },
 
     JOLTS_OPENINGS: { id: 'JTUJOL', label: 'Job Openings (level, thousands)', units: null, freq: 'm' },
     UNEMP_LEVEL: { id: 'LNU03000000', label: 'Unemployed (level, thousands)', units: null, freq: 'm' },
@@ -616,6 +652,10 @@
     inflationHeatmapYear: null,
     laborLevelsMonth: null,
     laborLevelsYear: null,
+    unemploymentHeatmapStartYear: null,
+    unemploymentHeatmapStartMonth: null,
+    unemploymentHeatmapEndYear: null,
+    unemploymentHeatmapEndMonth: null,
   };
 
   // DOM helpers
@@ -1175,6 +1215,136 @@
     }
   }
 
+  // U1-U6 Unemployment Heatmap
+  async function renderUnemploymentHeatmap() {
+    const startMonthEl = document.getElementById('u-heatmap-start-month');
+    const startYearEl = document.getElementById('u-heatmap-start-year');
+    const endMonthEl = document.getElementById('u-heatmap-end-month');
+    const endYearEl = document.getElementById('u-heatmap-end-year');
+    const headerEl = document.getElementById('u-heatmap-header');
+    const bodyEl = document.getElementById('u-heatmap-body');
+
+    if (!startMonthEl || !startYearEl || !endMonthEl || !endYearEl || !headerEl || !bodyEl) return;
+
+    // Initialize selectors if not already done
+    if (!startMonthEl.dataset.wired) {
+      startMonthEl.dataset.wired = 'true';
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const monthOpts = monthNames.map((m, i) => `<option value="${String(i).padStart(2,'0')}">${m}</option>`).join('');
+      startMonthEl.innerHTML = monthOpts;
+      endMonthEl.innerHTML = monthOpts;
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const yearOpts = [];
+      for (let y = currentYear; y >= 1994; y--) yearOpts.push(`<option value="${y}">${y}</option>`);
+      startYearEl.innerHTML = yearOpts.join('');
+      endYearEl.innerHTML = yearOpts.join('');
+
+      // Default: last 12 months
+      const defaultEnd = new Date(currentYear, now.getMonth(), 1);
+      const defaultStart = new Date(defaultEnd);
+      defaultStart.setMonth(defaultStart.getMonth() - 11);
+
+      startYearEl.value = defaultStart.getFullYear();
+      startMonthEl.value = String(defaultStart.getMonth()).padStart(2, '0');
+      endYearEl.value = defaultEnd.getFullYear();
+      endMonthEl.value = String(defaultEnd.getMonth()).padStart(2, '0');
+
+      // Wire change events
+      const rerender = () => {
+        STATE.unemploymentHeatmapStartYear = Number(startYearEl.value);
+        STATE.unemploymentHeatmapStartMonth = startMonthEl.value;
+        STATE.unemploymentHeatmapEndYear = Number(endYearEl.value);
+        STATE.unemploymentHeatmapEndMonth = endMonthEl.value;
+        renderUnemploymentHeatmap().catch(() => void 0);
+      };
+      startMonthEl.addEventListener('change', rerender);
+      startYearEl.addEventListener('change', rerender);
+      endMonthEl.addEventListener('change', rerender);
+      endYearEl.addEventListener('change', rerender);
+    }
+
+    // Parse selected range
+    const startYear = Number(startYearEl.value);
+    const startMonth = Number(startMonthEl.value);
+    const endYear = Number(endYearEl.value);
+    const endMonth = Number(endMonthEl.value);
+
+    // Build list of months in range
+    const months = [];
+    let cur = new Date(startYear, startMonth, 1);
+    const endDate = new Date(endYear, endMonth, 1);
+    while (cur <= endDate) {
+      months.push({ year: cur.getFullYear(), month: cur.getMonth() });
+      cur.setMonth(cur.getMonth() + 1);
+    }
+
+    if (months.length === 0) {
+      bodyEl.innerHTML = '<tr><td colspan="100" class="py-4 text-center text-slate-500">Invalid date range</td></tr>';
+      return;
+    }
+
+    // Fetch all U1-U6 series (fetch from earliest needed date)
+    const fetchStart = `${startYear}-${String(startMonth + 1).padStart(2, '0')}-01`;
+    const [u1, u2, u3, u4, u5, u6] = await Promise.all([
+      safeFetchSeriesObservations(SERIES.U1, fetchStart),
+      safeFetchSeriesObservations(SERIES.U2, fetchStart),
+      safeFetchSeriesObservations(SERIES.UNRATE, fetchStart),
+      safeFetchSeriesObservations(SERIES.U4, fetchStart),
+      safeFetchSeriesObservations(SERIES.U5, fetchStart),
+      safeFetchSeriesObservations(SERIES.U6, fetchStart),
+    ]);
+
+    // Build lookup maps by YYYY-MM
+    const buildMap = (pts) => new Map((pts || []).map(p => [p.x.toISOString().slice(0, 7), p.y]));
+    const maps = {
+      U1: buildMap(u1),
+      U2: buildMap(u2),
+      U3: buildMap(u3),
+      U4: buildMap(u4),
+      U5: buildMap(u5),
+      U6: buildMap(u6),
+    };
+
+    // Collect all values for heatmap normalization
+    const allVals = [];
+    Object.values(maps).forEach(m => m.forEach(v => { if (Number.isFinite(v)) allVals.push(v); }));
+    const minVal = allVals.length ? Math.min(...allVals) : 0;
+    const maxVal = allVals.length ? Math.max(...allVals) : 1;
+
+    // Build header row
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const headerRow = headerEl.querySelector('tr');
+    headerRow.innerHTML = `<th class="text-left py-2 pr-3 sticky left-0 bg-white z-10">Measure</th>` +
+      months.map(m => `<th class="text-right py-2 px-2 whitespace-nowrap">${monthNames[m.month]} ${String(m.year).slice(2)}</th>`).join('');
+
+    // Build body rows for each U measure
+    const measures = [
+      { key: 'U1', label: 'U1' },
+      { key: 'U2', label: 'U2' },
+      { key: 'U3', label: 'U3' },
+      { key: 'U4', label: 'U4' },
+      { key: 'U5', label: 'U5' },
+      { key: 'U6', label: 'U6' },
+    ];
+
+    bodyEl.innerHTML = measures.map(measure => {
+      const map = maps[measure.key];
+      const cells = months.map(m => {
+        const key = `${m.year}-${String(m.month + 1).padStart(2, '0')}`;
+        const val = map.get(key);
+        const bg = heatColor(val, minVal, maxVal);
+        const display = Number.isFinite(val) ? numberFmt(val, 1) : '—';
+        return `<td class="py-2 px-2 text-right tabular-nums" style="background:${bg}">${display}</td>`;
+      }).join('');
+      return `<tr class="border-t border-slate-100">
+        <td class="py-2 pr-3 font-medium sticky left-0 bg-white z-10">${measure.label}</td>
+        ${cells}
+      </tr>`;
+    }).join('');
+  }
+
   function setRecessionAnnotations(chart, recessionPeriods) {
     // chartjs-plugin-annotation: add box annotations
     const anns = {};
@@ -1692,6 +1862,7 @@
       renderLaborTab(startISO, recessionPeriods),
       renderInflationTab(startISO, recessionPeriods),
       renderRatesTab(startISO, recessionPeriods),
+      renderUnemploymentHeatmap(),
     ]);
 
     // Stats panels
