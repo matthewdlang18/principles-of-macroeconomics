@@ -674,7 +674,7 @@
     { label: '5Y', value: 5 },
     { label: '10Y', value: 10 },
     { label: '20Y', value: 20 },
-    { label: 'All', value: 'all' },
+    { label: 'Max', value: 60 },
   ];
 
   function setAlert(kind, message) {
@@ -2160,8 +2160,7 @@
 
     root.querySelectorAll('button[data-range]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const v = btn.getAttribute('data-range');
-        STATE.rangeYears = (v === 'all') ? 'all' : Number(v);
+        STATE.rangeYears = Number(btn.getAttribute('data-range'));
         setRangeButtons();
         loadAndRender().catch(() => void 0);
       });
@@ -2169,7 +2168,6 @@
   }
 
   function currentStartDateISO() {
-    if (STATE.rangeYears === 'all') return '1947-01-01'; // FRED data generally starts around 1947
     const start = subtractYears(new Date(), STATE.rangeYears);
     return start.toISOString().slice(0, 10);
   }
