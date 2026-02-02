@@ -202,8 +202,13 @@
           <div><span class="font-medium">IP:</span> INDPRO</div>
         </div>
       </div>
-      <div class="mt-4 h-[360px]">
+      <div class="mt-4 h-[360px] relative">
         <canvas id="chart-growth"></canvas>
+        <div class="absolute top-2 right-2 flex gap-1 z-10">
+          <button onclick="zoomChart('growth', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+          <button onclick="zoomChart('growth', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+          <button onclick="resetChartZoom('growth')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+        </div>
       </div>
       <div id="stats-growth" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
     </div>
@@ -220,8 +225,13 @@
           <div><span class="font-medium">PCE:</span> PCEPI</div>
         </div>
       </div>
-      <div class="mt-4 h-[360px]">
+      <div class="mt-4 h-[360px] relative">
         <canvas id="chart-inflation"></canvas>
+        <div class="absolute top-2 right-2 flex gap-1 z-10">
+          <button onclick="zoomChart('inflation', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+          <button onclick="zoomChart('inflation', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+          <button onclick="resetChartZoom('inflation')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+        </div>
       </div>
       <div id="stats-inflation" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
     </div>
@@ -238,8 +248,13 @@
           <div><span class="font-medium">LFP:</span> CIVPART</div>
         </div>
       </div>
-      <div class="mt-4 h-[360px]">
+      <div class="mt-4 h-[360px] relative">
         <canvas id="chart-labor"></canvas>
+        <div class="absolute top-2 right-2 flex gap-1 z-10">
+          <button onclick="zoomChart('labor', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+          <button onclick="zoomChart('labor', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+          <button onclick="resetChartZoom('labor')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+        </div>
       </div>
       <div id="stats-labor" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
     </div>
@@ -257,8 +272,13 @@
           <div><span class="font-medium">2Y:</span> DGS2</div>
         </div>
       </div>
-      <div class="mt-4 h-[360px]">
+      <div class="mt-4 h-[360px] relative">
         <canvas id="chart-rates"></canvas>
+        <div class="absolute top-2 right-2 flex gap-1 z-10">
+          <button onclick="zoomChart('rates', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+          <button onclick="zoomChart('rates', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+          <button onclick="resetChartZoom('rates')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+        </div>
       </div>
       <div id="stats-rates" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
     </div>
@@ -285,7 +305,14 @@
           <button class="rt-subtab" data-subtab="gdp-level">Level (raw)</button>
         </div>
 
-        <div class="mt-4 h-[380px]"><canvas id="chart-gdp-main"></canvas></div>
+        <div class="mt-4 h-[380px] relative">
+          <canvas id="chart-gdp-main"></canvas>
+          <div class="absolute top-2 right-2 flex gap-1 z-10">
+            <button onclick="zoomChart('gdpMain', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+            <button onclick="zoomChart('gdpMain', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+            <button onclick="resetChartZoom('gdpMain')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+          </div>
+        </div>
         <div id="stats-gdp" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
       </div>
 
@@ -301,7 +328,14 @@
             <div><span class="font-medium">Gov:</span> GCEC1</div>
           </div>
         </div>
-        <div class="mt-4 h-[380px]"><canvas id="chart-gdp-components"></canvas></div>
+        <div class="mt-4 h-[380px] relative">
+          <canvas id="chart-gdp-components"></canvas>
+          <div class="absolute top-2 right-2 flex gap-1 z-10">
+            <button onclick="zoomChart('gdpComponents', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+            <button onclick="zoomChart('gdpComponents', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+            <button onclick="resetChartZoom('gdpComponents')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+          </div>
+        </div>
         <div class="mt-3 text-xs text-slate-500">Note: We can expand this to net exports and contributions next.</div>
       </div>
     </div>
@@ -323,7 +357,14 @@
             <div><span class="font-medium">PCE:</span> PCEPI</div>
           </div>
         </div>
-        <div class="mt-4 h-[380px]"><canvas id="chart-inflation-levels"></canvas></div>
+        <div class="mt-4 h-[380px] relative">
+          <canvas id="chart-inflation-levels"></canvas>
+          <div class="absolute top-2 right-2 flex gap-1 z-10">
+            <button onclick="zoomChart('inflationLevels', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+            <button onclick="zoomChart('inflationLevels', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+            <button onclick="resetChartZoom('inflationLevels')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+          </div>
+        </div>
         <div id="stats-inflation-levels" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
       </div>
 
@@ -338,7 +379,14 @@
             <div><span class="font-medium">Core:</span> CPILFESL</div>
           </div>
         </div>
-        <div class="mt-4 h-[380px]"><canvas id="chart-cpi-breakdown"></canvas></div>
+        <div class="mt-4 h-[380px] relative">
+          <canvas id="chart-cpi-breakdown"></canvas>
+          <div class="absolute top-2 right-2 flex gap-1 z-10">
+            <button onclick="zoomChart('cpiBreakdown', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+            <button onclick="zoomChart('cpiBreakdown', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+            <button onclick="resetChartZoom('cpiBreakdown')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+          </div>
+        </div>
         <div id="stats-inflation-deep" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
       </div>
 
@@ -389,7 +437,14 @@
             <div><span class="font-medium">U6:</span> U6RATE</div>
           </div>
         </div>
-        <div class="mt-4 h-[380px]"><canvas id="chart-labor-u"></canvas></div>
+        <div class="mt-4 h-[380px] relative">
+          <canvas id="chart-labor-u"></canvas>
+          <div class="absolute top-2 right-2 flex gap-1 z-10">
+            <button onclick="zoomChart('laborU', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+            <button onclick="zoomChart('laborU', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+            <button onclick="resetChartZoom('laborU')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+          </div>
+        </div>
         <div id="stats-labor-u" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
       </div>
 
@@ -404,7 +459,14 @@
             <div><span class="font-medium">Unemployed:</span> LNU03000000</div>
           </div>
         </div>
-        <div class="mt-4 h-[380px]"><canvas id="chart-jolts"></canvas></div>
+        <div class="mt-4 h-[380px] relative">
+          <canvas id="chart-jolts"></canvas>
+          <div class="absolute top-2 right-2 flex gap-1 z-10">
+            <button onclick="zoomChart('jolts', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+            <button onclick="zoomChart('jolts', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+            <button onclick="resetChartZoom('jolts')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+          </div>
+        </div>
         <div id="stats-jolts" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
       </div>
 
@@ -496,7 +558,14 @@
             <div><span class="font-medium">30Y:</span> DGS30</div>
           </div>
         </div>
-        <div class="mt-4 h-[380px]"><canvas id="chart-yield-curve"></canvas></div>
+        <div class="mt-4 h-[380px] relative">
+          <canvas id="chart-yield-curve"></canvas>
+          <div class="absolute top-2 right-2 flex gap-1 z-10">
+            <button onclick="zoomChart('yieldCurve', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+            <button onclick="zoomChart('yieldCurve', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+            <button onclick="resetChartZoom('yieldCurve')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+          </div>
+        </div>
         <div id="stats-rates-deep" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
       </div>
 
@@ -512,7 +581,14 @@
             <div><span class="font-medium">10Y–3M:</span> computed</div>
           </div>
         </div>
-        <div class="mt-4 h-[380px]"><canvas id="chart-spreads"></canvas></div>
+        <div class="mt-4 h-[380px] relative">
+          <canvas id="chart-spreads"></canvas>
+          <div class="absolute top-2 right-2 flex gap-1 z-10">
+            <button onclick="zoomChart('spreads', 1.5)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">+</button>
+            <button onclick="zoomChart('spreads', 0.67)" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">−</button>
+            <button onclick="resetChartZoom('spreads')" class="bg-white/90 hover:bg-white border border-slate-200 rounded px-2 py-1 text-xs font-medium shadow-sm">Reset</button>
+          </div>
+        </div>
         <div class="mt-3 text-xs text-slate-500">Tip: an inverted curve (negative spreads) often precedes slowdowns.</div>
       </div>
     </div>
@@ -925,9 +1001,15 @@
           zoom: {
             wheel: { enabled: true },
             pinch: { enabled: true },
+            drag: {
+              enabled: true,
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              borderColor: 'rgba(59, 130, 246, 0.4)',
+              borderWidth: 1,
+            },
             mode: 'x',
           },
-          pan: { enabled: true, mode: 'x' },
+          pan: { enabled: true, mode: 'x', modifierKey: 'shift' },
           limits: { x: { min: 'original', max: 'original' } },
         },
         annotation: { annotations: {} },
@@ -2176,6 +2258,21 @@
       if (ch && ch.resetZoom) ch.resetZoom();
     });
   }
+
+  // Zoom controls for individual charts (exposed globally for onclick handlers)
+  window.zoomChart = function(chartKey, factor) {
+    const chart = charts[chartKey];
+    if (chart && chart.zoom) {
+      chart.zoom(factor);
+    }
+  };
+
+  window.resetChartZoom = function(chartKey) {
+    const chart = charts[chartKey];
+    if (chart && chart.resetZoom) {
+      chart.resetZoom();
+    }
+  };
 
   async function healthCheck() {
     // lightweight call to ensure key works
