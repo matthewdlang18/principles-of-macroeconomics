@@ -15,22 +15,14 @@
 <!-- CORS helper (existing in this repo) -->
 <script>
   // Minimal CORS helper (inlined) so the page works in VS Code Live Preview.
-  // FRED API supports CORS from most production domains but not localhost.
-  // On localhost, we use allorigins proxy; on production, direct calls.
+  // FRED API does not support browser CORS, so we always use a proxy.
   window.CORS_CONFIG = {
     activeProxy: 'allorigins',
-    useCorsProxy: (function() {
-      // Only use proxy on localhost/127.0.0.1/file://
-      const host = window.location.hostname;
-      return host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:';
-    })(),
+    useCorsProxy: true,
     wrapUrl(url) {
       if (!this.useCorsProxy) return url;
-      if (this.activeProxy === 'allorigins') {
-        return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-      }
-      // fallback proxy
-      return 'https://corsproxy.io/?' + url;
+      // allorigins.win is a free CORS proxy
+      return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
     },
   };
 </script>
