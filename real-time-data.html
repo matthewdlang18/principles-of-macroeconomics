@@ -18,10 +18,17 @@
   // FRED API does not support browser CORS, so we always use a proxy.
   window.CORS_CONFIG = {
     useCorsProxy: true,
+    proxyIndex: 0,
+    proxies: [
+      (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+      (url) => 'https://corsproxy.io/?' + encodeURIComponent(url),
+    ],
     wrapUrl(url) {
       if (!this.useCorsProxy) return url;
-      // allorigins.win is a free CORS proxy
-      return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+      return this.proxies[this.proxyIndex](url);
+    },
+    rotateProxy() {
+      this.proxyIndex = (this.proxyIndex + 1) % this.proxies.length;
     },
   };
 </script>
@@ -750,7 +757,19 @@
     }
   }
 
-  async function fredGet(path, params) {
+  // Simple request queue to avoid overwhelming proxies
+  const requestQueue = {
+    pending: Promise.resolve(),
+    delay: 100, // ms between requests
+    enqueue(fn) {
+      this.pending = this.pending.then(() =>
+        new Promise(resolve => setTimeout(resolve, this.delay))
+      ).then(fn);
+      return this.pending;
+    }
+  };
+
+  async function fredGet(path, params, retryCount = 0) {
     const withAuth = {
       ...params,
       api_key: FRED_API_KEY,
@@ -777,14 +796,30 @@
       ? window.CORS_CONFIG.wrapUrl(url.toString())
       : url.toString();
 
-    const res = await fetch(requestUrl, { method: 'GET' });
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new Error(`FRED request failed (${res.status}): ${text.slice(0, 180)}`);
+    try {
+      const res = await fetch(requestUrl, { method: 'GET' });
+      if (!res.ok) {
+        // If rate limited (429) or proxy error, try rotating proxy
+        if ((res.status === 429 || res.status >= 500) && retryCount < 2 && window.CORS_CONFIG) {
+          window.CORS_CONFIG.rotateProxy();
+          await new Promise(r => setTimeout(r, 500 * (retryCount + 1))); // backoff
+          return fredGet(path, params, retryCount + 1);
+        }
+        const text = await res.text().catch(() => '');
+        throw new Error(`FRED request failed (${res.status}): ${text.slice(0, 180)}`);
+      }
+      const json = await res.json();
+      setCache(key, json);
+      return json;
+    } catch (err) {
+      // Network error - try rotating proxy
+      if (retryCount < 2 && window.CORS_CONFIG) {
+        window.CORS_CONFIG.rotateProxy();
+        await new Promise(r => setTimeout(r, 500 * (retryCount + 1)));
+        return fredGet(path, params, retryCount + 1);
+      }
+      throw err;
     }
-    const json = await res.json();
-    setCache(key, json);
-    return json;
   }
 
   async function fetchSeriesObservations({ id, units, start }) {
@@ -974,7 +1009,10 @@
   }
 
   function safeFetchSeriesObservations(def, startISO) {
-    return fetchSeriesObservations({ ...def, start: startISO }).catch(() => []);
+    // Queue requests to avoid rate limiting on CORS proxies
+    return requestQueue.enqueue(() =>
+      fetchSeriesObservations({ ...def, start: startISO }).catch(() => [])
+    );
   }
 
   function normalizeIndexToYear(points, year, fallbackToFirst = true) {
