@@ -20,8 +20,8 @@
     useCorsProxy: true,
     proxyIndex: 0,
     proxies: [
+      (url) => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
       (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-      (url) => 'https://corsproxy.io/?' + encodeURIComponent(url),
     ],
     wrapUrl(url) {
       if (!this.useCorsProxy) return url;
