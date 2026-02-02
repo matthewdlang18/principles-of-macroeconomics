@@ -890,9 +890,10 @@
           zoom: {
             wheel: { enabled: true },
             pinch: { enabled: true },
+            drag: { enabled: true, backgroundColor: 'rgba(59, 130, 246, 0.15)', borderColor: 'rgba(59, 130, 246, 0.5)', borderWidth: 1 },
             mode: 'x',
           },
-          pan: { enabled: true, mode: 'x' },
+          pan: { enabled: false },
           limits: { x: { min: 'original', max: 'original' } },
         },
         annotation: { annotations: {} },
@@ -2130,7 +2131,7 @@
   }
 
   function currentStartDateISO() {
-    if (STATE.rangeYears === 'all') return '1900-01-01';
+    if (STATE.rangeYears === 'all') return '1947-01-01'; // FRED data generally starts around 1947
     const start = subtractYears(new Date(), STATE.rangeYears);
     return start.toISOString().slice(0, 10);
   }
