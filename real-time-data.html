@@ -17,12 +17,11 @@
   // Minimal CORS helper (inlined) so the page works in VS Code Live Preview.
   // FRED API does not support browser CORS, so we always use a proxy.
   window.CORS_CONFIG = {
-    activeProxy: 'allorigins',
     useCorsProxy: true,
     wrapUrl(url) {
       if (!this.useCorsProxy) return url;
-      // allorigins.win is a free CORS proxy
-      return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+      // codetabs.com is a free CORS proxy
+      return 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url);
     },
   };
 </script>
