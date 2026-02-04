@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recession Detective - Principles of Macroeconomics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .banner-container {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6));
+            color: white;
+            padding: 1.5rem;
+        }
+        .nav-links {
+            margin-bottom: 0.75rem;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            margin-right: 1.5rem;
+            font-weight: 300;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover {
+            color: white;
+        }
+        .activity-title {
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 0.25rem;
+            color: white;
+        }
+        .activity-date {
+            font-size: 0.9rem;
+            font-weight: 300;
+            color: rgba(255,255,255,0.8);
+        }
+        .scenario-card {
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .scenario-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .scenario-card.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .prediction-btn {
+            transition: all 0.15s;
+        }
+        .prediction-btn.recession {
+            background-color: #fef2f2;
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+        .prediction-btn.recession.active {
+            background-color: #dc2626;
+            border-color: #dc2626;
+            color: white;
+        }
+        .prediction-btn.no-recession {
+            background-color: #f0fdf4;
+            border-color: #86efac;
+            color: #166534;
+        }
+        .prediction-btn.no-recession.active {
+            background-color: #16a34a;
+            border-color: #16a34a;
+            color: white;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 0.4rem;
+            margin-bottom: 0.75rem;
+        }
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #d1d5db;
+            transition: all 0.2s;
+        }
+        .step-dot.active {
+            background-color: #3b82f6;
+            width: 28px;
+            border-radius: 5px;
+        }
+        .step-dot.completed {
+            background-color: #10b981;
+        }
+        .mini-chart {
+            height: 70px;
+        }
+        .index-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        .index-value.negative { color: #dc2626; }
+        .index-value.positive { color: #16a34a; }
+        .index-value.neutral { color: #6b7280; }
+        .metric-good { color: #16a34a; }
+        .metric-warning { color: #d97706; }
+        .metric-bad { color: #dc2626; }
+        .ai-comparison {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .step-content {
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .indicator-card {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .indicator-card:hover {
+            background-color: #f3f4f6;
+        }
+        .indicator-card.selected {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+        .indicator-chart {
+            height: 120px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner13.png" alt="Economic Indicators Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container mx-auto px-4">
+                    <div class="nav-links">
+                        <a href="../../index.html" class="nav-link">← Course Home</a>
+                        <a href="../index.html" class="nav-link">← Activities</a>
+                        <a href="index.html" class="nav-link">Explore Full Data</a>
+                    </div>
+                    <h1 class="activity-title">Recession Detective</h1>
+                    <p class="activity-date">February 10-13, 2026 (Week 6)</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-3 max-w-7xl">
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step-dot active" id="step-dot-0"></div>
+            <div class="step-dot" id="step-dot-1"></div>
+            <div class="step-dot" id="step-dot-2"></div>
+            <div class="step-dot" id="step-dot-3"></div>
+            <div class="step-dot" id="step-dot-4"></div>
+        </div>
+
+        <!-- Step 0: Tutorial - Learn the Indicators -->
+        <div id="step-0" class="step-content">
+            <div class="bg-white rounded-lg shadow-md p-5 mb-4">
+                <h2 class="text-xl font-semibold mb-3">Welcome, Recession Detective!</h2>
+                <p class="text-gray-600 mb-4">
+                    Can you predict recessions better than AI? You'll analyze <strong>12 mystery scenarios</strong> from U.S. history
+                    and decide which ones led to recessions. But first, let's learn about the tools at your disposal.
+                </p>
+
+                <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                    <h3 class="font-semibold text-blue-800 mb-2">What You'll Do:</h3>
+                    <ol class="list-decimal list-inside text-blue-700 space-y-1 text-sm">
+                        <li><strong>Learn</strong> about 8 leading economic indicators</li>
+                        <li><strong>Examine</strong> economic conditions (GDP, unemployment) for 12 mystery periods</li>
+                        <li><strong>Build</strong> your own weighted indicator index</li>
+                        <li><strong>Predict</strong> which scenarios preceded recessions</li>
+                        <li><strong>Compare</strong> your accuracy against AI</li>
+                    </ol>
+                </div>
+
+                <h3 class="text-lg font-semibold mb-3">Your Toolkit: Leading Economic Indicators</h3>
+                <p class="text-gray-600 text-sm mb-3">
+                    Leading indicators are statistics that <em>change before</em> the overall economy changes.
+                    Click each indicator below to see how it behaved before a real recession - then reveal what happened after!
+                    All values are shown as <strong>Z-scores</strong> (standard deviations from average).
+                </p>
+
+                <!-- Indicator Cards Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4" id="indicatorCardsGrid">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <!-- Selected Indicator Detail with Before/After -->
+                <div id="indicatorDetail" class="p-4 bg-gray-50 rounded-lg hidden">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold text-lg" id="indicatorDetailName">-</h4>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded" id="indicatorDetailKey">-</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3" id="indicatorDetailDesc">-</p>
+
+                    <!-- Three charts: Indicator + Unemployment + GDP -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                        <div>
+                            <h5 class="text-xs font-medium text-gray-500 mb-1">Indicator (Z-Score)</h5>
+                            <div class="h-28 bg-white rounded p-2 border">
+                                <canvas id="tutorialIndicatorChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="text-xs font-medium text-gray-500 mb-1">Unemployment Rate (%)</h5>
+                            <div class="h-28 bg-white rounded p-2 border">
+                                <canvas id="tutorialUnempChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="text-xs font-medium text-gray-500 mb-1">GDP Growth (YoY %)</h5>
+                            <div class="h-28 bg-white rounded p-2 border">
+                                <canvas id="tutorialGdpChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legend for vertical lines -->
+                    <div id="tutorialLegend" class="hidden text-xs text-gray-500 mb-2 flex items-center justify-center gap-4">
+                        <span><span class="inline-block w-3 h-0.5 bg-gray-400 mr-1" style="border-top: 2px dashed #9ca3af;"></span> T-0 (Decision Point)</span>
+                        <span><span class="inline-block w-3 h-0.5 bg-red-500 mr-1"></span> Recession Start</span>
+                    </div>
+
+                    <!-- Reveal Button -->
+                    <div id="tutorialRevealSection" class="text-center">
+                        <p class="text-sm text-gray-600 mb-2">This is what the data looked like leading up to T-0 (your decision point). Would you predict a recession?</p>
+                        <button onclick="revealTutorialOutcome()" id="tutorialRevealBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700">
+                            Reveal What Happened →
+                        </button>
+                    </div>
+
+                    <p class="text-xs text-gray-500 mt-3" id="indicatorDetailTip">-</p>
+                </div>
+
+                <div class="mt-5 text-center">
+                    <button onclick="goToStep(1)" class="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">
+                        Start Investigating →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 1: See the Economy -->
+        <div id="step-1" class="step-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-5 mb-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xl font-semibold">Step 1: Examine the Economy</h2>
+                    <button onclick="goToStep(0)" class="text-blue-600 hover:text-blue-800 text-sm">← Tutorial</button>
+                </div>
+                <p class="text-gray-600 text-sm mb-3">
+                    Here are 12 mystery periods from U.S. history (1979-2022). Each shows 24 months of data ending at "T-0" (your decision point).
+                    Click any scenario to see detailed charts.
+                </p>
+
+                <!-- Scenario Grid - Economic Fundamentals -->
+                <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2" id="economyGrid">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <!-- Selected Scenario Detail -->
+                <div id="economyDetail" class="mt-3 p-3 bg-blue-50 rounded-lg hidden">
+                    <h3 class="font-medium mb-2">Scenario <span id="detailEconomyId">A</span> - Economic Conditions</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <h4 class="text-xs font-medium text-gray-600 mb-1">Unemployment Rate (%)</h4>
+                            <div class="h-32 bg-white rounded p-2">
+                                <canvas id="unemploymentChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-medium text-gray-600 mb-1">GDP Growth (YoY %)</h4>
+                            <div class="h-32 bg-white rounded p-2">
+                                <canvas id="gdpChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 grid grid-cols-4 gap-2 text-xs">
+                        <div class="bg-white p-1.5 rounded text-center">
+                            <div class="text-gray-500">Unemp T-0</div>
+                            <div id="detailUnempT0" class="font-semibold">-</div>
+                        </div>
+                        <div class="bg-white p-1.5 rounded text-center">
+                            <div class="text-gray-500">Unemp Δ12mo</div>
+                            <div id="detailUnempChange" class="font-semibold">-</div>
+                        </div>
+                        <div class="bg-white p-1.5 rounded text-center">
+                            <div class="text-gray-500">GDP Latest</div>
+                            <div id="detailGdpT0" class="font-semibold">-</div>
+                        </div>
+                        <div class="bg-white p-1.5 rounded text-center">
+                            <div class="text-gray-500">GDP Δ</div>
+                            <div id="detailGdpChange" class="font-semibold">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <button onclick="goToStep(2)" class="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">
+                        Build Your Indicator →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Build Your Indicator -->
+        <div id="step-2" class="step-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-5 mb-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xl font-semibold">Step 2: Build Your Leading Indicator</h2>
+                    <button onclick="goToStep(1)" class="text-blue-600 hover:text-blue-800 text-sm">← Back</button>
+                </div>
+                <p class="text-gray-600 text-sm mb-3">
+                    Assign weights to each indicator. Select a scenario to see how your index compares to GDP and unemployment.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <!-- Left: Weight Inputs + Scenario Selector -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-medium">Weights (sum to 100%)</h3>
+                            <span class="font-semibold text-blue-600" id="totalWeight">0%</span>
+                        </div>
+                        <div id="weightInputs" class="space-y-1.5"></div>
+
+                        <div class="mt-2 flex gap-2">
+                            <button onclick="equalWeights()" class="flex-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
+                                Equal
+                            </button>
+                            <button onclick="normalizeWeights()" class="flex-1 px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                                Normalize
+                            </button>
+                            <button onclick="resetWeights()" class="flex-1 px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                                Reset
+                            </button>
+                        </div>
+
+                        <!-- Scenario Selector Grid -->
+                        <div class="mt-4">
+                            <h3 class="font-medium mb-2">Select Scenario to View</h3>
+                            <div class="grid grid-cols-6 gap-1" id="indexGrid">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Charts for Selected Scenario (always visible) -->
+                    <div class="bg-gray-50 rounded-lg p-3" id="step2ChartsPanel">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-medium text-sm">Scenario <span id="detailIndexId">A</span></h4>
+                            <div class="text-xs text-gray-500">
+                                Index T-0: <span id="detailIndexT0" class="font-semibold">-</span> |
+                                Unemp: <span id="detailIndexUnemp">-</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 gap-3">
+                            <div>
+                                <h5 class="text-xs font-medium text-gray-500 mb-1">Your Weighted Index</h5>
+                                <div class="h-24 bg-white rounded p-1 border">
+                                    <canvas id="indexTrendChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <h5 class="text-xs font-medium text-gray-500 mb-1">Unemployment (%)</h5>
+                                    <div class="h-20 bg-white rounded p-1 border">
+                                        <canvas id="indexUnempChart"></canvas>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 class="text-xs font-medium text-gray-500 mb-1">GDP Growth (%)</h5>
+                                    <div class="h-20 bg-white rounded p-1 border">
+                                        <canvas id="indexGdpChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2 text-center">Click scenarios on the left to compare</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <button onclick="goToStep(3)" id="step2-next" class="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Make Predictions →
+                    </button>
+                    <p id="step2-warning" class="text-red-500 text-xs mt-1 hidden">Weights must sum to 100%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Make Predictions -->
+        <div id="step-3" class="step-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-5 mb-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xl font-semibold">Step 3: Lock In Your Predictions</h2>
+                    <button onclick="goToStep(2)" class="text-blue-600 hover:text-blue-800 text-sm">← Back</button>
+                </div>
+                <p class="text-gray-600 text-sm mb-3">
+                    Did a recession start within 3-6 months of T-0? Click a scenario to view its data, then make your prediction.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <!-- Left: Prediction Grid -->
+                    <div>
+                        <div class="grid grid-cols-3 md:grid-cols-4 gap-2" id="predictionGrid">
+                            <!-- Populated by JavaScript -->
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="mt-3 p-2 bg-blue-50 rounded-lg flex justify-between items-center text-sm">
+                            <div>
+                                <span class="font-medium">Predictions:</span>
+                                <span id="recessionCount" class="text-red-600 font-semibold ml-1">0</span> R,
+                                <span id="noRecessionCount" class="text-green-600 font-semibold ml-1">0</span> N
+                            </div>
+                            <div>
+                                <span class="text-gray-500">Remaining:</span>
+                                <span id="remainingCount" class="font-semibold ml-1">12</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Charts for Selected Scenario -->
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-medium text-sm">Scenario <span id="step3ScenarioId">A</span></h4>
+                            <div class="text-xs text-gray-500">
+                                Index: <span id="step3IndexT0" class="font-semibold">-</span> |
+                                Unemp: <span id="step3UnempT0">-</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 gap-2">
+                            <div>
+                                <h5 class="text-xs font-medium text-gray-500 mb-1">Your Weighted Index</h5>
+                                <div class="h-20 bg-white rounded p-1 border">
+                                    <canvas id="step3IndexChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <h5 class="text-xs font-medium text-gray-500 mb-1">Unemployment (%)</h5>
+                                    <div class="h-16 bg-white rounded p-1 border">
+                                        <canvas id="step3UnempChart"></canvas>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 class="text-xs font-medium text-gray-500 mb-1">GDP Growth (%)</h5>
+                                    <div class="h-16 bg-white rounded p-1 border">
+                                        <canvas id="step3GdpChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <button onclick="goToStep(4)" id="step3-next" class="px-6 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Compare with AI →
+                    </button>
+                    <p id="step3-warning" class="text-red-500 text-xs mt-1 hidden">Predict all 12 scenarios</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: AI Comparison -->
+        <div id="step-4" class="step-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-5 mb-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xl font-semibold">Step 4: Compare with AI</h2>
+                    <button onclick="goToStep(3)" class="text-blue-600 hover:text-blue-800 text-sm">← Back</button>
+                </div>
+
+                <p class="text-gray-600 text-sm mb-3">
+                    Copy this prompt and paste it into ChatGPT, Claude, or another AI. Then compare predictions!
+                </p>
+
+                <!-- AI Prompt Box -->
+                <div class="ai-comparison p-4 rounded-lg mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-semibold">AI Prompt</h3>
+                        <button onclick="copyAIPrompt()" class="px-3 py-1 bg-white/20 rounded text-sm hover:bg-white/30">
+                            Copy
+                        </button>
+                    </div>
+                    <div class="bg-white/10 p-3 rounded max-h-40 overflow-y-auto">
+                        <pre id="aiPromptText" class="whitespace-pre-wrap text-xs font-mono"></pre>
+                    </div>
+                </div>
+
+                <!-- Side by side comparison -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <h3 class="font-medium text-sm mb-2">Your Predictions</h3>
+                        <div id="yourPredictionsSummary" class="grid grid-cols-6 gap-1 text-center"></div>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-lg">
+                        <h3 class="font-medium text-sm mb-2">AI Predictions</h3>
+                        <div id="aiPredictionInputs" class="grid grid-cols-6 gap-1 text-center"></div>
+                    </div>
+                </div>
+
+                <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <h3 class="font-medium text-yellow-800 text-sm mb-1">Next: TA Reveal!</h3>
+                    <p class="text-xs text-yellow-700">
+                        Submit your predictions via Google Form (TA will share link).
+                        During discussion, your TA will reveal actual outcomes and compare accuracy!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ============================================
+        // STATE
+        // ============================================
+        let scenarioData = null;
+        let weights = {};
+        let predictions = {};
+        let currentStep = 0;
+        let selectedScenarioId = 'A';
+
+        // Chart instances
+        let tutorialIndicatorChart = null;
+        let tutorialUnempChart = null;
+        let tutorialGdpChart = null;
+        let unemploymentChart = null;
+        let gdpChart = null;
+        let indexTrendChart = null;
+        let indexUnempChart = null;
+        let indexGdpChart = null;
+        let selectedIndChart = null;
+        let step3IndexChart = null;
+        let step3UnempChart = null;
+        let step3GdpChart = null;
+
+        // Step 3 selected scenario
+        let step3SelectedScenario = 'A';
+
+        // Tutorial state
+        let tutorialRevealed = false;
+        let currentTutorialIndicator = null;
+
+        // Indicator definitions with descriptions and tips
+        const indicatorInfo = {
+            "10Y2Y_Yield": {
+                name: "Yield Curve (10Y-2Y)",
+                key: "10Y2Y_Yield",
+                desc: "The difference between 10-year and 2-year Treasury yields. When short-term rates exceed long-term rates (inversion), it signals investors expect economic trouble.",
+                tip: "An inverted yield curve (negative value) has preceded every U.S. recession since 1970, typically 12-18 months ahead."
+            },
+            "US_CLI": {
+                name: "OECD CLI",
+                key: "US CLI",
+                desc: "The OECD Composite Leading Indicator combines multiple economic signals into one index, designed to anticipate turning points in the business cycle.",
+                tip: "Values below zero indicate below-trend economic growth expected."
+            },
+            "ISM_New_Orders": {
+                name: "ISM New Orders",
+                key: "ISM New Orders",
+                desc: "New orders component of the ISM Manufacturing survey. Rising orders signal future production increases; falling orders signal slowdown.",
+                tip: "Since manufacturers respond to orders, this leads actual production by 1-3 months."
+            },
+            "Building_Permits": {
+                name: "Building Permits",
+                key: "Building Permits",
+                desc: "New private housing permits authorized. Housing is interest-rate sensitive and leads the economy by 6-12 months.",
+                tip: "Housing downturns have preceded 8 of the last 10 recessions."
+            },
+            "Consumer_Confidence": {
+                name: "Consumer Confidence",
+                key: "Consumer Confidence",
+                desc: "The Conference Board's survey of household expectations about business conditions, jobs, and income.",
+                tip: "Consumer spending is ~70% of GDP, so confidence shifts can forecast spending changes."
+            },
+            "PMI": {
+                name: "PMI",
+                key: "PMI",
+                desc: "Purchasing Managers' Index - a survey of manufacturing executives about production, orders, employment, and prices.",
+                tip: "Values below 50 indicate manufacturing contraction; below 42.9 historically signals recession."
+            },
+            "Initial_Claims": {
+                name: "Initial Claims",
+                key: "4-Week MA Initial Unemployment Claims",
+                desc: "4-week moving average of new unemployment insurance claims. Rising claims signal labor market weakness.",
+                tip: "Note: This indicator is INVERTED in Z-scores - negative values mean rising claims (bad)."
+            },
+            "SP500": {
+                name: "S&P 500",
+                key: "SP500",
+                desc: "The S&P 500 stock index reflects investor expectations about future corporate earnings and economic conditions.",
+                tip: "Markets are forward-looking, but also prone to false signals ('the market has predicted 9 of the last 5 recessions')."
+            }
+        };
+
+        const indicators = Object.keys(indicatorInfo).map(id => ({
+            id,
+            label: indicatorInfo[id].name.split(' ')[0], // Short label
+            key: indicatorInfo[id].key
+        }));
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('data/scenario_data.json');
+                scenarioData = await response.json();
+                initializeWeightInputs();
+                initializePredictions();
+                populateIndicatorCards();
+            } catch (error) {
+                console.error('Error loading scenario data:', error);
+                alert('Error loading scenario data. Please refresh the page.');
+            }
+        });
+
+        // ============================================
+        // STEP 0: INDICATOR TUTORIAL (Before/After View)
+        // ============================================
+        function populateIndicatorCards() {
+            const grid = document.getElementById('indicatorCardsGrid');
+            grid.innerHTML = Object.entries(indicatorInfo).map(([id, info]) => `
+                <div class="indicator-card p-3 bg-white border rounded-lg" onclick="showIndicatorDetail('${id}')">
+                    <div class="font-semibold text-sm text-gray-800">${info.name}</div>
+                    <div class="text-xs text-gray-500 mt-1 line-clamp-2">${info.desc.substring(0, 60)}...</div>
+                </div>
+            `).join('');
+        }
+
+        function showIndicatorDetail(indicatorId) {
+            // Update selection
+            document.querySelectorAll('.indicator-card').forEach(card => card.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+
+            currentTutorialIndicator = indicatorId;
+            tutorialRevealed = false;
+
+            const info = indicatorInfo[indicatorId];
+            document.getElementById('indicatorDetailName').textContent = info.name;
+            document.getElementById('indicatorDetailKey').textContent = info.key;
+            document.getElementById('indicatorDetailDesc').textContent = info.desc;
+            document.getElementById('indicatorDetailTip').textContent = '💡 ' + info.tip;
+            document.getElementById('indicatorDetail').classList.remove('hidden');
+
+            // Reset reveal state - show button, hide legend
+            document.getElementById('tutorialRevealSection').classList.remove('hidden');
+            document.getElementById('tutorialRevealBtn').disabled = false;
+            document.getElementById('tutorialLegend').classList.add('hidden');
+
+            // Draw before-only charts (T-23 to T-0)
+            drawTutorialCharts(indicatorId, false);
+        }
+
+        function drawTutorialCharts(indicatorId, showAfter) {
+            const tutorial = scenarioData.tutorial_example;
+            const info = indicatorInfo[indicatorId];
+            const t0Index = tutorial.t0_index;
+            const recessionStartIndex = t0Index + 3; // Recession started 3 months after T-0
+
+            // Get data - only up to T-0 unless revealed
+            const endIndex = showAfter ? tutorial.periods.length : t0Index + 1;
+            const periods = tutorial.periods.slice(0, endIndex);
+            const indicatorValues = tutorial.indicators[info.key]?.slice(0, endIndex) || [];
+            const unempValues = tutorial.fundamentals['Unemployment Rate']?.slice(0, endIndex) || [];
+            const gdpValues = tutorial.fundamentals['US_GDP_YOY']?.slice(0, endIndex) || [];
+
+            // Destroy existing charts
+            if (tutorialIndicatorChart) tutorialIndicatorChart.destroy();
+            if (tutorialUnempChart) tutorialUnempChart.destroy();
+            if (tutorialGdpChart) tutorialGdpChart.destroy();
+
+            // Show/hide legend based on reveal state
+            document.getElementById('tutorialLegend').classList.toggle('hidden', !showAfter);
+
+            // Common annotation config for recession line
+            const getAnnotations = (includeRecession) => {
+                const annotations = {};
+                if (showAfter) {
+                    // T-0 line (dashed gray)
+                    annotations.t0Line = {
+                        type: 'line',
+                        xMin: t0Index,
+                        xMax: t0Index,
+                        borderColor: '#9ca3af',
+                        borderWidth: 2,
+                        borderDash: [5, 5]
+                    };
+                    // Recession start line (solid red)
+                    if (includeRecession && recessionStartIndex < endIndex) {
+                        annotations.recessionLine = {
+                            type: 'line',
+                            xMin: recessionStartIndex,
+                            xMax: recessionStartIndex,
+                            borderColor: '#dc2626',
+                            borderWidth: 2
+                        };
+                    }
+                }
+                return annotations;
+            };
+
+            // Draw indicator chart
+            const indCtx = document.getElementById('tutorialIndicatorChart').getContext('2d');
+            tutorialIndicatorChart = new Chart(indCtx, {
+                type: 'line',
+                data: {
+                    labels: periods,
+                    datasets: [{
+                        data: indicatorValues,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 1,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        annotation: { annotations: getAnnotations(true) }
+                    },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 5, font: { size: 7 } } },
+                        y: { ticks: { font: { size: 7 } } }
+                    }
+                }
+            });
+
+            // Draw unemployment chart
+            const unempCtx = document.getElementById('tutorialUnempChart').getContext('2d');
+            tutorialUnempChart = new Chart(unempCtx, {
+                type: 'line',
+                data: {
+                    labels: periods,
+                    datasets: [{
+                        data: unempValues,
+                        borderColor: '#dc2626',
+                        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 1,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        annotation: { annotations: getAnnotations(true) }
+                    },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 5, font: { size: 7 } } },
+                        y: { ticks: { font: { size: 7 } } }
+                    }
+                }
+            });
+
+            // Draw GDP chart
+            const gdpCtx = document.getElementById('tutorialGdpChart').getContext('2d');
+            tutorialGdpChart = new Chart(gdpCtx, {
+                type: 'line',
+                data: {
+                    labels: periods,
+                    datasets: [{
+                        data: gdpValues,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 1,
+                        tension: 0.3,
+                        spanGaps: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        annotation: { annotations: getAnnotations(true) }
+                    },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 5, font: { size: 7 } } },
+                        y: { ticks: { font: { size: 7 } } }
+                    }
+                }
+            });
+        }
+
+        function revealTutorialOutcome() {
+            tutorialRevealed = true;
+            document.getElementById('tutorialRevealBtn').disabled = true;
+            document.getElementById('tutorialRevealSection').classList.add('hidden');
+
+            // Redraw charts with post-recession data and recession line
+            drawTutorialCharts(currentTutorialIndicator, true);
+        }
+
+        // ============================================
+        // STEP 1: ECONOMY DISPLAY
+        // ============================================
+        function populateEconomyGrid() {
+            const grid = document.getElementById('economyGrid');
+            grid.innerHTML = scenarioData.scenarios.map(scenario => {
+                const data = scenarioData.scenario_data[scenario.id];
+                const unemp = data.fundamentals['Unemployment Rate'];
+                const gdp = data.fundamentals['US_GDP_YOY'];
+
+                const unempT0 = unemp[unemp.length - 1];
+                const gdpValues = gdp.filter(v => v !== null);
+                const gdpLatest = gdpValues.length > 0 ? gdpValues[gdpValues.length - 1] : null;
+
+                const unempClass = unempT0 > 7 ? 'metric-bad' : unempT0 > 5 ? 'metric-warning' : 'metric-good';
+                const gdpClass = gdpLatest < 0 ? 'metric-bad' : gdpLatest < 2 ? 'metric-warning' : 'metric-good';
+
+                return `
+                    <div class="scenario-card bg-gray-50 p-2 rounded-lg" onclick="showEconomyDetail('${scenario.id}')">
+                        <div class="text-center font-bold text-lg text-gray-800 mb-1">${scenario.id}</div>
+                        <div class="grid grid-cols-2 gap-1 text-xs">
+                            <div class="text-center">
+                                <div class="text-gray-400">U</div>
+                                <div class="font-semibold ${unempClass}">${unempT0?.toFixed(1) || '-'}%</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-400">GDP</div>
+                                <div class="font-semibold ${gdpClass}">${gdpLatest?.toFixed(1) || '-'}%</div>
+                            </div>
+                        </div>
+                        <div class="mt-1">
+                            <canvas id="mini-unemp-${scenario.id}" class="mini-chart"></canvas>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            scenarioData.scenarios.forEach(scenario => drawMiniUnemploymentChart(scenario.id));
+        }
+
+        function drawMiniUnemploymentChart(scenarioId) {
+            const canvas = document.getElementById(`mini-unemp-${scenarioId}`);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const data = scenarioData.scenario_data[scenarioId];
+            const unemp = data.fundamentals['Unemployment Rate'];
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.periods,
+                    datasets: [{
+                        data: unemp,
+                        borderColor: '#6b7280',
+                        borderWidth: 1.5,
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: false } },
+                    animation: false
+                }
+            });
+        }
+
+        function showEconomyDetail(scenarioId) {
+            selectedScenarioId = scenarioId;
+
+            document.querySelectorAll('#economyGrid .scenario-card').forEach(card => card.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+
+            const detail = document.getElementById('economyDetail');
+            detail.classList.remove('hidden');
+            document.getElementById('detailEconomyId').textContent = scenarioId;
+
+            const data = scenarioData.scenario_data[scenarioId];
+            const unemp = data.fundamentals['Unemployment Rate'];
+            const gdp = data.fundamentals['US_GDP_YOY'];
+            const periods = data.periods;
+
+            const unempT0 = unemp[unemp.length - 1];
+            const unempT12 = unemp[unemp.length - 13];
+            document.getElementById('detailUnempT0').textContent = unempT0 ? unempT0.toFixed(1) + '%' : 'N/A';
+            document.getElementById('detailUnempChange').textContent = (unempT0 && unempT12) ?
+                (unempT0 - unempT12 > 0 ? '+' : '') + (unempT0 - unempT12).toFixed(1) + '%' : 'N/A';
+
+            const gdpValues = gdp.filter(v => v !== null);
+            const gdpT0 = gdpValues.length > 0 ? gdpValues[gdpValues.length - 1] : null;
+            const gdpT4 = gdpValues.length > 4 ? gdpValues[gdpValues.length - 5] : null;
+            document.getElementById('detailGdpT0').textContent = gdpT0 ? gdpT0.toFixed(1) + '%' : 'N/A';
+            document.getElementById('detailGdpChange').textContent = (gdpT0 && gdpT4) ?
+                (gdpT0 - gdpT4 > 0 ? '+' : '') + (gdpT0 - gdpT4).toFixed(1) + '%' : 'N/A';
+
+            if (unemploymentChart) unemploymentChart.destroy();
+            const unempCtx = document.getElementById('unemploymentChart').getContext('2d');
+            unemploymentChart = new Chart(unempCtx, {
+                type: 'line',
+                data: {
+                    labels: periods,
+                    datasets: [{ data: unemp, borderColor: '#3b82f6', borderWidth: 2, fill: false, pointRadius: 1, tension: 0.3 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 5, font: { size: 8 } } },
+                        y: { ticks: { font: { size: 8 } } }
+                    }
+                }
+            });
+
+            if (gdpChart) gdpChart.destroy();
+            const gdpCtx = document.getElementById('gdpChart').getContext('2d');
+            gdpChart = new Chart(gdpCtx, {
+                type: 'line',
+                data: {
+                    labels: periods,
+                    datasets: [{ data: gdp, borderColor: '#10b981', borderWidth: 2, fill: false, pointRadius: 2, tension: 0.3, spanGaps: true }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 5, font: { size: 8 } } },
+                        y: { ticks: { font: { size: 8 } } }
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // STEP 2: WEIGHTS & INDEX
+        // ============================================
+        function initializeWeightInputs() {
+            const container = document.getElementById('weightInputs');
+            container.innerHTML = indicators.map(ind => {
+                const info = indicatorInfo[ind.id];
+                return `
+                <div class="flex items-center space-x-1">
+                    <button onclick="showIndicatorForScenario('${ind.id}')" class="w-16 text-xs font-medium text-blue-600 hover:text-blue-800 truncate text-left" title="${info.name}">${info.name.split('(')[0].trim().substring(0,12)}</button>
+                    <input type="range" id="weight_${ind.id}" class="flex-1 h-1.5" min="0" max="100" value="0" step="1"
+                        oninput="updateWeight('${ind.id}', this.value)">
+                    <input type="number" id="weight_num_${ind.id}" class="w-10 text-right border rounded px-1 py-0.5 text-xs"
+                        min="0" max="100" value="0" step="1"
+                        oninput="updateWeight('${ind.id}', this.value)">
+                    <span class="text-xs text-gray-400">%</span>
+                </div>
+            `}).join('');
+
+            indicators.forEach(ind => weights[ind.id] = 0);
+            updateTotalWeight();
+        }
+
+        function initializePredictions() {
+            if (!scenarioData) return;
+            scenarioData.scenarios.forEach(s => predictions[s.id] = null);
+        }
+
+        function showIndicatorForScenario(indicatorId) {
+            const info = indicatorInfo[indicatorId];
+            const data = scenarioData.scenario_data[selectedScenarioId];
+            const values = data.indicators[info.key] || [];
+
+            document.getElementById('selectedIndName').textContent = info.name;
+            document.getElementById('selectedIndScenario').textContent = selectedScenarioId;
+            document.getElementById('selectedIndicatorDetail').classList.remove('hidden');
+
+            if (selectedIndChart) selectedIndChart.destroy();
+            const ctx = document.getElementById('selectedIndChart').getContext('2d');
+            selectedIndChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.periods,
+                    datasets: [{ data: values, borderColor: '#8b5cf6', borderWidth: 2, fill: false, pointRadius: 1, tension: 0.3 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 5, font: { size: 7 } } },
+                        y: { ticks: { font: { size: 7 } } }
+                    }
+                }
+            });
+        }
+
+        function updateWeight(id, value) {
+            value = Math.max(0, Math.min(100, parseFloat(value) || 0));
+            weights[id] = value;
+            document.getElementById(`weight_${id}`).value = value;
+            document.getElementById(`weight_num_${id}`).value = value;
+            updateTotalWeight();
+            updateIndexGrid();
+        }
+
+        function updateTotalWeight() {
+            const total = Object.values(weights).reduce((a, b) => a + b, 0);
+            document.getElementById('totalWeight').textContent = total.toFixed(0) + '%';
+
+            const btn = document.getElementById('step2-next');
+            const warning = document.getElementById('step2-warning');
+
+            if (Math.abs(total - 100) < 0.5 && total > 0) {
+                btn.disabled = false;
+                warning.classList.add('hidden');
+            } else {
+                btn.disabled = true;
+                warning.classList.remove('hidden');
+                warning.textContent = total === 0 ? 'Assign weights' : `Sum: ${total.toFixed(0)}% (need 100%)`;
+            }
+        }
+
+        function normalizeWeights() {
+            const total = Object.values(weights).reduce((a, b) => a + b, 0);
+            if (total === 0) return;
+            indicators.forEach(ind => updateWeight(ind.id, Math.round((weights[ind.id] / total) * 100)));
+            const newTotal = Object.values(weights).reduce((a, b) => a + b, 0);
+            if (newTotal !== 100) {
+                const maxId = indicators.reduce((a, b) => weights[a.id] > weights[b.id] ? a : b).id;
+                updateWeight(maxId, weights[maxId] + (100 - newTotal));
+            }
+        }
+
+        function equalWeights() {
+            const weight = Math.floor(100 / indicators.length);
+            const remainder = 100 - (weight * indicators.length);
+            indicators.forEach((ind, i) => updateWeight(ind.id, weight + (i < remainder ? 1 : 0)));
+        }
+
+        function resetWeights() {
+            indicators.forEach(ind => updateWeight(ind.id, 0));
+        }
+
+        function calculateScenarioIndex(scenarioId) {
+            const data = scenarioData.scenario_data[scenarioId];
+            const periods = data.periods;
+            return periods.map((period, i) => {
+                let value = 0, totalWeight = 0;
+                indicators.forEach(ind => {
+                    const w = weights[ind.id];
+                    if (w > 0) {
+                        const indData = data.indicators[ind.key];
+                        if (indData && indData[i] !== null) {
+                            value += indData[i] * (w / 100);
+                            totalWeight += w;
+                        }
+                    }
+                });
+                return { period, value: totalWeight > 0 ? value : null };
+            });
+        }
+
+        function updateIndexGrid(initialLoad = false) {
+            const grid = document.getElementById('indexGrid');
+            if (!grid || !scenarioData) return;
+
+            const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+
+            grid.innerHTML = scenarioData.scenarios.map(scenario => {
+                let t0Value = null, valueClass = 'neutral';
+                if (totalWeight > 0) {
+                    const indexValues = calculateScenarioIndex(scenario.id);
+                    t0Value = indexValues.find(v => v.period === 'T-0')?.value;
+                    valueClass = t0Value < -0.5 ? 'negative' : t0Value > 0.5 ? 'positive' : 'neutral';
+                }
+                const isSelected = scenario.id === selectedScenarioId;
+                return `
+                    <div class="scenario-card bg-gray-50 p-1.5 rounded text-center ${isSelected ? 'selected' : ''}" onclick="showIndexDetail('${scenario.id}')">
+                        <div class="font-bold text-sm">${scenario.id}</div>
+                        <div class="index-value text-xs ${valueClass}">${t0Value !== null ? t0Value.toFixed(2) : '-'}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Also update the charts for the currently selected scenario
+            if (initialLoad || currentStep === 2) {
+                showIndexDetail(selectedScenarioId, false);
+            }
+        }
+
+        function showIndexDetail(scenarioId, fromClick = true) {
+            selectedScenarioId = scenarioId;
+
+            // Update selection highlighting
+            document.querySelectorAll('#indexGrid .scenario-card').forEach((card, i) => {
+                card.classList.toggle('selected', scenarioData.scenarios[i].id === scenarioId);
+            });
+
+            document.getElementById('detailIndexId').textContent = scenarioId;
+
+            const data = scenarioData.scenario_data[scenarioId];
+            const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+            const indexValues = totalWeight > 0 ? calculateScenarioIndex(scenarioId) : [];
+            const t0 = indexValues.find(v => v.period === 'T-0')?.value;
+            const unemp = data.fundamentals['Unemployment Rate'];
+            const gdp = data.fundamentals['US_GDP_YOY'];
+            const unempT0 = unemp[unemp.length - 1];
+
+            document.getElementById('detailIndexT0').textContent = t0?.toFixed(2) || '-';
+            document.getElementById('detailIndexUnemp').textContent = unempT0?.toFixed(1) + '%' || '-';
+
+            // Draw index trend chart
+            if (indexTrendChart) indexTrendChart.destroy();
+            const ctx = document.getElementById('indexTrendChart').getContext('2d');
+            indexTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: totalWeight > 0 ? indexValues.map(v => v.period) : data.periods,
+                    datasets: [{
+                        data: totalWeight > 0 ? indexValues.map(v => v.value) : data.periods.map(() => null),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 1,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 5, font: { size: 7 } } },
+                        y: { ticks: { font: { size: 7 } } }
+                    }
+                }
+            });
+
+            // Draw unemployment chart for this scenario
+            if (indexUnempChart) indexUnempChart.destroy();
+            const unempCtx = document.getElementById('indexUnempChart').getContext('2d');
+            indexUnempChart = new Chart(unempCtx, {
+                type: 'line',
+                data: {
+                    labels: data.periods,
+                    datasets: [{
+                        data: unemp,
+                        borderColor: '#dc2626',
+                        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 1,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 5, font: { size: 7 } } },
+                        y: { ticks: { font: { size: 7 } } }
+                    }
+                }
+            });
+
+            // Draw GDP chart for this scenario
+            if (indexGdpChart) indexGdpChart.destroy();
+            const gdpCtx = document.getElementById('indexGdpChart').getContext('2d');
+            indexGdpChart = new Chart(gdpCtx, {
+                type: 'line',
+                data: {
+                    labels: data.periods,
+                    datasets: [{
+                        data: gdp,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 1,
+                        tension: 0.3,
+                        spanGaps: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 5, font: { size: 7 } } },
+                        y: { ticks: { font: { size: 7 } } }
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // STEP 3: PREDICTIONS
+        // ============================================
+        function populatePredictionGrid(initialLoad = false) {
+            const grid = document.getElementById('predictionGrid');
+            const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+
+            grid.innerHTML = scenarioData.scenarios.map(scenario => {
+                let t0Value = null;
+                if (totalWeight > 0) {
+                    t0Value = calculateScenarioIndex(scenario.id).find(v => v.period === 'T-0')?.value;
+                }
+                const pred = predictions[scenario.id];
+                const isSelected = scenario.id === step3SelectedScenario;
+
+                return `
+                    <div class="scenario-card p-2 rounded-lg cursor-pointer ${isSelected ? 'selected' : 'bg-gray-50'}" onclick="selectStep3Scenario('${scenario.id}')">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold">${scenario.id}</span>
+                            <span class="text-xs text-gray-400">${t0Value?.toFixed(1) || '-'}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1">
+                            <button onclick="event.stopPropagation(); togglePrediction('${scenario.id}', 'recession')"
+                                class="prediction-btn recession py-1 rounded border text-xs font-medium ${pred === 'recession' ? 'active' : ''}">R</button>
+                            <button onclick="event.stopPropagation(); togglePrediction('${scenario.id}', 'no_recession')"
+                                class="prediction-btn no-recession py-1 rounded border text-xs font-medium ${pred === 'no_recession' ? 'active' : ''}">N</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            updatePredictionCounts();
+
+            // Show charts for selected scenario
+            if (initialLoad) {
+                showStep3Charts(step3SelectedScenario);
+            }
+        }
+
+        function selectStep3Scenario(scenarioId) {
+            step3SelectedScenario = scenarioId;
+            // Update selection highlighting
+            document.querySelectorAll('#predictionGrid .scenario-card').forEach((card, i) => {
+                card.classList.toggle('selected', scenarioData.scenarios[i].id === scenarioId);
+                card.classList.toggle('bg-gray-50', scenarioData.scenarios[i].id !== scenarioId);
+            });
+            showStep3Charts(scenarioId);
+        }
+
+        function showStep3Charts(scenarioId) {
+            const data = scenarioData.scenario_data[scenarioId];
+            const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+            const indexValues = totalWeight > 0 ? calculateScenarioIndex(scenarioId) : [];
+            const t0 = indexValues.find(v => v.period === 'T-0')?.value;
+            const unemp = data.fundamentals['Unemployment Rate'];
+            const gdp = data.fundamentals['US_GDP_YOY'];
+            const unempT0 = unemp[unemp.length - 1];
+
+            document.getElementById('step3ScenarioId').textContent = scenarioId;
+            document.getElementById('step3IndexT0').textContent = t0?.toFixed(2) || '-';
+            document.getElementById('step3UnempT0').textContent = unempT0?.toFixed(1) + '%' || '-';
+
+            // Draw index chart
+            if (step3IndexChart) step3IndexChart.destroy();
+            const indexCtx = document.getElementById('step3IndexChart').getContext('2d');
+            step3IndexChart = new Chart(indexCtx, {
+                type: 'line',
+                data: {
+                    labels: totalWeight > 0 ? indexValues.map(v => v.period) : data.periods,
+                    datasets: [{
+                        data: totalWeight > 0 ? indexValues.map(v => v.value) : data.periods.map(() => null),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 1,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 5, font: { size: 7 } } },
+                        y: { ticks: { font: { size: 7 } } }
+                    }
+                }
+            });
+
+            // Draw unemployment chart
+            if (step3UnempChart) step3UnempChart.destroy();
+            const unempCtx = document.getElementById('step3UnempChart').getContext('2d');
+            step3UnempChart = new Chart(unempCtx, {
+                type: 'line',
+                data: {
+                    labels: data.periods,
+                    datasets: [{
+                        data: unemp,
+                        borderColor: '#dc2626',
+                        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 1,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 4, font: { size: 6 } } },
+                        y: { ticks: { font: { size: 6 } } }
+                    }
+                }
+            });
+
+            // Draw GDP chart
+            if (step3GdpChart) step3GdpChart.destroy();
+            const gdpCtx = document.getElementById('step3GdpChart').getContext('2d');
+            step3GdpChart = new Chart(gdpCtx, {
+                type: 'line',
+                data: {
+                    labels: data.periods,
+                    datasets: [{
+                        data: gdp,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 1,
+                        tension: 0.3,
+                        spanGaps: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 4, font: { size: 6 } } },
+                        y: { ticks: { font: { size: 6 } } }
+                    }
+                }
+            });
+        }
+
+        function togglePrediction(scenarioId, value) {
+            predictions[scenarioId] = predictions[scenarioId] === value ? null : value;
+            populatePredictionGrid();
+        }
+
+        function updatePredictionCounts() {
+            const recCount = Object.values(predictions).filter(p => p === 'recession').length;
+            const noRecCount = Object.values(predictions).filter(p => p === 'no_recession').length;
+            const remaining = 12 - recCount - noRecCount;
+
+            document.getElementById('recessionCount').textContent = recCount;
+            document.getElementById('noRecessionCount').textContent = noRecCount;
+            document.getElementById('remainingCount').textContent = remaining;
+
+            const btn = document.getElementById('step3-next');
+            const warning = document.getElementById('step3-warning');
+            btn.disabled = remaining > 0;
+            warning.classList.toggle('hidden', remaining === 0);
+        }
+
+        // ============================================
+        // STEP 4: AI COMPARISON
+        // ============================================
+        function populateAIComparison() {
+            const yourSummary = document.getElementById('yourPredictionsSummary');
+            yourSummary.innerHTML = scenarioData.scenarios.map(s => {
+                const pred = predictions[s.id];
+                const bgClass = pred === 'recession' ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800';
+                return `<div class="p-1 rounded text-xs font-bold ${bgClass}">${s.id}:${pred === 'recession' ? 'R' : 'N'}</div>`;
+            }).join('');
+
+            const aiInputs = document.getElementById('aiPredictionInputs');
+            aiInputs.innerHTML = scenarioData.scenarios.map(s => `
+                <select id="ai_${s.id}" class="w-full text-xs p-0.5 border rounded">
+                    <option value="">${s.id}:?</option>
+                    <option value="R">${s.id}:R</option>
+                    <option value="N">${s.id}:N</option>
+                </select>
+            `).join('');
+
+            generateAIPrompt();
+        }
+
+        function generateAIPrompt() {
+            // Generate detailed data for each scenario
+            const scenarioDetails = scenarioData.scenarios.map(s => {
+                const data = scenarioData.scenario_data[s.id];
+                const unemp = data.fundamentals['Unemployment Rate'];
+                const gdp = data.fundamentals['US_GDP_YOY'];
+
+                // Unemployment analysis
+                const unempT0 = unemp[unemp.length - 1];
+                const unempT6 = unemp[unemp.length - 7];
+                const unempT12 = unemp[unemp.length - 13];
+                const unempChange6mo = (unempT0 && unempT6) ? (unempT0 - unempT6).toFixed(2) : 'N/A';
+                const unempChange12mo = (unempT0 && unempT12) ? (unempT0 - unempT12).toFixed(2) : 'N/A';
+
+                // GDP analysis
+                const gdpValues = gdp.filter(v => v !== null);
+                const gdpLatest = gdpValues.length > 0 ? gdpValues[gdpValues.length - 1] : null;
+                const gdpPrev = gdpValues.length > 3 ? gdpValues[gdpValues.length - 4] : null;
+                const gdpTrend = (gdpLatest && gdpPrev) ? (gdpLatest - gdpPrev).toFixed(2) : 'N/A';
+
+                // Leading indicator Z-scores at T-0
+                const indicators = data.indicators;
+                const yieldCurve = indicators['10Y2Y_Yield']?.[23]?.toFixed(2) || 'N/A';
+                const cli = indicators['US CLI']?.[23]?.toFixed(2) || 'N/A';
+                const ismOrders = indicators['ISM New Orders']?.[23]?.toFixed(2) || 'N/A';
+                const permits = indicators['Building Permits']?.[23]?.toFixed(2) || 'N/A';
+                const confidence = indicators['Consumer Confidence']?.[23]?.toFixed(2) || 'N/A';
+                const pmi = indicators['PMI']?.[23]?.toFixed(2) || 'N/A';
+                const claims = indicators['4-Week MA Initial Unemployment Claims']?.[23]?.toFixed(2) || 'N/A';
+                const sp500 = indicators['SP500']?.[23]?.toFixed(2) || 'N/A';
+
+                // 6-month trends for key indicators
+                const yieldT6 = indicators['10Y2Y_Yield']?.[17];
+                const yieldTrend = (yieldCurve !== 'N/A' && yieldT6) ? (parseFloat(yieldCurve) - yieldT6).toFixed(2) : 'N/A';
+                const cliT6 = indicators['US CLI']?.[17];
+                const cliTrend = (cli !== 'N/A' && cliT6) ? (parseFloat(cli) - cliT6).toFixed(2) : 'N/A';
+
+                return `
+SCENARIO ${s.id}:
+  Fundamentals at T-0:
+    - Unemployment: ${unempT0?.toFixed(1) || 'N/A'}% (6mo change: ${unempChange6mo}, 12mo change: ${unempChange12mo})
+    - GDP YoY: ${gdpLatest?.toFixed(1) || 'N/A'}% (3mo trend: ${gdpTrend})
+  Leading Indicators (Z-scores, negative = below average):
+    - Yield Curve (10Y-2Y): ${yieldCurve} (6mo trend: ${yieldTrend}) [inverted/negative preceded all recessions since 1970]
+    - OECD CLI: ${cli} (6mo trend: ${cliTrend}) [below 0 = below-trend growth expected]
+    - ISM New Orders: ${ismOrders} [manufacturing demand signal]
+    - Building Permits: ${permits} [housing leads economy 6-12 months]
+    - Consumer Confidence: ${confidence} [spending intentions]
+    - PMI: ${pmi} [<0 indicates contraction]
+    - Initial Claims: ${claims} [INVERTED: negative = rising claims = bad]
+    - S&P 500: ${sp500} [market expectations]`;
+            }).join('\n');
+
+            document.getElementById('aiPromptText').textContent = `You are an economic forecaster. I have 12 anonymized U.S. economic scenarios from 1979-2022. Each scenario shows 24 months of data leading up to a decision point (T-0). Your task is to predict whether a recession started within 3-6 months AFTER T-0.
+
+IMPORTANT CONTEXT:
+- All leading indicator values are Z-scores (standard deviations from historical mean)
+- Negative Z-scores indicate below-average/contractionary conditions
+- The yield curve (10Y-2Y spread) has inverted before every U.S. recession since 1970
+- Initial Claims are INVERTED: negative Z-score means claims are RISING (bad)
+- Some scenarios look scary but didn't lead to recession (false alarms)
+- Some scenarios look mild but recession followed (surprises)
+
+DATA FOR EACH SCENARIO:
+${scenarioDetails}
+
+YOUR TASK:
+For each scenario A through L, predict: Did a recession start within 3-6 months of T-0?
+
+Format your answer EXACTLY like this:
+A:R, B:N, C:R, D:N, E:R, F:N, G:R, H:N, I:R, J:N, K:R, L:N
+(R = Recession, N = No Recession)
+
+After your predictions, briefly explain your reasoning for 2-3 scenarios you found most challenging.`;
+        }
+
+        function copyAIPrompt() {
+            navigator.clipboard.writeText(document.getElementById('aiPromptText').textContent).then(() => alert('Copied!'));
+        }
+
+        // ============================================
+        // NAVIGATION
+        // ============================================
+        function goToStep(step) {
+            for (let i = 0; i <= 4; i++) {
+                document.getElementById(`step-${i}`).classList.add('hidden');
+                document.getElementById(`step-dot-${i}`).classList.remove('active', 'completed');
+                if (i < step) document.getElementById(`step-dot-${i}`).classList.add('completed');
+            }
+            document.getElementById(`step-${step}`).classList.remove('hidden');
+            document.getElementById(`step-dot-${step}`).classList.add('active');
+
+            if (step === 1) populateEconomyGrid();
+            else if (step === 2) updateIndexGrid(true);
+            else if (step === 3) populatePredictionGrid(true);
+            else if (step === 4) populateAIComparison();
+
+            currentStep = step;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

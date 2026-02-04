@@ -1,0 +1,104 @@
+{
+  "scenarios": [
+    {
+      "id": "A",
+      "t0_date": "1979-10-01",
+      "actual_outcome": "recession",
+      "recession_start": "1980-01-01",
+      "description": "Volcker tightening - Fed raised rates aggressively to fight inflation",
+      "months_to_recession": 3
+    },
+    {
+      "id": "B",
+      "t0_date": "1981-04-01",
+      "actual_outcome": "recession",
+      "recession_start": "1981-07-01",
+      "description": "Double-dip recession - Second Volcker tightening",
+      "months_to_recession": 3
+    },
+    {
+      "id": "C",
+      "t0_date": "1987-10-01",
+      "actual_outcome": "no_recession",
+      "description": "Black Monday - Stock market crashed 22% in one day, but no recession followed",
+      "months_to_recession": null
+    },
+    {
+      "id": "D",
+      "t0_date": "1990-04-01",
+      "actual_outcome": "recession",
+      "recession_start": "1990-07-01",
+      "description": "Gulf War recession - Oil price spike and S&L crisis aftermath",
+      "months_to_recession": 3
+    },
+    {
+      "id": "E",
+      "t0_date": "1998-09-01",
+      "actual_outcome": "no_recession",
+      "description": "LTCM/Russia crisis - Major hedge fund collapse and Russian default, but Fed cut rates and economy continued",
+      "months_to_recession": null
+    },
+    {
+      "id": "F",
+      "t0_date": "2000-12-01",
+      "actual_outcome": "recession",
+      "recession_start": "2001-03-01",
+      "description": "Dot-com bust - Tech bubble burst and 9/11 aftermath",
+      "months_to_recession": 3
+    },
+    {
+      "id": "G",
+      "t0_date": "2007-09-01",
+      "actual_outcome": "recession",
+      "recession_start": "2007-12-01",
+      "description": "Great Recession - Housing bubble burst and financial crisis",
+      "months_to_recession": 3
+    },
+    {
+      "id": "H",
+      "t0_date": "2011-09-01",
+      "actual_outcome": "no_recession",
+      "description": "Debt ceiling crisis and European sovereign debt fears - Markets tumbled but economy held",
+      "months_to_recession": null
+    },
+    {
+      "id": "I",
+      "t0_date": "2016-02-01",
+      "actual_outcome": "no_recession",
+      "description": "China slowdown fears - Manufacturing recession and oil price collapse, but services kept economy growing",
+      "months_to_recession": null
+    },
+    {
+      "id": "J",
+      "t0_date": "2018-12-01",
+      "actual_outcome": "no_recession",
+      "description": "Q4 2018 selloff - Fed tightening fears and trade war, 20% market drop, but no recession",
+      "months_to_recession": null
+    },
+    {
+      "id": "K",
+      "t0_date": "2019-11-01",
+      "actual_outcome": "recession",
+      "recession_start": "2020-02-01",
+      "description": "COVID-19 pandemic - Black swan event, shortest recession on record",
+      "months_to_recession": 3
+    },
+    {
+      "id": "L",
+      "t0_date": "2022-10-01",
+      "actual_outcome": "no_recession",
+      "description": "2022 yield curve inversion - Most inverted curve since 1980s, everyone predicted recession, but it never came",
+      "months_to_recession": null
+    }
+  ],
+  "indicators": [
+    {"key": "10Y2Y_Yield", "name": "10Y-2Y Yield Spread", "description": "Difference between 10-year and 2-year Treasury yields"},
+    {"key": "US CLI", "name": "OECD CLI", "description": "OECD Composite Leading Indicator for the US"},
+    {"key": "ISM New Orders", "name": "ISM New Orders", "description": "ISM Manufacturing New Orders Index"},
+    {"key": "Building Permits", "name": "Building Permits", "description": "New private housing units authorized"},
+    {"key": "Consumer Confidence", "name": "Consumer Confidence", "description": "Conference Board Consumer Confidence Index"},
+    {"key": "PMI", "name": "PMI", "description": "ISM Manufacturing PMI"},
+    {"key": "4-Week MA Initial Unemployment Claims", "name": "Initial Claims", "description": "4-week moving average of initial unemployment claims (inverted - higher is worse)"},
+    {"key": "SP500", "name": "S&P 500", "description": "S&P 500 stock index"}
+  ]
+}

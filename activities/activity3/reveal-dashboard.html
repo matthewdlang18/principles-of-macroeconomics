@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reveal Dashboard - Recession Detective</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .banner-container {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7));
+            color: white;
+            padding: 2rem;
+        }
+        .reveal-btn {
+            transition: all 0.3s;
+        }
+        .reveal-btn:hover {
+            transform: scale(1.02);
+        }
+        .scenario-revealed {
+            animation: revealPulse 0.5s ease-out;
+        }
+        @keyframes revealPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .outcome-recession {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border-color: #fca5a5;
+        }
+        .outcome-no-recession {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border-color: #86efac;
+        }
+        .hidden-outcome {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        }
+        .results-hidden {
+            filter: blur(8px);
+            user-select: none;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Password Protection Overlay -->
+    <div id="passwordOverlay" class="fixed inset-0 bg-gray-900 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-semibold mb-4 text-center">TA Access Required</h2>
+            <p class="text-gray-600 mb-6 text-center">Enter the password to access the reveal dashboard.</p>
+            <div class="mb-4">
+                <input type="password" id="passwordInput" placeholder="Enter password"
+                    class="w-full p-3 border rounded-lg text-center text-lg"
+                    onkeypress="if(event.key === 'Enter') checkPassword()">
+            </div>
+            <button onclick="checkPassword()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700">
+                Access Dashboard
+            </button>
+            <p id="passwordError" class="text-red-500 text-center mt-3 hidden">Incorrect password. Try again.</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="banner-container">
+            <img src="../../images/banner13.png" alt="Economic Indicators Banner" class="banner-image">
+            <div class="banner-overlay">
+                <div class="container mx-auto px-4">
+                    <div class="mb-4">
+                        <a href="../../index.html" class="text-white/80 hover:text-white mr-4">← Course Home</a>
+                        <a href="../index.html" class="text-white/80 hover:text-white">← Activities</a>
+                    </div>
+                    <h1 class="text-3xl font-light mb-2">TA Reveal Dashboard</h1>
+                    <p class="text-lg opacity-80">Recession Detective - Activity 3</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- Control Panel -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Scenario Reveal Controls</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <button onclick="revealAll()" class="reveal-btn bg-red-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-700">
+                    Reveal All
+                </button>
+                <button onclick="hideAll()" class="reveal-btn bg-gray-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-700">
+                    Hide All
+                </button>
+                <button onclick="revealNext()" class="reveal-btn bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700">
+                    Reveal Next →
+                </button>
+                <button onclick="openProjectorView()" class="reveal-btn bg-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-purple-700">
+                    Projector View
+                </button>
+            </div>
+
+            <p class="text-sm text-gray-500">
+                Click individual scenarios below to reveal/hide, or use the buttons above for bulk actions.
+            </p>
+        </div>
+
+        <!-- Scenario Outcomes Grid -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Scenario Outcomes</h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="scenarioOutcomes">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Quick Stats</h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-red-50 p-4 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-red-600">6</div>
+                    <div class="text-sm text-red-800">Recessions</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-green-600">6</div>
+                    <div class="text-sm text-green-800">No Recession</div>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-blue-600" id="revealedCount">0</div>
+                    <div class="text-sm text-blue-800">Revealed</div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-gray-600" id="hiddenCount">12</div>
+                    <div class="text-sm text-gray-800">Hidden</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Google Sheet Upload Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Upload Class Predictions</h2>
+
+            <!-- Instructions -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                <h3 class="font-medium mb-2">Google Sheet Setup Instructions</h3>
+                <p class="text-sm text-gray-600 mb-3">
+                    Create a Google Sheet with pre-filled Type column. Students only fill in Name and predictions (R/N):
+                </p>
+                <div class="overflow-x-auto mb-3">
+                    <table class="text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="border px-2 py-1">Type</th>
+                                <th class="border px-2 py-1">Name</th>
+                                <th class="border px-2 py-1">A</th>
+                                <th class="border px-2 py-1">B</th>
+                                <th class="border px-2 py-1">C</th>
+                                <th class="border px-2 py-1">...</th>
+                                <th class="border px-2 py-1">L</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-blue-50">
+                                <td class="border px-2 py-1 text-gray-400 italic">Student</td>
+                                <td class="border px-2 py-1">John Smith</td>
+                                <td class="border px-2 py-1">R</td>
+                                <td class="border px-2 py-1">N</td>
+                                <td class="border px-2 py-1">R</td>
+                                <td class="border px-2 py-1">...</td>
+                                <td class="border px-2 py-1">N</td>
+                            </tr>
+                            <tr class="bg-blue-50">
+                                <td class="border px-2 py-1 text-gray-400 italic">Student</td>
+                                <td class="border px-2 py-1">Jane Doe</td>
+                                <td class="border px-2 py-1">R</td>
+                                <td class="border px-2 py-1">R</td>
+                                <td class="border px-2 py-1">N</td>
+                                <td class="border px-2 py-1">...</td>
+                                <td class="border px-2 py-1">R</td>
+                            </tr>
+                            <tr class="bg-blue-50">
+                                <td class="border px-2 py-1 text-gray-400 italic">Student</td>
+                                <td class="border px-2 py-1 text-gray-300">(empty rows...)</td>
+                                <td class="border px-2 py-1"></td>
+                                <td class="border px-2 py-1"></td>
+                                <td class="border px-2 py-1"></td>
+                                <td class="border px-2 py-1"></td>
+                                <td class="border px-2 py-1"></td>
+                            </tr>
+                            <tr class="bg-purple-50">
+                                <td class="border px-2 py-1 text-gray-400 italic">AI</td>
+                                <td class="border px-2 py-1">ChatGPT (John)</td>
+                                <td class="border px-2 py-1">R</td>
+                                <td class="border px-2 py-1">R</td>
+                                <td class="border px-2 py-1">N</td>
+                                <td class="border px-2 py-1">...</td>
+                                <td class="border px-2 py-1">R</td>
+                            </tr>
+                            <tr class="bg-purple-50">
+                                <td class="border px-2 py-1 text-gray-400 italic">AI</td>
+                                <td class="border px-2 py-1">Claude (Jane)</td>
+                                <td class="border px-2 py-1">N</td>
+                                <td class="border px-2 py-1">R</td>
+                                <td class="border px-2 py-1">N</td>
+                                <td class="border px-2 py-1">...</td>
+                                <td class="border px-2 py-1">N</td>
+                            </tr>
+                            <tr class="bg-purple-50">
+                                <td class="border px-2 py-1 text-gray-400 italic">AI</td>
+                                <td class="border px-2 py-1 text-gray-300">(empty rows...)</td>
+                                <td class="border px-2 py-1"></td>
+                                <td class="border px-2 py-1"></td>
+                                <td class="border px-2 py-1"></td>
+                                <td class="border px-2 py-1"></td>
+                                <td class="border px-2 py-1"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul class="text-xs text-gray-600 space-y-1">
+                    <li><strong>Type:</strong> Pre-fill with "Student" rows, then "AI" rows below (protect this column)</li>
+                    <li><strong>Name:</strong> Students fill in their name; for AI, include model + name (e.g., "Claude (Jane)")</li>
+                    <li><strong>A-L:</strong> "R" = Recession, "N" = No Recession</li>
+                    <li><strong>Tip:</strong> Create ~30 Student rows and ~30 AI rows. Empty rows are ignored.</li>
+                </ul>
+            </div>
+
+            <!-- Single Upload -->
+            <div class="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                <h3 class="font-medium text-gray-800 mb-3">Upload Predictions CSV</h3>
+                <p class="text-sm text-gray-600 mb-3">
+                    Download your Google Sheet as CSV (File → Download → CSV) and upload here.
+                </p>
+                <input type="file" id="predictionsCSV" accept=".csv" onchange="loadPredictionsCSV(event)"
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+                <div id="uploadStatus" class="mt-2 text-sm"></div>
+            </div>
+
+            <!-- Staged Reveal Controls -->
+            <div id="revealControls" class="hidden mt-6">
+                <div class="flex flex-wrap gap-4 justify-center p-4 bg-gray-100 rounded-lg">
+                    <button id="revealHumanBtn" onclick="revealHumanResults()"
+                        class="reveal-btn bg-blue-600 text-white py-3 px-8 rounded-lg font-medium hover:bg-blue-700 text-lg">
+                        👥 Reveal Human Results
+                    </button>
+                    <button id="revealAIBtn" onclick="revealAIResults()"
+                        class="reveal-btn bg-purple-600 text-white py-3 px-8 rounded-lg font-medium hover:bg-purple-700 text-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        🤖 Reveal AI Results
+                    </button>
+                    <button id="resetResultsBtn" onclick="resetResults()"
+                        class="reveal-btn bg-gray-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-600">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Comparison (initially hidden) -->
+            <div id="comparisonResults" class="hidden mt-6">
+                <!-- Summary Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div id="humanAccuracyCard" class="bg-blue-100 p-4 rounded-lg text-center results-hidden">
+                        <div class="text-3xl font-bold text-blue-700" id="avgHumanAccuracy">-</div>
+                        <div class="text-sm text-blue-800">Avg Human Accuracy</div>
+                    </div>
+                    <div id="aiAccuracyCard" class="bg-purple-100 p-4 rounded-lg text-center results-hidden">
+                        <div class="text-3xl font-bold text-purple-700" id="avgAIAccuracy">-</div>
+                        <div class="text-sm text-purple-800">Avg AI Accuracy</div>
+                    </div>
+                    <div id="humanWinsCard" class="bg-green-100 p-4 rounded-lg text-center results-hidden">
+                        <div class="text-3xl font-bold text-green-700" id="humanWins">-</div>
+                        <div class="text-sm text-green-800">Humans Beat AI Avg</div>
+                    </div>
+                    <div class="bg-orange-100 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-orange-700" id="totalResponses">-</div>
+                        <div class="text-sm text-orange-800">Total Responses</div>
+                    </div>
+                </div>
+
+                <!-- Scenario Breakdown -->
+                <h4 class="font-medium mb-3">Predictions by Scenario (% predicting Recession)</h4>
+                <div class="overflow-x-auto mb-6">
+                    <table class="min-w-full text-sm">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="px-3 py-2 text-left">Scenario</th>
+                                <th class="px-3 py-2 text-center">Actual</th>
+                                <th class="px-3 py-2 text-center" id="humanColHeader">Humans % R</th>
+                                <th class="px-3 py-2 text-center" id="aiColHeader">AI % R</th>
+                                <th class="px-3 py-2 text-center" id="humanCorrectHeader">Human Correct %</th>
+                                <th class="px-3 py-2 text-center" id="aiCorrectHeader">AI Correct %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scenarioBreakdown"></tbody>
+                    </table>
+                </div>
+
+                <!-- Individual Results -->
+                <h4 class="font-medium mb-3">Individual Accuracies</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <h5 class="text-sm font-medium text-gray-600 mb-2">Human Participants</h5>
+                        <div id="humanLeaderboard" class="max-h-60 overflow-y-auto space-y-1"></div>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-medium text-gray-600 mb-2">AI Models</h5>
+                        <div id="aiLeaderboard" class="max-h-60 overflow-y-auto space-y-1"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenario Reference -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Full Scenario Reference</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-2 text-left font-medium">ID</th>
+                            <th class="px-4 py-2 text-left font-medium">T-0 Date</th>
+                            <th class="px-4 py-2 text-left font-medium">Description</th>
+                            <th class="px-4 py-2 text-left font-medium">Outcome</th>
+                            <th class="px-4 py-2 text-left font-medium">Recession Start</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scenarioTable">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Projector View Modal -->
+    <div id="projectorModal" class="fixed inset-0 bg-black z-50 hidden">
+        <div class="h-full flex flex-col">
+            <div class="p-4 flex justify-between items-center">
+                <h1 class="text-white text-2xl font-light">Recession Detective - Results</h1>
+                <button onclick="closeProjectorView()" class="text-white text-3xl">&times;</button>
+            </div>
+            <div class="flex-1 p-8">
+                <div class="grid grid-cols-3 md:grid-cols-4 gap-6 max-w-5xl mx-auto" id="projectorGrid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            <div class="p-4 flex justify-center gap-4">
+                <button onclick="hideAll(); updateProjectorGrid()" class="bg-gray-700 text-white px-6 py-3 rounded-lg">Hide All</button>
+                <button onclick="revealNext(); updateProjectorGrid()" class="bg-blue-600 text-white px-6 py-3 rounded-lg">Reveal Next</button>
+                <button onclick="revealAll(); updateProjectorGrid()" class="bg-red-600 text-white px-6 py-3 rounded-lg">Reveal All</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Password protection
+        const DASHBOARD_PASSWORD = 'password';
+
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            if (input === DASHBOARD_PASSWORD) {
+                document.getElementById('passwordOverlay').classList.add('hidden');
+                sessionStorage.setItem('ta_authenticated', 'true');
+            } else {
+                document.getElementById('passwordError').classList.remove('hidden');
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+
+        // Check if already authenticated this session
+        if (sessionStorage.getItem('ta_authenticated') === 'true') {
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('passwordOverlay').classList.add('hidden');
+            });
+        }
+
+        // Scenario data
+        const scenarios = [
+            { id: "A", outcome: "recession", date: "Oct 1979", description: "Volcker tightening - Fed raised rates aggressively", recessionStart: "Jan 1980" },
+            { id: "B", outcome: "recession", date: "Apr 1981", description: "Double-dip recession - Second Volcker tightening", recessionStart: "Jul 1981" },
+            { id: "C", outcome: "no_recession", date: "Oct 1987", description: "Black Monday - Stock market crashed 22% in one day", recessionStart: null },
+            { id: "D", outcome: "recession", date: "Apr 1990", description: "Gulf War recession - Oil spike and S&L crisis", recessionStart: "Jul 1990" },
+            { id: "E", outcome: "no_recession", date: "Sep 1998", description: "LTCM/Russia crisis - Hedge fund collapse, Russian default", recessionStart: null },
+            { id: "F", outcome: "recession", date: "Dec 2000", description: "Dot-com bust - Tech bubble burst", recessionStart: "Mar 2001" },
+            { id: "G", outcome: "recession", date: "Sep 2007", description: "Great Recession - Housing bubble burst", recessionStart: "Dec 2007" },
+            { id: "H", outcome: "no_recession", date: "Sep 2011", description: "Debt ceiling crisis - European debt fears", recessionStart: null },
+            { id: "I", outcome: "no_recession", date: "Feb 2016", description: "China slowdown fears - Manufacturing recession", recessionStart: null },
+            { id: "J", outcome: "no_recession", date: "Dec 2018", description: "Q4 2018 selloff - Fed tightening, trade war fears", recessionStart: null },
+            { id: "K", outcome: "recession", date: "Nov 2019", description: "Pre-COVID - Shortest recession on record", recessionStart: "Feb 2020" },
+            { id: "L", outcome: "no_recession", date: "Oct 2022", description: "2022 yield curve inversion - Most inverted since 1980s", recessionStart: null }
+        ];
+
+        let revealedScenarios = new Set();
+        let revealIndex = 0;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            populateScenarioOutcomes();
+            populateScenarioTable();
+        });
+
+        function populateScenarioOutcomes() {
+            const container = document.getElementById('scenarioOutcomes');
+            container.innerHTML = scenarios.map(s => {
+                const isRevealed = revealedScenarios.has(s.id);
+                const outcomeClass = isRevealed ?
+                    (s.outcome === 'recession' ? 'outcome-recession' : 'outcome-no-recession') :
+                    'hidden-outcome';
+
+                return `
+                    <div id="scenario-${s.id}"
+                         class="p-4 rounded-lg border-2 cursor-pointer transition-all ${outcomeClass}"
+                         onclick="toggleReveal('${s.id}')">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-2xl font-bold">${s.id}</span>
+                            <span class="text-xs text-gray-500">${s.date}</span>
+                        </div>
+                        <div class="text-xs text-gray-600 mb-2 line-clamp-2">${s.description}</div>
+                        <div class="text-lg font-semibold ${isRevealed ? '' : 'blur-sm select-none'}">
+                            ${s.outcome === 'recession' ? '📉 RECESSION' : '✅ No Recession'}
+                        </div>
+                        ${s.recessionStart ? `<div class="text-xs text-gray-500 mt-1 ${isRevealed ? '' : 'blur-sm'}">Started: ${s.recessionStart}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            updateCounts();
+        }
+
+        function populateScenarioTable() {
+            const container = document.getElementById('scenarioTable');
+            container.innerHTML = scenarios.map(s => `
+                <tr class="${s.outcome === 'recession' ? 'bg-red-50' : 'bg-green-50'}">
+                    <td class="px-4 py-2 font-bold">${s.id}</td>
+                    <td class="px-4 py-2">${s.date}</td>
+                    <td class="px-4 py-2">${s.description}</td>
+                    <td class="px-4 py-2 font-medium ${s.outcome === 'recession' ? 'text-red-700' : 'text-green-700'}">
+                        ${s.outcome === 'recession' ? 'RECESSION' : 'No Recession'}
+                    </td>
+                    <td class="px-4 py-2">${s.recessionStart || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleReveal(scenarioId) {
+            if (revealedScenarios.has(scenarioId)) {
+                revealedScenarios.delete(scenarioId);
+            } else {
+                revealedScenarios.add(scenarioId);
+            }
+            populateScenarioOutcomes();
+            updateProjectorGrid();
+
+            const el = document.getElementById(`scenario-${scenarioId}`);
+            el.classList.add('scenario-revealed');
+            setTimeout(() => el.classList.remove('scenario-revealed'), 500);
+        }
+
+        function revealAll() {
+            scenarios.forEach(s => revealedScenarios.add(s.id));
+            revealIndex = scenarios.length;
+            populateScenarioOutcomes();
+        }
+
+        function hideAll() {
+            revealedScenarios.clear();
+            revealIndex = 0;
+            populateScenarioOutcomes();
+        }
+
+        function revealNext() {
+            if (revealIndex >= scenarios.length) {
+                return;
+            }
+
+            const scenarioId = scenarios[revealIndex].id;
+            revealedScenarios.add(scenarioId);
+            populateScenarioOutcomes();
+            updateProjectorGrid();
+
+            const el = document.getElementById(`scenario-${scenarioId}`);
+            if (el) {
+                el.classList.add('scenario-revealed');
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            revealIndex++;
+        }
+
+        function updateCounts() {
+            document.getElementById('revealedCount').textContent = revealedScenarios.size;
+            document.getElementById('hiddenCount').textContent = 12 - revealedScenarios.size;
+        }
+
+        // Projector View
+        function openProjectorView() {
+            document.getElementById('projectorModal').classList.remove('hidden');
+            updateProjectorGrid();
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProjectorView() {
+            document.getElementById('projectorModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function updateProjectorGrid() {
+            const grid = document.getElementById('projectorGrid');
+            grid.innerHTML = scenarios.map(s => {
+                const isRevealed = revealedScenarios.has(s.id);
+                const bgClass = isRevealed ?
+                    (s.outcome === 'recession' ? 'bg-red-600' : 'bg-green-600') :
+                    'bg-gray-700';
+
+                return `
+                    <div class="p-6 rounded-xl ${bgClass} text-white text-center transition-all duration-500">
+                        <div class="text-4xl font-bold mb-2">${s.id}</div>
+                        <div class="text-sm opacity-80 mb-3">${s.date}</div>
+                        <div class="text-xl font-semibold ${isRevealed ? '' : 'blur-lg'}">
+                            ${s.outcome === 'recession' ? '📉 RECESSION' : '✅ NO REC'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                revealNext();
+                updateProjectorGrid();
+            } else if (e.key === 'Escape') {
+                closeProjectorView();
+            } else if (e.key === 'r' && e.ctrlKey) {
+                hideAll();
+                updateProjectorGrid();
+            }
+        });
+
+        // ============================================
+        // CSV UPLOAD HANDLING
+        // ============================================
+        let studentPredictions = [];
+        let aiPredictions = [];
+        let humanResultsRevealed = false;
+        let aiResultsRevealed = false;
+        const scenarioIds = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+
+        // Get actual outcomes map
+        const actualOutcomes = {};
+        scenarios.forEach(s => {
+            actualOutcomes[s.id] = s.outcome === 'recession' ? 'R' : 'N';
+        });
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            const rows = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                // Handle quoted values with commas inside
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                for (const char of lines[i]) {
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim());
+
+                if (values.length >= 2) {
+                    rows.push({ headers, values });
+                }
+            }
+            return rows;
+        }
+
+        function extractPredictionsWithType(rows) {
+            const students = [];
+            const ais = [];
+
+            // Find column indices
+            let typeCol = -1;
+            let nameCol = -1;
+            const scenarioCols = {};
+
+            const headers = rows[0]?.headers || [];
+            headers.forEach((h, i) => {
+                const header = h.toUpperCase().trim();
+                if (header === 'TYPE') typeCol = i;
+                else if (header === 'NAME' || header === 'EMAIL' || header === 'STUDENT') nameCol = i;
+                else {
+                    // Check for scenario columns
+                    for (const sid of scenarioIds) {
+                        if (header === sid || header === `SCENARIO ${sid}` || header.endsWith(` ${sid}`)) {
+                            scenarioCols[sid] = i;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            // If no Type column, try to detect based on name patterns
+            const hasTypeColumn = typeCol >= 0;
+
+            // If no explicit name column, assume it's column 0 (or 1 if type is 0)
+            if (nameCol < 0) {
+                nameCol = typeCol === 0 ? 1 : 0;
+            }
+
+            for (const row of rows) {
+                const values = row.values;
+                const name = values[nameCol] || 'Unknown';
+
+                // Determine type
+                let type = 'student';
+                if (hasTypeColumn) {
+                    const typeVal = (values[typeCol] || '').toUpperCase().trim();
+                    if (typeVal === 'AI' || typeVal === 'MODEL' || typeVal === 'GPT' || typeVal === 'CLAUDE') {
+                        type = 'ai';
+                    }
+                } else {
+                    // Auto-detect based on name containing AI model names
+                    const nameLower = name.toLowerCase();
+                    if (nameLower.includes('gpt') || nameLower.includes('claude') || nameLower.includes('gemini') ||
+                        nameLower.includes('copilot') || nameLower.includes('llama') || nameLower.includes('ai')) {
+                        type = 'ai';
+                    }
+                }
+
+                // Extract predictions
+                const predictions = {};
+                let validPredictions = 0;
+
+                for (const sid of scenarioIds) {
+                    const colIdx = scenarioCols[sid];
+                    if (colIdx !== undefined && colIdx < values.length) {
+                        const value = (values[colIdx] || '').toUpperCase().trim();
+                        if (value === 'R' || value === 'RECESSION' || value === 'YES') {
+                            predictions[sid] = 'R';
+                            validPredictions++;
+                        } else if (value === 'N' || value === 'NO RECESSION' || value === 'NO') {
+                            predictions[sid] = 'N';
+                            validPredictions++;
+                        }
+                    }
+                }
+
+                if (validPredictions > 0) {
+                    const entry = { name, predictions, validPredictions };
+                    if (type === 'ai') {
+                        ais.push(entry);
+                    } else {
+                        students.push(entry);
+                    }
+                }
+            }
+
+            return { students, ais };
+        }
+
+        function calculatePredictionAccuracy(predictions) {
+            let correct = 0;
+            let total = 0;
+
+            for (const sid of scenarioIds) {
+                if (predictions[sid]) {
+                    total++;
+                    if (predictions[sid] === actualOutcomes[sid]) {
+                        correct++;
+                    }
+                }
+            }
+
+            return total > 0 ? { correct, total, accuracy: Math.round((correct / total) * 100) } : null;
+        }
+
+        function loadPredictionsCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const rows = parseCSV(e.target.result);
+                    const { students, ais } = extractPredictionsWithType(rows);
+
+                    studentPredictions = students;
+                    aiPredictions = ais;
+
+                    const total = students.length + ais.length;
+                    if (total > 0) {
+                        document.getElementById('uploadStatus').innerHTML =
+                            `<span class="text-green-600">✓ Loaded ${students.length} student + ${ais.length} AI predictions</span>`;
+
+                        // Show reveal controls
+                        document.getElementById('revealControls').classList.remove('hidden');
+                        document.getElementById('comparisonResults').classList.remove('hidden');
+
+                        // Reset reveal state
+                        humanResultsRevealed = false;
+                        aiResultsRevealed = false;
+                        document.getElementById('revealHumanBtn').disabled = false;
+                        document.getElementById('revealAIBtn').disabled = true;
+
+                        // Update display with everything hidden
+                        updateComparisonResults();
+                    } else {
+                        document.getElementById('uploadStatus').innerHTML =
+                            `<span class="text-red-600">✗ No valid predictions found. Check CSV format (need Type, Name, A-L columns).</span>`;
+                    }
+                } catch (err) {
+                    document.getElementById('uploadStatus').innerHTML =
+                        `<span class="text-red-600">✗ Error parsing CSV: ${err.message}</span>`;
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function revealHumanResults() {
+            humanResultsRevealed = true;
+            document.getElementById('revealHumanBtn').disabled = true;
+            document.getElementById('revealHumanBtn').classList.add('opacity-50');
+            document.getElementById('revealAIBtn').disabled = false;
+            updateComparisonResults();
+        }
+
+        function revealAIResults() {
+            aiResultsRevealed = true;
+            document.getElementById('revealAIBtn').disabled = true;
+            document.getElementById('revealAIBtn').classList.add('opacity-50');
+            updateComparisonResults();
+        }
+
+        function resetResults() {
+            humanResultsRevealed = false;
+            aiResultsRevealed = false;
+            document.getElementById('revealHumanBtn').disabled = false;
+            document.getElementById('revealHumanBtn').classList.remove('opacity-50');
+            document.getElementById('revealAIBtn').disabled = true;
+            document.getElementById('revealAIBtn').classList.remove('opacity-50');
+            updateComparisonResults();
+        }
+
+        function updateComparisonResults() {
+            if (studentPredictions.length === 0 && aiPredictions.length === 0) {
+                document.getElementById('comparisonResults').classList.add('hidden');
+                return;
+            }
+
+            // Calculate accuracies
+            const humanAccuracies = studentPredictions.map(p => ({
+                name: p.name,
+                predictions: p.predictions,
+                ...calculatePredictionAccuracy(p.predictions)
+            })).filter(a => a.accuracy !== undefined);
+
+            const aiAccuracies = aiPredictions.map(p => ({
+                name: p.name,
+                predictions: p.predictions,
+                ...calculatePredictionAccuracy(p.predictions)
+            })).filter(a => a.accuracy !== undefined);
+
+            // Summary stats
+            const avgHuman = humanAccuracies.length > 0
+                ? Math.round(humanAccuracies.reduce((sum, a) => sum + a.accuracy, 0) / humanAccuracies.length)
+                : '-';
+            const avgAI = aiAccuracies.length > 0
+                ? Math.round(aiAccuracies.reduce((sum, a) => sum + a.accuracy, 0) / aiAccuracies.length)
+                : '-';
+
+            let humanWins = 0;
+            if (avgHuman !== '-' && avgAI !== '-') {
+                humanWins = humanAccuracies.filter(h => h.accuracy > avgAI).length;
+            }
+
+            // Update summary cards with blur based on reveal state
+            document.getElementById('humanAccuracyCard').classList.toggle('results-hidden', !humanResultsRevealed);
+            document.getElementById('aiAccuracyCard').classList.toggle('results-hidden', !aiResultsRevealed);
+            document.getElementById('humanWinsCard').classList.toggle('results-hidden', !aiResultsRevealed);
+
+            document.getElementById('avgHumanAccuracy').textContent = avgHuman !== '-' ? avgHuman + '%' : '-';
+            document.getElementById('avgAIAccuracy').textContent = avgAI !== '-' ? avgAI + '%' : '-';
+            document.getElementById('humanWins').textContent = humanWins;
+            document.getElementById('totalResponses').textContent = studentPredictions.length + aiPredictions.length;
+
+            // Scenario breakdown
+            const scenarioBreakdown = document.getElementById('scenarioBreakdown');
+            scenarioBreakdown.innerHTML = scenarios.map(s => {
+                const humanR = studentPredictions.filter(p => p.predictions[s.id] === 'R').length;
+                const humanTotal = studentPredictions.filter(p => p.predictions[s.id]).length;
+                const humanPctR = humanTotal > 0 ? Math.round((humanR / humanTotal) * 100) : '-';
+
+                const aiR = aiPredictions.filter(p => p.predictions[s.id] === 'R').length;
+                const aiTotal = aiPredictions.filter(p => p.predictions[s.id]).length;
+                const aiPctR = aiTotal > 0 ? Math.round((aiR / aiTotal) * 100) : '-';
+
+                const actual = s.outcome === 'recession' ? 'R' : 'N';
+                const humanCorrect = studentPredictions.filter(p =>
+                    p.predictions[s.id] === actual
+                ).length;
+                const humanCorrectPct = humanTotal > 0 ? Math.round((humanCorrect / humanTotal) * 100) : '-';
+
+                const aiCorrect = aiPredictions.filter(p =>
+                    p.predictions[s.id] === actual
+                ).length;
+                const aiCorrectPct = aiTotal > 0 ? Math.round((aiCorrect / aiTotal) * 100) : '-';
+
+                const actualClass = actual === 'R' ? 'text-red-600 font-bold' : 'text-green-600 font-bold';
+                const humanBlur = humanResultsRevealed ? '' : 'results-hidden';
+                const aiBlur = aiResultsRevealed ? '' : 'results-hidden';
+
+                return `
+                    <tr class="border-b">
+                        <td class="px-3 py-2 font-bold">${s.id}</td>
+                        <td class="px-3 py-2 text-center ${actualClass}">${actual === 'R' ? 'RECESSION' : 'No Rec'}</td>
+                        <td class="px-3 py-2 text-center ${humanBlur}">${humanPctR !== '-' ? humanPctR + '%' : '-'}</td>
+                        <td class="px-3 py-2 text-center ${aiBlur}">${aiPctR !== '-' ? aiPctR + '%' : '-'}</td>
+                        <td class="px-3 py-2 text-center ${humanBlur} ${humanCorrectPct !== '-' && humanCorrectPct >= 50 ? 'text-green-600' : 'text-red-600'}">${humanCorrectPct !== '-' ? humanCorrectPct + '%' : '-'}</td>
+                        <td class="px-3 py-2 text-center ${aiBlur} ${aiCorrectPct !== '-' && aiCorrectPct >= 50 ? 'text-green-600' : 'text-red-600'}">${aiCorrectPct !== '-' ? aiCorrectPct + '%' : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Leaderboards
+            const humanLeaderboard = document.getElementById('humanLeaderboard');
+            humanAccuracies.sort((a, b) => b.accuracy - a.accuracy);
+            if (humanResultsRevealed) {
+                humanLeaderboard.innerHTML = humanAccuracies.map((h, i) => {
+                    const bgClass = h.accuracy >= 67 ? 'bg-green-100' : h.accuracy >= 50 ? 'bg-yellow-100' : 'bg-red-100';
+                    return `
+                        <div class="p-2 rounded ${bgClass} flex justify-between items-center">
+                            <span class="text-sm truncate">${i + 1}. ${h.name}</span>
+                            <span class="font-bold text-sm">${h.accuracy}% (${h.correct}/${h.total})</span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                humanLeaderboard.innerHTML = `
+                    <div class="p-4 bg-gray-100 rounded-lg text-center text-gray-500">
+                        <div class="text-4xl mb-2">👥</div>
+                        <div>Click "Reveal Human Results" to show</div>
+                    </div>
+                `;
+            }
+
+            const aiLeaderboard = document.getElementById('aiLeaderboard');
+            aiAccuracies.sort((a, b) => b.accuracy - a.accuracy);
+            if (aiResultsRevealed) {
+                aiLeaderboard.innerHTML = aiAccuracies.map((a, i) => {
+                    const bgClass = a.accuracy >= 67 ? 'bg-green-100' : a.accuracy >= 50 ? 'bg-yellow-100' : 'bg-red-100';
+                    return `
+                        <div class="p-2 rounded ${bgClass} flex justify-between items-center">
+                            <span class="text-sm truncate">${i + 1}. ${a.name}</span>
+                            <span class="font-bold text-sm">${a.accuracy}% (${a.correct}/${a.total})</span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                aiLeaderboard.innerHTML = `
+                    <div class="p-4 bg-gray-100 rounded-lg text-center text-gray-500">
+                        <div class="text-4xl mb-2">🤖</div>
+                        <div>Click "Reveal AI Results" to show</div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
