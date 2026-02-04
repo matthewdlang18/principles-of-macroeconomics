@@ -49,11 +49,11 @@ const lectureConfig = {
         },
         {
             week: 5,
-            monday: {
+            monday: null, // Midterm - no class
+            wednesday: {
                 slides: 'lecture_slides/Lecture8_updated.pdf',
                 notes: 'lecture_notes/Lecture8notes_updated.pdf'
-            },
-            wednesday: null // Midterm - no materials
+            }
         },
         {
             week: 6,
