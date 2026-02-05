@@ -2,8 +2,8 @@
 // Using the same configuration as windsurf-project
 
 // Supabase credentials
-const SUPABASE_URL = 'https://bvvkevmqnnlecghyraao.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dmtldm1xbm5sZWNnaHlyYWFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDAzNDEsImV4cCI6MjA2MDQ3NjM0MX0.UY_H91jIbbZWq6A-l7XbdyF6s3rSoBVcJfawhZ2CyVg';
+const SUPABASE_URL = 'https://cldbphjfuouzxznsnqqi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsZGJwaGpmdW91enh6bnNucXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwMTAsImV4cCI6MjA4NTg5MDAxMH0.xzTLgQG-Dvp0jPhrqdi8meFNf0wztiAfEZ3cmZDwpRE';
 
 // Log initialization
 console.log('Investment Odyssey supabase.js: Initializing with URL:', SUPABASE_URL);

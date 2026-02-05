@@ -9,8 +9,8 @@
 
 // Replace these with your actual Supabase URL and anon key
 // Using the credentials from windsurf-project/supabase.js
-export const supabaseUrl = 'https://bvvkevmqnnlecghyraao.supabase.co';
-export const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dmtldm1xbm5sZWNnaHlyYWFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDAzNDEsImV4cCI6MjA2MDQ3NjM0MX0.UY_H91jIbbZWq6A-l7XbdyF6s3rSoBVcJfawhZ2CyVg';
+export const supabaseUrl = 'https://cldbphjfuouzxznsnqqi.supabase.co';
+export const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsZGJwaGpmdW91enh6bnNucXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTQwMTAsImV4cCI6MjA4NTg5MDAxMH0.xzTLgQG-Dvp0jPhrqdi8meFNf0wztiAfEZ3cmZDwpRE';
 
 // Also make these available as window variables for compatibility
 if (typeof window !== 'undefined') {
