@@ -472,10 +472,22 @@ const assetReturns = {
         max: 2.00
     },
     'Bitcoin': {
-        mean: 0.50,
-        stdDev: 1.00,
-        min: -0.73,
-        max: 2.50
+        mean: 0.19,           // Post-burst mean return (~19% per round)
+        burstMean: 0.50,      // Early burst mean return (~50% per round)
+        burstRounds: 3,       // Number of initial burst rounds
+        baseStdDev: 0.45,     // Base standard deviation
+        volFactor: 0.5,       // Volatility scaling factor (increases with log(price))
+        stdDev: 0.45,         // Used for correlation calculation compatibility
+        min: -0.75,
+        max: 3.00,
+        // Milestone shock thresholds and severity
+        milestones: [350000, 750000, 1500000, 3000000],
+        milestoneSeverity: [-0.45, -0.50, -0.55, -0.65],
+        // Crash cycle parameters
+        crashInterval: 5,
+        crashProb: 0.45,
+        crashLo: 0.35,
+        crashHi: 0.70
     }
 };
 
@@ -517,8 +529,8 @@ async function loadMarketData() {
                 },
                 cpi: 100,
                 cpiHistory: [100],
-                lastBitcoinCrashRound: 0,
-                bitcoinShockRange: [-0.5, -0.75],
+                lastBitcoinCrashRound: -999,
+                bitcoinMilestonesHit: [],
                 roundNumber: currentRound,
                 // Add a flag to track which rounds have been generated
                 generatedRounds: [0]
@@ -593,85 +605,52 @@ function generateAssetReturn(asset, round) {
         uncorrelatedZ.push(z);
     }
 
-    // Special handling for Bitcoin
+    // Special handling for Bitcoin — BURST-H2 model
+    // Calibrated via Monte Carlo: ~27% win rate, early FOMO trap, increasing volatility
     if (asset === 'Bitcoin') {
         const bitcoinPrice = gameState.priceHistory[asset][round-1] || gameState.assetPrices[asset];
+        const btcParams = assetReturns['Bitcoin'];
         let bitcoinReturn;
 
-        // Bitcoin has special growth patterns based on its price
-        if (bitcoinPrice < 10000) {
-            // Low price: rapid growth
-            bitcoinReturn = 2 + Math.random() * 2; // Return between 200% and 400%
-        } else if (bitcoinPrice >= 1000000) {
-            // Very high price: crash
-            bitcoinReturn = -0.3 - Math.random() * 0.2; // Return between -30% and -50%
-        } else {
-            // Normal price range: correlated with other assets but with high volatility
-            let weightedReturn = 0;
-            for (let j = 0; j < assetNames.length; j++) {
-                weightedReturn += correlationMatrix[5][j] * uncorrelatedZ[j];
-            }
-            bitcoinReturn = assetReturns['Bitcoin'].mean + assetReturns['Bitcoin'].stdDev * weightedReturn;
+        // Step 1: Determine base mean (burst phase vs normal phase)
+        let roundMean = btcParams.mean; // 0.19 post-burst
+        if (btcParams.burstRounds && round <= btcParams.burstRounds) {
+            roundMean = btcParams.burstMean; // 0.50 during burst
+            console.log(`Bitcoin BURST round ${round}: using burst mean ${roundMean}`);
+        }
 
-            // Adjust Bitcoin's return based on its current price
-            const priceThreshold = 100000;
-            if (bitcoinPrice > priceThreshold) {
-                // Calculate how many increments above threshold
-                const incrementsAboveThreshold = Math.max(0, (bitcoinPrice - priceThreshold) / 50000);
+        // Step 2: Volatility INCREASES with price (higher price = wilder swings)
+        const logPriceRatio = Math.log(bitcoinPrice / 50000);
+        const volMultiplier = 1 + btcParams.volFactor * Math.max(0, logPriceRatio);
+        const adjustedStdDev = btcParams.baseStdDev * volMultiplier;
 
-                // Reduce volatility as price grows (more mature asset)
-                const volatilityReduction = Math.min(0.7, incrementsAboveThreshold * 0.05);
-                const adjustedStdDev = assetReturns['Bitcoin'].stdDev * (1 - volatilityReduction);
+        // Step 3: Generate base return using Box-Muller normal distribution
+        const u1_btc = Math.random();
+        const u2_btc = Math.random();
+        const normalRandom = Math.sqrt(-2.0 * Math.log(u1_btc === 0 ? 0.0001 : u1_btc)) * Math.cos(2.0 * Math.PI * u2_btc);
+        bitcoinReturn = roundMean + adjustedStdDev * normalRandom;
 
-                // Use a skewed distribution to avoid clustering around the mean
-                const u1 = Math.random();
-                const u2 = Math.random();
-                const normalRandom = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
-
-                // Adjust the mean based on price to create more varied returns
-                const adjustedMean = assetReturns['Bitcoin'].mean * (0.5 + (Math.random() * 0.5));
-
-                // Recalculate return with reduced volatility and varied mean
-                bitcoinReturn = adjustedMean + (normalRandom * adjustedStdDev);
-            }
-
-            // Check for Bitcoin crash (4-year cycle)
-            if (round - gameState.lastBitcoinCrashRound >= 4) {
-                if (Math.random() < 0.5) { // 50% chance of crash after 4 rounds
-                    // Apply shock based on current shock range
-                    bitcoinReturn = gameState.bitcoinShockRange[0] + Math.random() * (gameState.bitcoinShockRange[1] - gameState.bitcoinShockRange[0]);
-
-                    // Update last crash round
-                    gameState.lastBitcoinCrashRound = round;
-
-                    // Update shock range for next crash (less severe but still negative)
-                    gameState.bitcoinShockRange = [
-                        Math.min(Math.max(gameState.bitcoinShockRange[0] + 0.1, -0.5), -0.05),
-                        Math.min(Math.max(gameState.bitcoinShockRange[1] + 0.1, -0.75), -0.15)
-                    ];
-                }
+        // Step 4: Milestone shocks — one-time severe drops at price thresholds
+        for (let i = 0; i < btcParams.milestones.length; i++) {
+            if (bitcoinPrice >= btcParams.milestones[i] && !gameState.bitcoinMilestonesHit.includes(i)) {
+                gameState.bitcoinMilestonesHit.push(i);
+                const severity = btcParams.milestoneSeverity[i] + (Math.random() - 0.5) * 0.20;
+                bitcoinReturn += severity;
+                console.log(`Bitcoin MILESTONE SHOCK at $${btcParams.milestones[i].toLocaleString()}: severity ${severity.toFixed(2)} in round ${round}`);
             }
         }
 
-        // Ensure Bitcoin return is within bounds, but avoid exact min/max values
-        const min = assetReturns['Bitcoin'].min;
-        const max = assetReturns['Bitcoin'].max;
-
-        // Check if return would hit min or max exactly or very close to it
-        if (bitcoinReturn <= min + 0.01) {
-            // Choose a random value between min-5% and min+5%
-            bitcoinReturn = min + (Math.random() * 0.1 - 0.05) * Math.abs(min);
-            // This will give a value between approximately -0.68 and -0.78 for min = -0.73
-            console.log(`Bitcoin return at minimum threshold, randomizing to: ${bitcoinReturn.toFixed(2)}`);
-        } else if (bitcoinReturn >= max - 0.01) {
-            // Choose a random value between max-5% and max+5%
-            bitcoinReturn = max + (Math.random() * 0.1 - 0.05) * max;
-            // This will give a value between approximately 2.4 and 2.6 for max = 2.5
-            console.log(`Bitcoin return at maximum threshold, randomizing to: ${bitcoinReturn.toFixed(2)}`);
-        } else {
-            // Normal case - just ensure it's within bounds
-            bitcoinReturn = Math.max(min, Math.min(max, bitcoinReturn));
+        // Step 5: Crash cycle — periodic crashes
+        const roundsSinceCrash = round - gameState.lastBitcoinCrashRound;
+        if (roundsSinceCrash >= btcParams.crashInterval && Math.random() < btcParams.crashProb) {
+            const crashMag = btcParams.crashLo + Math.random() * (btcParams.crashHi - btcParams.crashLo);
+            bitcoinReturn = -crashMag;
+            gameState.lastBitcoinCrashRound = round;
+            console.log(`Bitcoin CRASH in round ${round}: -${(crashMag * 100).toFixed(1)}% (price was $${bitcoinPrice.toFixed(0)})`);
         }
+
+        // Step 6: Clamp to bounds
+        bitcoinReturn = Math.max(btcParams.min, Math.min(btcParams.max, bitcoinReturn));
 
         return bitcoinReturn;
     }

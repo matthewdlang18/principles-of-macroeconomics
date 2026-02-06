@@ -759,32 +759,17 @@ async function loadLeaderboardData() {
                     </tr>
                 `;
 
-                                // Try to use cached data
-                const cachedData = localStorage.getItem(`leaderboard-cache-${currentTab}`);
-                if (cachedData) {
-                    try {
-                        const parsedData = JSON.parse(cachedData);
-                        updateLeaderboardTable(parsedData.scores, tableBody);
-                        totalPages[currentTab] = parsedData.totalPages;
-                        updatePagination();
-                        showNotification('Using cached leaderboard data', 'info', 3000);
-                    } catch (cacheError) {
-                        console.error('Error parsing cached leaderboard data:', cacheError);
-                        // Generate sample data
-                        const sampleData = generateSampleLeaderboardData(10);
-                        updateLeaderboardTable(sampleData, tableBody);
-                        totalPages[currentTab] = 1;
-                        updatePagination();
-                        showNotification('Using sample leaderboard data', 'info', 3000);
-                    }
-                } else {
-                    // Generate sample data
-                    const sampleData = generateSampleLeaderboardData(10);
-                    updateLeaderboardTable(sampleData, tableBody);
-                    totalPages[currentTab] = 1;
-                    updatePagination();
-                    showNotification('Using sample leaderboard data', 'info', 3000);
-                }
+                                // Show empty state - no fake sample data
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <i class="fas fa-trophy mr-2"></i>
+                            No scores yet. Play a game to be the first on the leaderboard!
+                        </td>
+                    </tr>
+                `;
+                totalPages[currentTab] = 1;
+                updatePagination();
             }
         }, 8000); // 8 seconds timeout
 
@@ -1058,22 +1043,8 @@ async function loadLeaderboardData() {
                 </tr>
             `;
 
-            // Try to use cached data
-            const cachedData = localStorage.getItem(`leaderboard-cache-${currentTab}`);
-            if (cachedData) {
-                try {
-                    const parsedData = JSON.parse(cachedData);
-                    updateLeaderboardTable(parsedData.scores, tableBody);
-                    totalPages[currentTab] = parsedData.totalPages;
-                    updatePagination();
-                    showNotification('Using cached leaderboard data', 'info', 3000);
-                } catch (cacheError) {
-                    console.error('Error parsing cached leaderboard data:', cacheError);
-                    showErrorMessage('Failed to load leaderboard data from Supabase and cache.');
-                }
-            } else {
-                showErrorMessage('Failed to load leaderboard data from Supabase. No cached data available.');
-            }
+            // Show error - no stale cache fallback
+            showErrorMessage('Failed to load leaderboard data. Please try refreshing the page.');
         }
     } catch (error) {
         console.error('Error loading leaderboard data:', error);
