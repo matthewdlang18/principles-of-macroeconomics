@@ -1014,12 +1014,16 @@ async function loadLeaderboardData() {
                         noResultsDiv.classList.add('d-none');
                     }
 
-                    // Cache the data for future use
-                    localStorage.setItem(`leaderboard-cache-${currentTab}`, JSON.stringify({
-                        scores: formattedScores,
-                        totalPages: totalPages[currentTab],
-                        timestamp: Date.now()
-                    }));
+                    // Cache the data for future use (non-critical, fail silently)
+                    try {
+                        localStorage.setItem(`leaderboard-cache-${currentTab}`, JSON.stringify({
+                            scores: formattedScores,
+                            totalPages: totalPages[currentTab],
+                            timestamp: Date.now()
+                        }));
+                    } catch (e) {
+                        // localStorage full — not a problem, data is already displayed
+                    }
                 }
 
                 // Clear the timeout if data loaded successfully
