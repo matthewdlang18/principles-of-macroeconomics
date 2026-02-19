@@ -8,7 +8,24 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <link rel="stylesheet" href="../../styles.css">
+    <!-- CORS proxy helper — FRED API blocks direct browser requests -->
+    <script>
+      window.CORS_CONFIG = {
+        useCorsProxy: true,
+        proxyIndex: 0,
+        proxies: [
+          (url) => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
+          (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+        ],
+        wrapUrl(url) {
+          if (!this.useCorsProxy) return url;
+          return this.proxies[this.proxyIndex](url);
+        },
+        rotateProxy() {
+          this.proxyIndex = (this.proxyIndex + 1) % this.proxies.length;
+        },
+      };
+    </script>
     <style>
         .banner-container {
             position: relative;
@@ -817,10 +834,6 @@
                             <span class="font-bold text-blue-600 flex-shrink-0">Q3.</span>
                             <span>What additional information (not shown here) would you want before making a confident recession forecast?</span>
                         </div>
-                        <div class="flex gap-2">
-                            <span class="font-bold text-blue-600 flex-shrink-0">Q4.</span>
-                            <span>The article we read noted that "conventional economic analysis is always reactive rather than anticipatory." Do you agree? What would it take to change that?</span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -837,8 +850,9 @@
         let currentStep = 0;
         let selectedScenarioId = 'A';
 
-        // FRED API key (public read-only key for educational use)
-        const FRED_API_KEY = 'b3fa79e0bf8e3a7aa7a88e8f92b59c22'; // Replace with your key at fred.stlouisfed.org/api/key
+        // FRED API — same key and proxy approach as real-time-data.html
+        const FRED_API_KEY = 'c1a69cc8450457303e5f04ffb3f68b97';
+        const FRED_BASE = 'https://api.stlouisfed.org/fred';
         let fredDataLoaded = false;
 
         // Chart instances
@@ -1885,40 +1899,51 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
         async function loadFredData() {
             if (fredDataLoaded) { applyWeightsToFred(); return; }
 
-            // We use the FRED API via a CORS proxy or direct fetch
-            // FRED allows cross-origin requests for its JSON API
-            const base = 'https://api.stlouisfed.org/fred/series/observations';
-            const key = FRED_API_KEY;
-            const limit = 24; // months of data
-
-            async function fetchSeries(seriesId, units = 'lin') {
+            // Fetch via CORS proxy (same pattern as real-time-data.html)
+            async function fetchSeries(seriesId, units = 'lin', limit = 15, retryCount = 0) {
                 try {
-                    const url = `${base}?series_id=${seriesId}&api_key=${key}&file_type=json&sort_order=desc&limit=${limit}&units=${units}`;
-                    const r = await fetch(url);
-                    const d = await r.json();
+                    const url = new URL(`${FRED_BASE}/series/observations`);
+                    url.searchParams.set('series_id', seriesId);
+                    url.searchParams.set('api_key', FRED_API_KEY);
+                    url.searchParams.set('file_type', 'json');
+                    url.searchParams.set('sort_order', 'desc');
+                    url.searchParams.set('limit', limit);
+                    if (units !== 'lin') url.searchParams.set('units', units);
+
+                    const requestUrl = window.CORS_CONFIG.wrapUrl(url.toString());
+                    const res = await fetch(requestUrl);
+                    if (!res.ok) {
+                        if (retryCount < 2) { window.CORS_CONFIG.rotateProxy(); return fetchSeries(seriesId, units, limit, retryCount + 1); }
+                        return [];
+                    }
+                    const d = await res.json();
                     return d.observations || [];
-                } catch (e) { return []; }
+                } catch (e) {
+                    if (retryCount < 2) { window.CORS_CONFIG.rotateProxy(); return fetchSeries(seriesId, units, limit, retryCount + 1); }
+                    return [];
+                }
             }
 
-            // Fetch key series in parallel
+            // Fetch key series in parallel — use more history for YoY comparisons
             const [unempObs, gdpObs, cpiObs, fedObs, t10Obs, t2Obs, permitsObs, claimsObs, sp500Obs] = await Promise.all([
-                fetchSeries('UNRATE'),
-                fetchSeries('A191RL1Q225SBEA'),   // Real GDP % change annualized
-                fetchSeries('CPIAUCSL', 'pc1'),   // CPI YoY %
-                fetchSeries('FEDFUNDS'),
-                fetchSeries('DGS10'),
-                fetchSeries('DGS2'),
-                fetchSeries('PERMIT', 'pc1'),     // Building permits YoY%
-                fetchSeries('IC4WSA'),             // 4-week MA initial claims
-                fetchSeries('SP500')
+                fetchSeries('UNRATE', 'lin', 15),
+                fetchSeries('A191RL1Q225SBEA', 'lin', 8),  // Real GDP QoQ annualized
+                fetchSeries('CPIAUCSL', 'pc1', 15),        // CPI YoY %
+                fetchSeries('FEDFUNDS', 'lin', 10),
+                fetchSeries('DGS10', 'lin', 15),
+                fetchSeries('DGS2', 'lin', 15),
+                fetchSeries('PERMIT', 'pc1', 15),          // Building permits YoY%
+                fetchSeries('IC4WSA', 'lin', 15),          // 4-week MA initial claims
+                fetchSeries('SP500', 'lin', 60)            // Need ~52 weeks for 1yr change
             ]);
 
             function latest(obs) {
-                const valid = obs.filter(o => o.value !== '.' && o.value !== '');
+                const valid = obs.filter(o => o.value !== '.' && o.value !== '' && o.value !== null);
                 return valid.length > 0 ? parseFloat(valid[0].value) : null;
             }
+            // Safe prev — returns null if not enough observations
             function prev(obs, n) {
-                const valid = obs.filter(o => o.value !== '.' && o.value !== '');
+                const valid = obs.filter(o => o.value !== '.' && o.value !== '' && o.value !== null);
                 return valid.length > n ? parseFloat(valid[n].value) : null;
             }
 
