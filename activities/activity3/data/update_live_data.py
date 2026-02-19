@@ -95,6 +95,10 @@ pmi_now    = safe_val(df_raw_recent['PMI'])
 conf_now   = safe_val(df_raw_recent['Consumer Confidence'])
 cli_now    = safe_val(df_raw_recent['US CLI'])
 
+# Durable Goods and Transport Equipment YoY%
+durable_now   = safe_val(df_raw_recent['Durable_Goods_YOY'])    if 'Durable_Goods_YOY'       in df_raw_recent.columns else None
+transport_now = safe_val(df_raw_recent['Transport_Equipment_YOY']) if 'Transport_Equipment_YOY' in df_raw_recent.columns else None
+
 # ── Latest Z-scores ──────────────────────────────────────────────────────────
 # Baselines (1985-2019) — must match fetch_new_data.py
 BASELINE = {
@@ -102,10 +106,12 @@ BASELINE = {
     'Building_Permits':{'mean': 1352947.619,  'std': 399002.219, 'invert': False},
     'Consumer_Conf':   {'mean': 88.3333,      'std': 11.6132,    'invert': False},
     'Initial_Claims':  {'mean': 349497.024,   'std': 73416.939,  'invert': True},
-    'SP500_YOY':       {'mean': 9.9019,       'std': 15.6395,    'invert': False},
-    'ISM_New_Orders':  {'mean': 55.1819,      'std': 6.4291,     'invert': False},
-    'PMI':             {'mean': 52.3262,      'std': 4.7230,     'invert': False},
-    'US_CLI':          {'mean': 100.003,      'std': 1.330,      'invert': False},
+    'SP500_YOY':           {'mean': 9.9019,   'std': 15.6395,    'invert': False},
+    'ISM_New_Orders':      {'mean': 55.1819,  'std': 6.4291,     'invert': False},
+    'PMI':                 {'mean': 52.3262,  'std': 4.7230,     'invert': False},
+    'US_CLI':              {'mean': 100.003,  'std': 1.330,      'invert': False},
+    'Durable_Goods':       {'mean': 2.928,    'std': 10.357,     'invert': False},
+    'Transport_Equipment': {'mean': 4.455,    'std': 19.349,     'invert': False},
 }
 
 def zsc(raw_val, key):
@@ -123,6 +129,8 @@ z_id_map = {
     'PMI':                                    'PMI',
     '4-Week MA Initial Unemployment Claims':  'Initial_Claims',
     'SP500':                                  'SP500',
+    'Durable_Goods':                          'Durable_Goods',
+    'Transport_Equipment':                    'Transport_Equipment',
 }
 
 # Primary source: pre-computed z-score CSV
@@ -135,9 +143,11 @@ for col, ind_id in z_id_map.items():
 # Fallback: compute from raw CSV when z-score CSV is behind
 # (e.g. ISM/PMI added manually to raw CSV but z-score CSV not yet updated)
 raw_fallbacks = {
-    'ISM New Orders': ('ISM_New_Orders', 'ISM_New_Orders'),
-    'PMI':            ('PMI',            'PMI'),
-    'US CLI':         ('US CLI',         'US_CLI'),
+    'ISM New Orders':       ('ISM_New_Orders',      'ISM_New_Orders'),
+    'PMI':                  ('PMI',                 'PMI'),
+    'US CLI':               ('US CLI',              'US_CLI'),
+    'Durable_Goods_YOY':    ('Durable_Goods',       'Durable_Goods'),
+    'Transport_Equipment_YOY': ('Transport_Equipment', 'Transport_Equipment'),
 }
 # Also compute SP500 YoY% z-score from raw level series
 df_raw_full = pd.read_csv('LeadingIndicators.csv')
@@ -177,6 +187,12 @@ series['initial_claims']    = to_series(df_raw, '4-Week MA Initial Unemployment 
 if 'CPI_YOY' in df_raw.columns:
     series['cpi_yoy'] = to_series(df_raw, 'CPI_YOY')
 
+# Durable Goods and Transport Equipment YoY%
+if 'Durable_Goods_YOY' in df_raw.columns:
+    series['durable_goods_yoy'] = to_series(df_raw, 'Durable_Goods_YOY')
+if 'Transport_Equipment_YOY' in df_raw.columns:
+    series['transport_equipment_yoy'] = to_series(df_raw, 'Transport_Equipment_YOY')
+
 # Z-score series (for index computation)
 for col, ind_id in z_id_map.items():
     if col in df_z.columns:
@@ -203,6 +219,8 @@ output = {
         'pmi':                {'value': pmi_now},
         'consumer_confidence':{'value': conf_now},
         'cli':                {'value': cli_now},
+        'durable_goods_yoy':  {'value': round(durable_now, 1)   if durable_now   is not None else None},
+        'transport_equip_yoy':{'value': round(transport_now, 1) if transport_now is not None else None},
     },
     'z_scores': z_latest,
     'series': series,

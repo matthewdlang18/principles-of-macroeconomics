@@ -778,6 +778,14 @@
                             <h5 class="text-xs font-semibold text-gray-600 mb-1">Building Permits — YoY (%)</h5>
                             <div class="h-36 bg-gray-50 rounded p-2 border"><canvas id="fredPermitsChart"></canvas></div>
                         </div>
+                        <div>
+                            <h5 class="text-xs font-semibold text-gray-600 mb-1">Durable Goods Orders — YoY (%)</h5>
+                            <div class="h-36 bg-gray-50 rounded p-2 border"><canvas id="fredDurableChart"></canvas></div>
+                        </div>
+                        <div>
+                            <h5 class="text-xs font-semibold text-gray-600 mb-1">Transportation Equipment Orders — YoY (%)</h5>
+                            <div class="h-36 bg-gray-50 rounded p-2 border"><canvas id="fredTransportChart"></canvas></div>
+                        </div>
                     </div>
                 </div>
 
@@ -915,6 +923,18 @@
                 key: "SP500",
                 desc: "The S&P 500 stock index reflects investor expectations about future corporate earnings and economic conditions.",
                 tip: "Markets are forward-looking, but also prone to false signals ('the market has predicted 9 of the last 5 recessions')."
+            },
+            "Durable_Goods": {
+                name: "Durable Goods Orders",
+                key: "Durable_Goods",
+                desc: "YoY % change in manufacturers' new orders for durable goods (products lasting 3+ years). A leading indicator of business investment and industrial activity.",
+                tip: "Durable goods orders lead GDP by 2-4 months — a major drop signals firms are pulling back on investment."
+            },
+            "Transport_Equipment": {
+                name: "Transport Equipment Orders",
+                key: "Transport_Equipment",
+                desc: "YoY % change in manufacturers' new orders for transportation equipment (aircraft, autos, trucks). One of the strongest leading indicators of business cycles.",
+                tip: "Transportation investment is highly cyclical — large swings here often precede broader economic turning points by 3-6 months."
             }
         };
 
@@ -1994,15 +2014,20 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
                 makeChart('fredYieldChart', seriesToChart(liveData.series.yield_spread), '#3b82f6', '10Y-2Y Spread', true, true);
             if (liveData.series.building_permits_yoy)
                 makeChart('fredPermitsChart', seriesToChart(liveData.series.building_permits_yoy), '#10b981', 'Permits YoY %', true);
+            if (liveData.series.durable_goods_yoy)
+                makeChart('fredDurableChart', seriesToChart(liveData.series.durable_goods_yoy), '#8b5cf6', 'Durable Goods YoY %', true);
+            if (liveData.series.transport_equipment_yoy)
+                makeChart('fredTransportChart', seriesToChart(liveData.series.transport_equipment_yoy), '#f59e0b', 'Transport Equip YoY %', true);
 
-            // ── Build z-score series for all 8 indicators ─────────────────────────
+            // ── Build z-score series for all 10 indicators ────────────────────────
             // The JSON contains pre-computed z-series: e.g. series.z_10Y2Y_Yield
             // Use unemployment dates as the backbone (all series share same monthly dates)
             const backboneDates = liveData.series.unemployment?.dates || [];
 
             // Map: ind.id → array of z-scores (aligned to backbone dates)
             const zSeriesById = {};
-            const indIds = ['10Y2Y_Yield','Building_Permits','Initial_Claims','SP500','US_CLI','ISM_New_Orders','Consumer_Confidence','PMI'];
+            const indIds = ['10Y2Y_Yield','Building_Permits','Initial_Claims','SP500','US_CLI',
+                            'ISM_New_Orders','Consumer_Confidence','PMI','Durable_Goods','Transport_Equipment'];
             indIds.forEach(id => {
                 const key = `z_${id}`;
                 if (liveData.series[key]) {
@@ -2026,14 +2051,16 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
 
             // Raw display labels for snapshot
             const rawLabels = {
-                '10Y2Y_Yield':       yieldNow !== null ? fmt(yieldNow, 2, '%') : null,
-                'Building_Permits':  snap.building_permits_yoy?.value !== null ? fmt(snap.building_permits_yoy?.value, 1, '% YoY') : null,
-                'Initial_Claims':    snap.initial_claims?.value !== null ? (snap.initial_claims.value / 1000).toFixed(0) + 'K' : null,
-                'SP500':             snap.sp500_yoy?.value !== null ? fmt(snap.sp500_yoy?.value, 1, '% YoY') : null,
-                'US_CLI':            snap.cli?.value !== null ? fmt(snap.cli?.value, 2, '') : null,
-                'ISM_New_Orders':    snap.ism_new_orders?.value !== null ? fmt(snap.ism_new_orders?.value, 1, '') : null,
+                '10Y2Y_Yield':         yieldNow !== null ? fmt(yieldNow, 2, '%') : null,
+                'Building_Permits':    snap.building_permits_yoy?.value !== null ? fmt(snap.building_permits_yoy?.value, 1, '% YoY') : null,
+                'Initial_Claims':      snap.initial_claims?.value !== null ? (snap.initial_claims.value / 1000).toFixed(0) + 'K' : null,
+                'SP500':               snap.sp500_yoy?.value !== null ? fmt(snap.sp500_yoy?.value, 1, '% YoY') : null,
+                'US_CLI':              snap.cli?.value !== null ? fmt(snap.cli?.value, 2, '') : null,
+                'ISM_New_Orders':      snap.ism_new_orders?.value !== null ? fmt(snap.ism_new_orders?.value, 1, '') : null,
                 'Consumer_Confidence': snap.consumer_confidence?.value !== null ? fmt(snap.consumer_confidence?.value, 1, '') : null,
-                'PMI':               snap.pmi?.value !== null ? fmt(snap.pmi?.value, 1, '') : null,
+                'PMI':                 snap.pmi?.value !== null ? fmt(snap.pmi?.value, 1, '') : null,
+                'Durable_Goods':       snap.durable_goods_yoy?.value !== null ? fmt(snap.durable_goods_yoy?.value, 1, '% YoY') : null,
+                'Transport_Equipment': snap.transport_equip_yoy?.value !== null ? fmt(snap.transport_equip_yoy?.value, 1, '% YoY') : null,
             };
 
             window.fredData = {

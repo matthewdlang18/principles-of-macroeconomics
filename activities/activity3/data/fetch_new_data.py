@@ -23,7 +23,9 @@ Automated sources (no action needed):
   • Consumer Sentiment       FRED: UMCSENT
   • CPI YoY %                FRED: CPIAUCSL
   • Fed Funds Rate           FRED: FEDFUNDS
-  • US CLI                   FRED: USALOLITOAASTSAM  ← now automated!
+  • US CLI                   FRED: USALOLITOAASTSAM
+  • Durable Goods Orders YoY FRED: DGORDER
+  • Transport Equipment YoY  FRED: A36SNO
 
 Manual entry still required (proprietary, not on any free API):
   • ISM New Orders & PMI → https://www.ismworld.org/
@@ -57,6 +59,9 @@ BASELINE = {
     'PMI':             {'mean': 52.3262,   'std': 4.7230,      'invert': False},
     # CLI: baseline reverse-engineered from existing CSV z-score pairs
     'US_CLI':          {'mean': 100.003,   'std': 1.330,       'invert': False},
+    # Durable Goods and Transport Equipment YoY% (1985–2019 baseline)
+    'Durable_Goods':       {'mean': 2.928,    'std': 10.357,   'invert': False},
+    'Transport_Equipment': {'mean': 4.455,    'std': 19.349,   'invert': False},
 }
 
 
@@ -119,6 +124,8 @@ tasks = [
     ('CPIAUCSL',         'pc1', 'CPI YoY %'),
     ('FEDFUNDS',         'lin', 'Fed Funds Rate'),
     ('USALOLITOAASTSAM', 'lin', 'US CLI (OECD amplitude-adjusted, via FRED)'),
+    ('DGORDER',          'pc1', 'Durable Goods Orders YoY %'),
+    ('A36SNO',           'pc1', 'Transportation Equipment Orders YoY %'),
 ]
 
 for sid, units, label in tasks:
@@ -195,6 +202,8 @@ all_monthly = pd.DataFrame({
     'FEDFUNDS':      fetched['FEDFUNDS'],
     'GDP_QOQ':       gdp,
     'US CLI':        fetched.get('USALOLITOAASTSAM', pd.Series(dtype=float)),
+    'Durable_Goods_YOY':       fetched.get('DGORDER',  pd.Series(dtype=float)),
+    'Transport_Equipment_YOY': fetched.get('A36SNO',   pd.Series(dtype=float)),
     # ISM New Orders and PMI — proprietary, filled in manually below
 }).sort_index()
 all_monthly.index.name = 'time'
@@ -226,6 +235,12 @@ if len(new_raw) > 0:
         r['Unemployment Rate'] = v('Unemployment Rate', 1)
         r['US CLI']           = v('US CLI', 5)
         r['SP500']            = v('SP500', 2)
+        if 'CPI_YOY' in existing_cols:
+            r['CPI_YOY'] = v('CPI_YOY', 2)
+        if 'Durable_Goods_YOY' in existing_cols:
+            r['Durable_Goods_YOY'] = v('Durable_Goods_YOY', 2)
+        if 'Transport_Equipment_YOY' in existing_cols:
+            r['Transport_Equipment_YOY'] = v('Transport_Equipment_YOY', 2)
         append_rows.append(r)
 
     df_raw_new = pd.DataFrame(append_rows, columns=existing_cols)
@@ -258,6 +273,10 @@ if len(new_z) > 0:
         zr['PMI']            = np.nan   # proprietary — filled manually after script runs
         zr['4-Week MA Initial Unemployment Claims'] = zv('4-Week MA Initial Unemployment Claims', 'Initial_Claims')
         zr['SP500']          = zv('SP500_YOY', 'SP500_YOY')   # YoY% basis, not level
+        if 'Durable_Goods' in z_cols:
+            zr['Durable_Goods']       = zv('Durable_Goods_YOY', 'Durable_Goods')
+        if 'Transport_Equipment' in z_cols:
+            zr['Transport_Equipment'] = zv('Transport_Equipment_YOY', 'Transport_Equipment')
 
         z_append.append(zr)
 
@@ -281,7 +300,9 @@ print("=" * 60)
 print("✅ Automated sources updated (FRED + OECD via FRED):")
 print("   • Yield curve, Building Permits, Initial Claims")
 print("   • S&P 500, Unemployment, Consumer Sentiment, CPI, Fed Funds")
-print("   • US CLI  ← now automated!")
+print("   • US CLI (OECD amplitude-adjusted)")
+print("   • Durable Goods Orders YoY %")
+print("   • Transportation Equipment Orders YoY %")
 print()
 
 # ── Show missing ISM / PMI values so they're easy to fill in manually ─────────
