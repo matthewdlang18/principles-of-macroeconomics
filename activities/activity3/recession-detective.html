@@ -773,8 +773,13 @@
                 <!-- 5-year charts -->
                 <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
                     <h3 class="font-semibold text-gray-800 mb-1">Last 5 Years of Data</h3>
-                    <p class="text-xs text-gray-500 mb-3">These are the same indicators you used to analyze historical scenarios — now shown for today's economy.</p>
+                    <p class="text-xs text-gray-500 mb-3">These are the same indicators you used to analyze historical scenarios — now shown for today's economy. Your weighted index is computed from whichever of these indicators you assigned weight to.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Your weighted index over time — full width -->
+                        <div class="md:col-span-2">
+                            <h5 class="text-xs font-semibold text-gray-600 mb-1">Your Weighted Index <span class="font-normal text-gray-400" id="fredIndexChartLabel">(set weights in Step 2)</span></h5>
+                            <div class="h-40 bg-gray-50 rounded p-2 border"><canvas id="fredIndexChart"></canvas></div>
+                        </div>
                         <div>
                             <h5 class="text-xs font-semibold text-gray-600 mb-1">Unemployment Rate (%)</h5>
                             <div class="h-36 bg-gray-50 rounded p-2 border"><canvas id="fredUnempChart"></canvas></div>
@@ -2055,24 +2060,63 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
             makeChart('fredYieldChart', obsToChart(yieldObs), '#3b82f6', '10Y-2Y Spread', true, true);
             makeChart('fredPermitsChart', obsToChart(permitsObs), '#10b981', 'Permits YoY %', true);
 
-            // Store computed Z-score inputs for index calculation
-            // Z-scores estimated vs 1985–2019 historical mean/std (hard-coded approximations)
-            // ind.id → z-score
-            window.fredZScores = {
-                '10Y2Y_Yield':      yieldNow !== null ? (yieldNow - 1.20) / 1.10 : 0,       // mean≈1.2, std≈1.1
-                'Building_Permits': latest(permitsObs) !== null ? latest(permitsObs) / 14 : 0, // YoY% / ~14% std
-                'Initial_Claims':   claimsNow !== null ? -((claimsNow - 335000) / 85000) : 0, // inverted, mean≈335K
-                'SP500':            0,   // no live weekly data fetched — neutral
-                'US_CLI':           0,
-                'ISM_New_Orders':   0,
-                'Consumer_Confidence': 0,
-                'PMI':              0
+            // -------------------------------------------------------
+            // Build time-series Z-score arrays for each live indicator
+            // Historical mean/std estimated from 1985-2019 FRED data
+            // -------------------------------------------------------
+            // Align all series to the same monthly dates using unempObs as backbone
+            const backboneDates = unempObs.filter(o => o.value !== '.').map(o => o.date);
+
+            function alignToBackbone(obs, transform) {
+                // Build a date→value map, then look up each backbone date
+                const map = {};
+                obs.filter(o => o.value !== '.').forEach(o => { map[o.date] = parseFloat(o.value); });
+                return backboneDates.map(d => {
+                    // Try exact match, then closest prior month
+                    if (map[d] !== undefined) return transform(map[d]);
+                    // For daily series (DGS10/DGS2), average nearby values in same month
+                    const monthKey = d.substring(0, 7);
+                    const monthVals = obs.filter(o => o.date.startsWith(monthKey) && o.value !== '.').map(o => parseFloat(o.value));
+                    if (monthVals.length > 0) {
+                        const avg = monthVals.reduce((a, b) => a + b, 0) / monthVals.length;
+                        return transform(avg);
+                    }
+                    return null;
+                });
+            }
+
+            // Z-score transforms: (raw - mean) / std, inverted where needed
+            const zSeries = {
+                '10Y2Y_Yield':      alignToBackbone(yieldObs,   v => (v - 1.20) / 1.10),
+                'Building_Permits': alignToBackbone(permitsObs, v => v / 14),          // YoY%, std≈14
+                'Initial_Claims':   alignToBackbone(claimsObs,  v => -((v - 335000) / 85000)), // inverted
+                // Not available live — will be excluded from score
+                'SP500': null, 'US_CLI': null, 'ISM_New_Orders': null, 'Consumer_Confidence': null, 'PMI': null
             };
-            window.fredZScoreLabels = {
-                '10Y2Y_Yield':      yieldNow !== null ? fmt(yieldNow, 2, '%') : null,
-                'Building_Permits': latest(permitsObs) !== null ? fmt(latest(permitsObs), 1, '% YoY') : null,
-                'Initial_Claims':   claimsNow !== null ? (claimsNow/1000).toFixed(0) + 'K' : null,
-                'SP500':            null, 'US_CLI': null, 'ISM_New_Orders': null, 'Consumer_Confidence': null, 'PMI': null
+
+            // Latest single z-scores for snapshot
+            function latestZ(arr) {
+                if (!arr) return null;
+                for (let i = arr.length - 1; i >= 0; i--) { if (arr[i] !== null) return arr[i]; }
+                return null;
+            }
+
+            window.fredData = {
+                dates: backboneDates,
+                zSeries,
+                latestZ: {
+                    '10Y2Y_Yield':      latestZ(zSeries['10Y2Y_Yield']),
+                    'Building_Permits': latestZ(zSeries['Building_Permits']),
+                    'Initial_Claims':   latestZ(zSeries['Initial_Claims']),
+                    'SP500': null, 'US_CLI': null, 'ISM_New_Orders': null, 'Consumer_Confidence': null, 'PMI': null
+                },
+                rawLabels: {
+                    '10Y2Y_Yield':      yieldNow !== null ? fmt(yieldNow, 2, '%') : null,
+                    'Building_Permits': latest(permitsObs) !== null ? fmt(latest(permitsObs), 1, '% YoY') : null,
+                    'Initial_Claims':   claimsNow !== null ? (claimsNow/1000).toFixed(0) + 'K' : null,
+                    'SP500': null, 'US_CLI': null, 'ISM_New_Orders': null, 'Consumer_Confidence': null, 'PMI': null
+                },
+                makeChart  // expose so applyWeightsToFred can draw index chart
             };
 
             fredDataLoaded = true;
@@ -2080,34 +2124,49 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
         }
 
         function applyWeightsToFred() {
-            if (!window.fredZScores) return;
-            const zScores = window.fredZScores;
-            const zLabels = window.fredZScoreLabels || {};
+            if (!window.fredData) return;
+            const { dates, zSeries, latestZ, rawLabels, makeChart } = window.fredData;
+            const el = id => document.getElementById(id);
 
-            let totalW = 0, indexScore = 0;
+            // Separate live indicators (have time-series data) from non-live
+            const liveIds = ['10Y2Y_Yield', 'Building_Permits', 'Initial_Claims'];
+            let liveWeight = 0, nonLiveWeight = 0;
             const breakdown = [];
+
             indicators.forEach(ind => {
                 const w = weights[ind.id] || 0;
                 if (w > 0) {
-                    const z = zScores[ind.id] ?? 0; // default neutral if missing
-                    indexScore += z * (w / 100);
-                    totalW += w;
-                    breakdown.push({ id: ind.id, name: indicatorInfo[ind.id].name, w, z, raw: zLabels[ind.id] });
+                    const isLive = liveIds.includes(ind.id);
+                    if (isLive) liveWeight += w; else nonLiveWeight += w;
+                    breakdown.push({ id: ind.id, name: indicatorInfo[ind.id].name, w, isLive,
+                        z: latestZ[ind.id] ?? 0, raw: rawLabels[ind.id] });
                 }
             });
 
-            const score = totalW > 0 ? indexScore : null;
+            const totalAssigned = liveWeight + nonLiveWeight;
 
-            const el = id => document.getElementById(id);
+            // Compute score — normalize so live indicators carry their proportional weight
+            // e.g. if student assigned 40% yield, 60% PMI (no data) → yield carries 100% of score
+            let score = null;
+            if (liveWeight > 0) {
+                let weightedSum = 0;
+                breakdown.filter(b => b.isLive).forEach(b => {
+                    weightedSum += (b.z ?? 0) * (b.w / liveWeight);
+                });
+                score = weightedSum;
+            } else if (totalAssigned > 0) {
+                score = 0; // all non-live → neutral
+            }
+
+            // Update score display
             el('fredMyIndex').textContent = score !== null ? score.toFixed(2) : '—';
-
             const pct = score !== null ? Math.min(100, Math.max(0, ((score + 2) / 4) * 100)) : 50;
             const barColor = score === null ? '#6b7280' : score < -0.75 ? '#ef4444' : score < -0.25 ? '#f59e0b' : '#10b981';
             el('fredIndexBar').style.width = pct + '%';
             el('fredIndexBar').style.background = barColor;
 
             const badge = el('fredRiskBadge');
-            if (score === null) {
+            if (totalAssigned === 0) {
                 badge.textContent = 'Set weights in Step 2'; badge.style.background = '#e5e7eb'; badge.style.color = '#374151';
             } else if (score < -0.75) {
                 badge.textContent = '🔴 Elevated Risk'; badge.style.background = '#fef2f2'; badge.style.color = '#991b1b';
@@ -2117,18 +2176,69 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
                 badge.textContent = '🟢 Low Risk Signal'; badge.style.background = '#f0fdf4'; badge.style.color = '#166534';
             }
 
-            // Show per-indicator breakdown
+            // Per-indicator breakdown
             const breakEl = el('fredIndexBreakdown');
-            if (breakEl && breakdown.length > 0) {
-                breakEl.innerHTML = breakdown.map(b => {
-                    const zColor = b.z < -0.5 ? '#dc2626' : b.z > 0.5 ? '#16a34a' : '#6b7280';
-                    const dataStr = b.raw ? `<span class="opacity-60">${b.raw}</span>` : '<span class="opacity-40">no live data</span>';
-                    return `<div class="bg-white rounded p-1.5 border text-center">
-                        <div class="font-medium truncate" title="${b.name}">${b.name.split('(')[0].trim().substring(0,14)}</div>
-                        <div style="color:${zColor}" class="font-bold">z=${b.z.toFixed(2)}</div>
-                        <div class="text-gray-400">${dataStr} • ${b.w}%</div>
+            if (breakEl) {
+                if (breakdown.length === 0) {
+                    breakEl.innerHTML = '<p class="text-xs text-gray-400 col-span-4">Go back to Step 2 and assign weights to build your index.</p>';
+                } else {
+                    const livePct = totalAssigned > 0 ? Math.round(liveWeight / totalAssigned * 100) : 0;
+                    breakEl.innerHTML = breakdown.map(b => {
+                        const zColor = b.z < -0.5 ? '#dc2626' : b.z > 0.5 ? '#16a34a' : '#6b7280';
+                        const dataStr = b.raw ? `<span class="text-gray-500">${b.raw}</span>` :
+                            `<span class="text-gray-400 italic">no live data</span>`;
+                        const liveBadge = b.isLive ? '' : '<span class="text-orange-400 text-xs"> ★neutral</span>';
+                        return `<div class="bg-white rounded p-1.5 border text-center">
+                            <div class="font-medium text-xs truncate" title="${b.name}">${b.name.split('(')[0].trim().substring(0,13)}</div>
+                            <div style="color:${zColor}" class="font-bold text-sm">z=${b.z.toFixed(2)}${liveBadge}</div>
+                            <div class="text-xs mt-0.5">${dataStr} <span class="text-gray-400">• ${b.w}%</span></div>
+                        </div>`;
+                    }).join('') +
+                    `<div class="col-span-full text-xs text-gray-400 mt-1">
+                        ★ = no live data available, treated as neutral (0). Live indicators = ${livePct}% of your assigned weight.
                     </div>`;
-                }).join('');
+                }
+            }
+
+            // -----------------------------------------------
+            // Compute + draw historical index time-series
+            // -----------------------------------------------
+            const liveBreakdown = breakdown.filter(b => b.isLive && b.w > 0);
+            let indexSeries = null;
+
+            if (liveBreakdown.length > 0 && dates) {
+                indexSeries = dates.map((d, i) => {
+                    let val = 0, wSum = 0;
+                    liveBreakdown.forEach(b => {
+                        const zArr = zSeries[b.id];
+                        const z = zArr ? zArr[i] : null;
+                        if (z !== null && z !== undefined) {
+                            val += z * (b.w / liveWeight);
+                            wSum += b.w;
+                        }
+                    });
+                    return wSum > 0 ? val : null;
+                });
+            }
+
+            // Update chart label
+            const chartLabel = el('fredIndexChartLabel');
+            if (chartLabel) {
+                if (liveBreakdown.length === 0) {
+                    chartLabel.textContent = '(assign weights to indicators with live data: Yield Curve, Building Permits, Initial Claims)';
+                } else {
+                    const names = liveBreakdown.map(b => b.name.split('(')[0].trim()).join(', ');
+                    chartLabel.textContent = `(live: ${names})`;
+                }
+            }
+
+            // Draw the index chart
+            if (makeChart && indexSeries) {
+                makeChart('fredIndexChart', { labels: dates, values: indexSeries }, '#7c3aed', 'Your Index', true, false);
+            } else if (!indexSeries) {
+                // Clear/placeholder
+                const existing = Chart.getChart('fredIndexChart');
+                if (existing) existing.destroy();
             }
         }
     </script>
