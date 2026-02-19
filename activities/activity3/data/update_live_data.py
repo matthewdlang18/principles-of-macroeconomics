@@ -26,12 +26,12 @@ print("Loading CSVs...")
 
 # ── Raw indicators (for CPI, GDP, UE, Fed Funds if present) ─────────────────
 df_raw = pd.read_csv('LeadingIndicators.csv')
-df_raw['time'] = pd.to_datetime(df_raw['time'], infer_datetime_format=True)
+df_raw['time'] = pd.to_datetime(df_raw['time'], format='mixed', dayfirst=False)
 df_raw = df_raw.sort_values('time').reset_index(drop=True)
 
 # ── Z-score indicators (pre-computed, 1985-2019 baseline) ────────────────────
 df_z = pd.read_csv('LeadingIndicators_ZScore.csv')
-df_z['time'] = pd.to_datetime(df_z['time'], infer_datetime_format=True)
+df_z['time'] = pd.to_datetime(df_z['time'], format='mixed', dayfirst=False)
 df_z = df_z.sort_values('time').reset_index(drop=True)
 
 # ── Filter to last 65 months (~5.5 years) for charting ──────────────────────
