@@ -8,24 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <!-- CORS proxy helper — FRED API blocks direct browser requests -->
-    <script>
-      window.CORS_CONFIG = {
-        useCorsProxy: true,
-        proxyIndex: 0,
-        proxies: [
-          (url) => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
-          (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-        ],
-        wrapUrl(url) {
-          if (!this.useCorsProxy) return url;
-          return this.proxies[this.proxyIndex](url);
-        },
-        rotateProxy() {
-          this.proxyIndex = (this.proxyIndex + 1) % this.proxies.length;
-        },
-      };
-    </script>
     <style>
         .banner-container {
             position: relative;
@@ -861,9 +843,6 @@
         let currentStep = 0;
         let selectedScenarioId = 'A';
 
-        // FRED API — same key and proxy approach as real-time-data.html
-        const FRED_API_KEY = 'c1a69cc8450457303e5f04ffb3f68b97';
-        const FRED_BASE = 'https://api.stlouisfed.org/fred';
         let fredDataLoaded = false;
 
         // Chart instances
@@ -1913,108 +1892,9 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
         async function loadFredData() {
             if (fredDataLoaded) { applyWeightsToFred(); return; }
 
-            // Fetch via CORS proxy — same pattern as real-time-data.html
-            async function fetchSeries(seriesId, units = 'lin', limit = 65, retryCount = 0) {
-                try {
-                    const url = new URL(`${FRED_BASE}/series/observations`);
-                    url.searchParams.set('series_id', seriesId);
-                    url.searchParams.set('api_key', FRED_API_KEY);
-                    url.searchParams.set('file_type', 'json');
-                    url.searchParams.set('sort_order', 'desc');
-                    url.searchParams.set('limit', limit);
-                    if (units !== 'lin') url.searchParams.set('units', units);
-                    const requestUrl = window.CORS_CONFIG.wrapUrl(url.toString());
-                    const res = await fetch(requestUrl);
-                    if (!res.ok) {
-                        if (retryCount < 2) { window.CORS_CONFIG.rotateProxy(); return fetchSeries(seriesId, units, limit, retryCount + 1); }
-                        return [];
-                    }
-                    const d = await res.json();
-                    return (d.observations || []).reverse(); // oldest-first for charting
-                } catch (e) {
-                    if (retryCount < 2) { window.CORS_CONFIG.rotateProxy(); return fetchSeries(seriesId, units, limit, retryCount + 1); }
-                    return [];
-                }
-            }
-
-            // Helper: last valid value from oldest-first array
-            function latest(obs) {
-                for (let i = obs.length - 1; i >= 0; i--) {
-                    if (obs[i].value !== '.' && obs[i].value !== '') return parseFloat(obs[i].value);
-                }
-                return null;
-            }
-            // N periods back from latest valid
-            function nBack(obs, n) {
-                const valid = obs.filter(o => o.value !== '.' && o.value !== '');
-                const idx = valid.length - 1 - n;
-                return idx >= 0 ? parseFloat(valid[idx].value) : null;
-            }
-            function obsToChart(obs) {
-                const valid = obs.filter(o => o.value !== '.' && o.value !== '');
-                return {
-                    labels: valid.map(o => o.date),
-                    values: valid.map(o => parseFloat(o.value))
-                };
-            }
-
-            // Fetch 65 months (~5.5 years) for charts; quarterly GDP needs fewer
-            const [unempObs, cpiObs, t10Obs, t2Obs, permitsObs, fedObs, claimsObs] = await Promise.all([
-                fetchSeries('UNRATE', 'lin', 65),
-                fetchSeries('CPIAUCSL', 'pc1', 65),   // CPI YoY %
-                fetchSeries('DGS10', 'lin', 65),
-                fetchSeries('DGS2', 'lin', 65),
-                fetchSeries('PERMIT', 'pc1', 65),      // Building permits YoY %
-                fetchSeries('FEDFUNDS', 'lin', 65),
-                fetchSeries('IC4WSA', 'lin', 65),      // 4-wk MA initial claims
-            ]);
-
-            // Compute yield spread series
-            const yieldObs = t10Obs.map((obs, i) => {
-                const t2 = t2Obs[i];
-                if (!t2 || obs.value === '.' || t2.value === '.') return { date: obs.date, value: '.' };
-                return { date: obs.date, value: String((parseFloat(obs.value) - parseFloat(t2.value)).toFixed(3)) };
-            });
-
-            // Latest values for snapshot
-            const unempNow = latest(unempObs);
-            const unempPrev = nBack(unempObs, 12);
-            const cpiNow = latest(cpiObs);
-            const cpiPrev = nBack(cpiObs, 12);
-            const yieldNow = latest(yieldObs);
-            const fedNow = latest(fedObs);
-            const fedPrev = nBack(fedObs, 6);
-            const claimsNow = latest(claimsObs);
-            const claimsPrev = nBack(claimsObs, 52);
-
-            const fmt = (v, dec=1, suf='') => v !== null && v !== undefined ? v.toFixed(dec) + suf : '—';
-            const chgStr = (v, p) => {
-                if (v === null || p === null) return '';
-                const d = v - p; return (d >= 0 ? '▲' : '▼') + Math.abs(d).toFixed(1) + '%';
-            };
-
-            // Update snapshot tiles
             const el = id => document.getElementById(id);
-            el('fredUnemp').textContent = fmt(unempNow, 1, '%');
-            el('fredUnemp').classList.remove('fred-loading');
-            el('fredUnempChange').textContent = unempPrev ? chgStr(unempNow, unempPrev) + ' vs 1yr ago' : 'latest';
 
-            el('fredCpi').textContent = fmt(cpiNow, 1, '%');
-            el('fredCpi').classList.remove('fred-loading');
-            el('fredCpiChange').textContent = cpiPrev ? chgStr(cpiNow, cpiPrev) + ' vs 1yr ago' : 'YoY';
-
-            el('fredYieldCurve').textContent = fmt(yieldNow, 2, '%');
-            el('fredYieldCurve').classList.remove('fred-loading');
-            el('fredYieldSign').textContent = yieldNow === null ? '' : yieldNow < 0 ? '🔴 Inverted' : yieldNow < 0.5 ? '🟡 Flat' : '🟢 Normal';
-
-            el('fredFedFunds').textContent = fmt(fedNow, 2, '%');
-            el('fredFedFunds').classList.remove('fred-loading');
-            el('fredFedFundsChange').textContent = fedPrev ? chgStr(fedNow, fedPrev) + ' vs 6mo ago' : '';
-
-            const latestDate = unempObs.filter(o => o.value !== '.').slice(-1)[0]?.date || '';
-            el('fredLastUpdated').textContent = latestDate ? `Data through ${latestDate} • FRED` : 'FRED';
-
-            // Draw 5-year charts
+            // ── Helper: draw a Chart.js line chart ────────────────────────────────
             function makeChart(canvasId, chartData, color, label, zeroLine = false, fillBelow = false) {
                 const existing = Chart.getChart(canvasId);
                 if (existing) existing.destroy();
@@ -2055,68 +1935,114 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
                 });
             }
 
-            makeChart('fredUnempChart', obsToChart(unempObs), '#dc2626', 'Unemployment %');
-            makeChart('fredCpiChart', obsToChart(cpiObs), '#d97706', 'CPI YoY %', true);
-            makeChart('fredYieldChart', obsToChart(yieldObs), '#3b82f6', '10Y-2Y Spread', true, true);
-            makeChart('fredPermitsChart', obsToChart(permitsObs), '#10b981', 'Permits YoY %', true);
-
-            // -------------------------------------------------------
-            // Build time-series Z-score arrays for each live indicator
-            // Historical mean/std estimated from 1985-2019 FRED data
-            // -------------------------------------------------------
-            // Align all series to the same monthly dates using unempObs as backbone
-            const backboneDates = unempObs.filter(o => o.value !== '.').map(o => o.date);
-
-            function alignToBackbone(obs, transform) {
-                // Build a date→value map, then look up each backbone date
-                const map = {};
-                obs.filter(o => o.value !== '.').forEach(o => { map[o.date] = parseFloat(o.value); });
-                return backboneDates.map(d => {
-                    // Try exact match, then closest prior month
-                    if (map[d] !== undefined) return transform(map[d]);
-                    // For daily series (DGS10/DGS2), average nearby values in same month
-                    const monthKey = d.substring(0, 7);
-                    const monthVals = obs.filter(o => o.date.startsWith(monthKey) && o.value !== '.').map(o => parseFloat(o.value));
-                    if (monthVals.length > 0) {
-                        const avg = monthVals.reduce((a, b) => a + b, 0) / monthVals.length;
-                        return transform(avg);
-                    }
-                    return null;
-                });
+            // ── Load pre-processed JSON (generated by update_live_data.py) ────────
+            let liveData;
+            try {
+                const res = await fetch('data/live_data.json');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                liveData = await res.json();
+            } catch (e) {
+                console.error('Failed to load live_data.json:', e);
+                el('fredLastUpdated').textContent = 'Data unavailable — run update_live_data.py';
+                return;
             }
 
-            // Z-score transforms: (raw - mean) / std, inverted where needed
-            const zSeries = {
-                '10Y2Y_Yield':      alignToBackbone(yieldObs,   v => (v - 1.20) / 1.10),
-                'Building_Permits': alignToBackbone(permitsObs, v => v / 14),          // YoY%, std≈14
-                'Initial_Claims':   alignToBackbone(claimsObs,  v => -((v - 335000) / 85000)), // inverted
-                // Not available live — will be excluded from score
-                'SP500': null, 'US_CLI': null, 'ISM_New_Orders': null, 'Consumer_Confidence': null, 'PMI': null
+            const snap = liveData.snapshot;
+            const fmt = (v, dec=1, suf='') => v !== null && v !== undefined ? Number(v).toFixed(dec) + suf : '—';
+            const chgStr = (v, p) => {
+                if (v === null || p === null || p === undefined) return '';
+                const d = v - p; return (d >= 0 ? '▲' : '▼') + Math.abs(d).toFixed(1) + '%';
             };
 
-            // Latest single z-scores for snapshot
-            function latestZ(arr) {
-                if (!arr) return null;
-                for (let i = arr.length - 1; i >= 0; i--) { if (arr[i] !== null) return arr[i]; }
-                return null;
+            // ── Snapshot tiles ────────────────────────────────────────────────────
+            const unempNow  = snap.unemployment?.value;
+            const unempPrev = unempNow !== null && snap.unemployment?.change_1yr !== null
+                ? unempNow - snap.unemployment.change_1yr : null;
+            el('fredUnemp').textContent = fmt(unempNow, 1, '%');
+            el('fredUnemp').classList.remove('fred-loading');
+            el('fredUnempChange').textContent = snap.unemployment?.change_1yr !== null
+                ? (snap.unemployment.change_1yr >= 0 ? '▲' : '▼') + Math.abs(snap.unemployment.change_1yr).toFixed(1) + '% vs 1yr ago'
+                : 'latest';
+
+            const cpiNow = snap.cpi_yoy?.value;
+            el('fredCpi').textContent = fmt(cpiNow, 1, '%');
+            el('fredCpi').classList.remove('fred-loading');
+            el('fredCpiChange').textContent = 'YoY';
+
+            const yieldNow = snap.yield_spread?.value;
+            el('fredYieldCurve').textContent = fmt(yieldNow, 2, '%');
+            el('fredYieldCurve').classList.remove('fred-loading');
+            el('fredYieldSign').textContent = yieldNow === null ? '' : yieldNow < 0 ? '🔴 Inverted' : yieldNow < 0.5 ? '🟡 Flat' : '🟢 Normal';
+
+            const fedNow = snap.fed_funds?.value;
+            el('fredFedFunds').textContent = fmt(fedNow, 2, '%');
+            el('fredFedFunds').classList.remove('fred-loading');
+            el('fredFedFundsChange').textContent = '';
+
+            el('fredLastUpdated').textContent = `Data through ${liveData.latest_date} • Updated ${liveData.generated}`;
+
+            // ── 5-year charts ─────────────────────────────────────────────────────
+            function seriesToChart(s) {
+                return { labels: s.dates, values: s.values };
             }
 
+            if (liveData.series.unemployment)
+                makeChart('fredUnempChart', seriesToChart(liveData.series.unemployment), '#dc2626', 'Unemployment %');
+            if (liveData.series.cpi_yoy)
+                makeChart('fredCpiChart', seriesToChart(liveData.series.cpi_yoy), '#d97706', 'CPI YoY %', true);
+            if (liveData.series.yield_spread)
+                makeChart('fredYieldChart', seriesToChart(liveData.series.yield_spread), '#3b82f6', '10Y-2Y Spread', true, true);
+            if (liveData.series.building_permits_yoy)
+                makeChart('fredPermitsChart', seriesToChart(liveData.series.building_permits_yoy), '#10b981', 'Permits YoY %', true);
+
+            // ── Build z-score series for all 8 indicators ─────────────────────────
+            // The JSON contains pre-computed z-series: e.g. series.z_10Y2Y_Yield
+            // Use unemployment dates as the backbone (all series share same monthly dates)
+            const backboneDates = liveData.series.unemployment?.dates || [];
+
+            // Map: ind.id → array of z-scores (aligned to backbone dates)
+            const zSeriesById = {};
+            const indIds = ['10Y2Y_Yield','Building_Permits','Initial_Claims','SP500','US_CLI','ISM_New_Orders','Consumer_Confidence','PMI'];
+            indIds.forEach(id => {
+                const key = `z_${id}`;
+                if (liveData.series[key]) {
+                    // Align to backbone dates
+                    const dateMap = {};
+                    liveData.series[key].dates.forEach((d, i) => { dateMap[d] = liveData.series[key].values[i]; });
+                    zSeriesById[id] = backboneDates.map(d => {
+                        const v = dateMap[d];
+                        return (v !== undefined && v !== null) ? v : null;
+                    });
+                } else {
+                    zSeriesById[id] = null;
+                }
+            });
+
+            // Latest z-scores from pre-computed JSON z_scores dict
+            const latestZById = {};
+            indIds.forEach(id => {
+                latestZById[id] = liveData.z_scores[id] ?? null;
+            });
+
+            // Raw display labels for snapshot
+            const rawLabels = {
+                '10Y2Y_Yield':       yieldNow !== null ? fmt(yieldNow, 2, '%') : null,
+                'Building_Permits':  snap.building_permits_yoy?.value !== null ? fmt(snap.building_permits_yoy?.value, 1, '% YoY') : null,
+                'Initial_Claims':    snap.initial_claims?.value !== null ? (snap.initial_claims.value / 1000).toFixed(0) + 'K' : null,
+                'SP500':             snap.sp500_yoy?.value !== null ? fmt(snap.sp500_yoy?.value, 1, '% YoY') : null,
+                'US_CLI':            snap.cli?.value !== null ? fmt(snap.cli?.value, 2, '') : null,
+                'ISM_New_Orders':    snap.ism_new_orders?.value !== null ? fmt(snap.ism_new_orders?.value, 1, '') : null,
+                'Consumer_Confidence': snap.consumer_confidence?.value !== null ? fmt(snap.consumer_confidence?.value, 1, '') : null,
+                'PMI':               snap.pmi?.value !== null ? fmt(snap.pmi?.value, 1, '') : null,
+            };
+
             window.fredData = {
+                liveData,
                 dates: backboneDates,
-                zSeries,
-                latestZ: {
-                    '10Y2Y_Yield':      latestZ(zSeries['10Y2Y_Yield']),
-                    'Building_Permits': latestZ(zSeries['Building_Permits']),
-                    'Initial_Claims':   latestZ(zSeries['Initial_Claims']),
-                    'SP500': null, 'US_CLI': null, 'ISM_New_Orders': null, 'Consumer_Confidence': null, 'PMI': null
-                },
-                rawLabels: {
-                    '10Y2Y_Yield':      yieldNow !== null ? fmt(yieldNow, 2, '%') : null,
-                    'Building_Permits': latest(permitsObs) !== null ? fmt(latest(permitsObs), 1, '% YoY') : null,
-                    'Initial_Claims':   claimsNow !== null ? (claimsNow/1000).toFixed(0) + 'K' : null,
-                    'SP500': null, 'US_CLI': null, 'ISM_New_Orders': null, 'Consumer_Confidence': null, 'PMI': null
-                },
-                makeChart  // expose so applyWeightsToFred can draw index chart
+                zSeries: zSeriesById,
+                latestZ: latestZById,
+                rawLabels,
+                makeChart
             };
 
             fredDataLoaded = true;
@@ -2128,34 +2054,39 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
             const { dates, zSeries, latestZ, rawLabels, makeChart } = window.fredData;
             const el = id => document.getElementById(id);
 
-            // Separate live indicators (have time-series data) from non-live
-            const liveIds = ['10Y2Y_Yield', 'Building_Permits', 'Initial_Claims'];
-            let liveWeight = 0, nonLiveWeight = 0;
+            // All 8 indicators now have z-scores from the JSON.
+            // "hasTimeSeries" means we can plot the index over time (z-series available).
+            const hasTimeSeriesIds = Object.keys(zSeries).filter(id => zSeries[id] !== null);
+            let totalWeight = 0;
             const breakdown = [];
 
             indicators.forEach(ind => {
                 const w = weights[ind.id] || 0;
                 if (w > 0) {
-                    const isLive = liveIds.includes(ind.id);
-                    if (isLive) liveWeight += w; else nonLiveWeight += w;
-                    breakdown.push({ id: ind.id, name: indicatorInfo[ind.id].name, w, isLive,
-                        z: latestZ[ind.id] ?? 0, raw: rawLabels[ind.id] });
+                    totalWeight += w;
+                    breakdown.push({
+                        id: ind.id,
+                        name: indicatorInfo[ind.id].name,
+                        w,
+                        hasTimeSeries: hasTimeSeriesIds.includes(ind.id),
+                        z: latestZ[ind.id] ?? null,
+                        raw: rawLabels[ind.id]
+                    });
                 }
             });
 
-            const totalAssigned = liveWeight + nonLiveWeight;
-
-            // Compute score — normalize so live indicators carry their proportional weight
-            // e.g. if student assigned 40% yield, 60% PMI (no data) → yield carries 100% of score
+            // Compute weighted score using all assigned indicators that have a z-score
             let score = null;
-            if (liveWeight > 0) {
-                let weightedSum = 0;
-                breakdown.filter(b => b.isLive).forEach(b => {
-                    weightedSum += (b.z ?? 0) * (b.w / liveWeight);
+            if (totalWeight > 0) {
+                let weightedSum = 0, weightUsed = 0;
+                breakdown.forEach(b => {
+                    if (b.z !== null) {
+                        weightedSum += b.z * (b.w / totalWeight);
+                        weightUsed += b.w;
+                    }
                 });
-                score = weightedSum;
-            } else if (totalAssigned > 0) {
-                score = 0; // all non-live → neutral
+                // Normalize to only indicators with data
+                score = weightUsed > 0 ? weightedSum * (totalWeight / weightUsed) : 0;
             }
 
             // Update score display
@@ -2166,11 +2097,11 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
             el('fredIndexBar').style.background = barColor;
 
             const badge = el('fredRiskBadge');
-            if (totalAssigned === 0) {
+            if (totalWeight === 0) {
                 badge.textContent = 'Set weights in Step 2'; badge.style.background = '#e5e7eb'; badge.style.color = '#374151';
-            } else if (score < -0.75) {
+            } else if (score !== null && score < -0.75) {
                 badge.textContent = '🔴 Elevated Risk'; badge.style.background = '#fef2f2'; badge.style.color = '#991b1b';
-            } else if (score < -0.25) {
+            } else if (score !== null && score < -0.25) {
                 badge.textContent = '🟡 Moderate Risk'; badge.style.background = '#fffbeb'; badge.style.color = '#92400e';
             } else {
                 badge.textContent = '🟢 Low Risk Signal'; badge.style.background = '#f0fdf4'; badge.style.color = '#166534';
@@ -2182,38 +2113,36 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
                 if (breakdown.length === 0) {
                     breakEl.innerHTML = '<p class="text-xs text-gray-400 col-span-4">Go back to Step 2 and assign weights to build your index.</p>';
                 } else {
-                    const livePct = totalAssigned > 0 ? Math.round(liveWeight / totalAssigned * 100) : 0;
                     breakEl.innerHTML = breakdown.map(b => {
-                        const zColor = b.z < -0.5 ? '#dc2626' : b.z > 0.5 ? '#16a34a' : '#6b7280';
+                        const z = b.z ?? 0;
+                        const zColor = z < -0.5 ? '#dc2626' : z > 0.5 ? '#16a34a' : '#6b7280';
                         const dataStr = b.raw ? `<span class="text-gray-500">${b.raw}</span>` :
-                            `<span class="text-gray-400 italic">no live data</span>`;
-                        const liveBadge = b.isLive ? '' : '<span class="text-orange-400 text-xs"> ★neutral</span>';
+                            `<span class="text-gray-400 italic">z-score only</span>`;
                         return `<div class="bg-white rounded p-1.5 border text-center">
                             <div class="font-medium text-xs truncate" title="${b.name}">${b.name.split('(')[0].trim().substring(0,13)}</div>
-                            <div style="color:${zColor}" class="font-bold text-sm">z=${b.z.toFixed(2)}${liveBadge}</div>
+                            <div style="color:${zColor}" class="font-bold text-sm">z=${z.toFixed(2)}</div>
                             <div class="text-xs mt-0.5">${dataStr} <span class="text-gray-400">• ${b.w}%</span></div>
                         </div>`;
-                    }).join('') +
-                    `<div class="col-span-full text-xs text-gray-400 mt-1">
-                        ★ = no live data available, treated as neutral (0). Live indicators = ${livePct}% of your assigned weight.
-                    </div>`;
+                    }).join('');
                 }
             }
 
             // -----------------------------------------------
             // Compute + draw historical index time-series
             // -----------------------------------------------
-            const liveBreakdown = breakdown.filter(b => b.isLive && b.w > 0);
+            // Use indicators that have z-series time data
+            const timeSeriesBreakdown = breakdown.filter(b => b.hasTimeSeries && b.w > 0);
+            const tsWeight = timeSeriesBreakdown.reduce((s, b) => s + b.w, 0);
             let indexSeries = null;
 
-            if (liveBreakdown.length > 0 && dates) {
+            if (timeSeriesBreakdown.length > 0 && dates && dates.length > 0) {
                 indexSeries = dates.map((d, i) => {
                     let val = 0, wSum = 0;
-                    liveBreakdown.forEach(b => {
+                    timeSeriesBreakdown.forEach(b => {
                         const zArr = zSeries[b.id];
                         const z = zArr ? zArr[i] : null;
                         if (z !== null && z !== undefined) {
-                            val += z * (b.w / liveWeight);
+                            val += z * (b.w / tsWeight);
                             wSum += b.w;
                         }
                     });
@@ -2224,11 +2153,11 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
             // Update chart label
             const chartLabel = el('fredIndexChartLabel');
             if (chartLabel) {
-                if (liveBreakdown.length === 0) {
-                    chartLabel.textContent = '(assign weights to indicators with live data: Yield Curve, Building Permits, Initial Claims)';
+                if (timeSeriesBreakdown.length === 0) {
+                    chartLabel.textContent = '(assign weights to any indicators to see your index over time)';
                 } else {
-                    const names = liveBreakdown.map(b => b.name.split('(')[0].trim()).join(', ');
-                    chartLabel.textContent = `(live: ${names})`;
+                    const names = timeSeriesBreakdown.map(b => b.name.split('(')[0].trim()).join(', ');
+                    chartLabel.textContent = `(based on: ${names})`;
                 }
             }
 
