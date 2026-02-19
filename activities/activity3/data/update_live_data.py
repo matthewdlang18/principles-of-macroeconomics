@@ -96,9 +96,24 @@ conf_now   = safe_val(df_raw_recent['Consumer Confidence'])
 cli_now    = safe_val(df_raw_recent['US CLI'])
 
 # ── Latest Z-scores ──────────────────────────────────────────────────────────
+# Baselines (1985-2019) — must match fetch_new_data.py
+BASELINE = {
+    '10Y2Y_Yield':     {'mean': 1.1025,      'std': 0.8513,     'invert': False},
+    'Building_Permits':{'mean': 1352947.619,  'std': 399002.219, 'invert': False},
+    'Consumer_Conf':   {'mean': 88.3333,      'std': 11.6132,    'invert': False},
+    'Initial_Claims':  {'mean': 349497.024,   'std': 73416.939,  'invert': True},
+    'SP500_YOY':       {'mean': 9.9019,       'std': 15.6395,    'invert': False},
+    'ISM_New_Orders':  {'mean': 55.1819,      'std': 6.4291,     'invert': False},
+    'PMI':             {'mean': 52.3262,      'std': 4.7230,     'invert': False},
+    'US_CLI':          {'mean': 100.003,      'std': 1.330,      'invert': False},
+}
+
+def zsc(raw_val, key):
+    b = BASELINE[key]
+    z = (raw_val - b['mean']) / b['std']
+    return -z if b['invert'] else z
+
 z_latest = {}
-z_cols = ['10Y2Y_Yield','US CLI','ISM New Orders','Building Permits',
-          'Consumer Confidence','PMI','4-Week MA Initial Unemployment Claims','SP500']
 z_id_map = {
     '10Y2Y_Yield':                            '10Y2Y_Yield',
     'US CLI':                                 'US_CLI',
@@ -109,9 +124,37 @@ z_id_map = {
     '4-Week MA Initial Unemployment Claims':  'Initial_Claims',
     'SP500':                                  'SP500',
 }
-for col in z_cols:
+
+# Primary source: pre-computed z-score CSV
+for col, ind_id in z_id_map.items():
     if col in df_z.columns:
-        z_latest[z_id_map[col]] = safe_val(df_z[col])
+        v = safe_val(df_z[col])
+        if v is not None:
+            z_latest[ind_id] = v
+
+# Fallback: compute from raw CSV when z-score CSV is behind
+# (e.g. ISM/PMI added manually to raw CSV but z-score CSV not yet updated)
+raw_fallbacks = {
+    'ISM New Orders': ('ISM_New_Orders', 'ISM_New_Orders'),
+    'PMI':            ('PMI',            'PMI'),
+    'US CLI':         ('US CLI',         'US_CLI'),
+}
+# Also compute SP500 YoY% z-score from raw level series
+df_raw_full = pd.read_csv('LeadingIndicators.csv')
+df_raw_full['time'] = pd.to_datetime(df_raw_full['time'], format='mixed', dayfirst=False)
+df_raw_full = df_raw_full.sort_values('time')
+df_raw_full['SP500_YOY'] = df_raw_full['SP500'].pct_change(12) * 100
+
+for raw_col, (baseline_key, ind_id) in raw_fallbacks.items():
+    if raw_col in df_raw_recent.columns:
+        raw_v = safe_val(df_raw_recent[raw_col])
+        if raw_v is not None and ind_id not in z_latest:
+            z_latest[ind_id] = round(zsc(raw_v, baseline_key), 9)
+
+# SP500 z-score via YoY%
+sp500_yoy_latest = safe_val(df_raw_full['SP500_YOY'])
+if sp500_yoy_latest is not None and 'SP500' not in z_latest:
+    z_latest['SP500'] = round(zsc(sp500_yoy_latest, 'SP500_YOY'), 9)
 
 # Latest date across all indicators
 latest_date = df_z_recent['time'].max().strftime('%Y-%m')

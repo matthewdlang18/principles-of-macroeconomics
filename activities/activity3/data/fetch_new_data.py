@@ -2,7 +2,7 @@
 """
 fetch_new_data.py
 -----------------
-Fetches the latest values for Activity 3 indicators from the FRED API,
+Fetches the latest values for Activity 3 indicators from FRED and the OECD,
 appends new monthly rows to LeadingIndicators.csv and LeadingIndicators_ZScore.csv,
 then regenerates live_data.json.
 
@@ -14,16 +14,22 @@ Requires: pandas, requests, numpy
 Install:  pip install pandas requests numpy
 
 ─────────────────────────────────────────────────────────────────────────────
-NOTE on ISM New Orders, PMI, and US CLI:
-  These three series are NOT freely available on FRED — they come from
-  proprietary sources. The script will leave them NaN for new months.
-  If you want to fill them in, look up each month and edit
-  LeadingIndicators.csv manually, then re-run update_live_data.py.
+Automated sources (no action needed):
+  • Yield curve (10Y-2Y)     FRED: DGS10, DGS2
+  • Building Permits          FRED: PERMIT
+  • Initial Claims (4wk MA)  FRED: IC4WSA
+  • S&P 500                  FRED: SP500
+  • Unemployment Rate        FRED: UNRATE
+  • Consumer Sentiment       FRED: UMCSENT
+  • CPI YoY %                FRED: CPIAUCSL
+  • Fed Funds Rate           FRED: FEDFUNDS
+  • US CLI                   FRED: USALOLITOAASTSAM  ← now automated!
 
-    ISM New Orders & PMI:
-      https://www.ismworld.org/supply-management-news-and-reports/reports/ism-report-on-business/
-    US CLI (OECD Composite Leading Indicator):
-      https://stats.oecd.org/  → search "Composite Leading Indicators"
+Manual entry still required (proprietary, not on any free API):
+  • ISM New Orders & PMI → https://www.ismworld.org/
+      After running this script, it will print a table showing which
+      months are missing. Copy the values from the ISM website and
+      re-run:  python3 update_live_data.py
 ─────────────────────────────────────────────────────────────────────────────
 """
 
@@ -42,11 +48,15 @@ FRED_BASE    = 'https://api.stlouisfed.org/fred/series/observations'
 # These match the pre-computed baseline in LeadingIndicators_ZScore.csv.
 # Do NOT change — they define "historical normal" for this activity.
 BASELINE = {
-    '10Y2Y_Yield':     {'mean': 1.1025,   'std': 0.8513,  'invert': False},
-    'Building_Permits':{'mean': 1352947.619, 'std': 399002.219, 'invert': False},
-    'Consumer_Conf':   {'mean': 88.3333,  'std': 11.6132, 'invert': False},
-    'Initial_Claims':  {'mean': 349497.024, 'std': 73416.939, 'invert': True},  # high = bad
-    'SP500_YOY':       {'mean': 9.9019,   'std': 15.6395, 'invert': False},     # YoY% basis
+    '10Y2Y_Yield':     {'mean': 1.1025,    'std': 0.8513,      'invert': False},
+    'Building_Permits':{'mean': 1352947.619,'std': 399002.219,  'invert': False},
+    'Consumer_Conf':   {'mean': 88.3333,   'std': 11.6132,     'invert': False},
+    'Initial_Claims':  {'mean': 349497.024, 'std': 73416.939,   'invert': True},   # high = bad
+    'SP500_YOY':       {'mean': 9.9019,    'std': 15.6395,     'invert': False},   # YoY% basis
+    'ISM_New_Orders':  {'mean': 55.1819,   'std': 6.4291,      'invert': False},
+    'PMI':             {'mean': 52.3262,   'std': 4.7230,      'invert': False},
+    # CLI: baseline reverse-engineered from existing CSV z-score pairs
+    'US_CLI':          {'mean': 100.003,   'std': 1.330,       'invert': False},
 }
 
 
@@ -99,15 +109,16 @@ print("\nFetching from FRED (most recent 120 months):")
 
 fetched = {}
 tasks = [
-    ('DGS10',   'lin', '10Y Treasury yield'),
-    ('DGS2',    'lin', '2Y Treasury yield'),
-    ('PERMIT',  'lin', 'Building Permits (SAAR, thousands)'),
-    ('IC4WSA',  'lin', '4-Week MA Initial Claims'),
-    ('SP500',   'lin', 'S&P 500'),
-    ('UNRATE',  'lin', 'Unemployment Rate'),
-    ('UMCSENT', 'lin', 'U Mich Consumer Sentiment'),
-    ('CPIAUCSL','pc1', 'CPI YoY %'),
-    ('FEDFUNDS','lin', 'Fed Funds Rate'),
+    ('DGS10',            'lin', '10Y Treasury yield'),
+    ('DGS2',             'lin', '2Y Treasury yield'),
+    ('PERMIT',           'lin', 'Building Permits (SAAR, thousands)'),
+    ('IC4WSA',           'lin', '4-Week MA Initial Claims'),
+    ('SP500',            'lin', 'S&P 500'),
+    ('UNRATE',           'lin', 'Unemployment Rate'),
+    ('UMCSENT',          'lin', 'U Mich Consumer Sentiment'),
+    ('CPIAUCSL',         'pc1', 'CPI YoY %'),
+    ('FEDFUNDS',         'lin', 'Fed Funds Rate'),
+    ('USALOLITOAASTSAM', 'lin', 'US CLI (OECD amplitude-adjusted, via FRED)'),
 ]
 
 for sid, units, label in tasks:
@@ -183,7 +194,8 @@ all_monthly = pd.DataFrame({
     'CPI_YOY':       fetched['CPIAUCSL'],
     'FEDFUNDS':      fetched['FEDFUNDS'],
     'GDP_QOQ':       gdp,
-    # ISM New Orders, PMI, US CLI — not on FRED, left NaN
+    'US CLI':        fetched.get('USALOLITOAASTSAM', pd.Series(dtype=float)),
+    # ISM New Orders and PMI — proprietary, filled in manually below
 }).sort_index()
 all_monthly.index.name = 'time'
 
@@ -204,15 +216,15 @@ if len(new_raw) > 0:
             return round(float(val), dec) if not pd.isna(val) else np.nan
 
         r['10Y2Y_Yield']      = v('10Y2Y_Yield', 4)
-        r['ISM New Orders']   = np.nan   # proprietary — fill manually if desired
+        r['ISM New Orders']   = np.nan   # proprietary — fill manually (see below)
         r['US_GDP_YOY']       = np.nan
         r['US_GDP_QOQ']       = v('GDP_QOQ', 1)
         r['Building Permits'] = v('Building Permits', 0)
         r['Consumer Confidence'] = v('Consumer Confidence', 1)
-        r['PMI']              = np.nan   # proprietary — fill manually if desired
+        r['PMI']              = np.nan   # proprietary — fill manually (see below)
         r['4-Week MA Initial Unemployment Claims'] = v('4-Week MA Initial Unemployment Claims', 0)
         r['Unemployment Rate'] = v('Unemployment Rate', 1)
-        r['US CLI']           = np.nan   # proprietary — fill manually if desired
+        r['US CLI']           = v('US CLI', 5)
         r['SP500']            = v('SP500', 2)
         append_rows.append(r)
 
@@ -239,11 +251,11 @@ if len(new_z) > 0:
             return round(zscore(float(val), baseline_key), 9) if not pd.isna(val) else np.nan
 
         zr['10Y2Y_Yield']    = zv('10Y2Y_Yield',   '10Y2Y_Yield')
-        zr['US CLI']         = np.nan   # no live FRED source
-        zr['ISM New Orders'] = np.nan   # no live FRED source
+        zr['US CLI']         = zv('US CLI',        'US_CLI')
+        zr['ISM New Orders'] = np.nan   # proprietary — filled manually after script runs
         zr['Building Permits'] = zv('Building Permits', 'Building_Permits')
         zr['Consumer Confidence'] = zv('Consumer Confidence', 'Consumer_Conf')
-        zr['PMI']            = np.nan   # no live FRED source
+        zr['PMI']            = np.nan   # proprietary — filled manually after script runs
         zr['4-Week MA Initial Unemployment Claims'] = zv('4-Week MA Initial Unemployment Claims', 'Initial_Claims')
         zr['SP500']          = zv('SP500_YOY', 'SP500_YOY')   # YoY% basis, not level
 
@@ -266,15 +278,37 @@ if result.returncode != 0:
     sys.exit(1)
 
 print("=" * 60)
-print("✅ Done! Indicators updated automatically from FRED:")
-print("   • Yield curve (10Y-2Y), Building Permits, Initial Claims")
+print("✅ Automated sources updated (FRED + OECD via FRED):")
+print("   • Yield curve, Building Permits, Initial Claims")
 print("   • S&P 500, Unemployment, Consumer Sentiment, CPI, Fed Funds")
+print("   • US CLI  ← now automated!")
 print()
-print("⚠️  These require manual entry (proprietary sources):")
-print("   • ISM New Orders  → ismworld.org")
-print("   • PMI             → ismworld.org")
-print("   • US CLI          → stats.oecd.org")
+
+# ── Show missing ISM / PMI values so they're easy to fill in manually ─────────
+df_final = pd.read_csv('LeadingIndicators.csv')
+df_final['time'] = pd.to_datetime(df_final['time'], format='mixed', dayfirst=False)
+missing = df_final[df_final['ISM New Orders'].isna() | df_final['PMI'].isna()].copy()
+missing = missing[missing['time'] >= pd.Timestamp('2020-01-01')]
+
+if len(missing) > 0:
+    print("⚠️  ISM New Orders and PMI still need manual entry.")
+    print("   Source: https://www.ismworld.org/  (Manufacturing Report on Business)")
+    print()
+    print(f"   {'Month':<10}  {'ISM New Orders':>15}  {'PMI':>8}")
+    print(f"   {'-'*10}  {'-'*15}  {'-'*8}")
+    for _, row in missing.iterrows():
+        ism_val = f"{row['ISM New Orders']:.1f}" if not pd.isna(row['ISM New Orders']) else '  ← needed'
+        pmi_val = f"{row['PMI']:.1f}"            if not pd.isna(row['PMI'])            else '← needed'
+        print(f"   {row['time'].strftime('%Y-%m'):<10}  {ism_val:>15}  {pmi_val:>8}")
+    print()
+    print("   Edit LeadingIndicators.csv with those values, then run:")
+    print("     python3 update_live_data.py")
+    print("   (The z-scores will be computed automatically from the raw values.)")
+else:
+    print("✅ ISM New Orders and PMI are fully up to date.")
+
 print()
-print("After filling those in, re-run:  python3 update_live_data.py")
-print()
-print("To deploy:  git add activities/activity3/data/ && git commit -m 'Refresh data' && git push")
+print("To deploy:")
+print("  git add activities/activity3/data/")
+print("  git commit -m 'Refresh leading indicator data'")
+print("  git push")
