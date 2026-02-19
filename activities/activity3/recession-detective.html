@@ -740,82 +740,88 @@
                     Live data is pulled from the FRED API (Federal Reserve Economic Data).
                 </p>
 
-                <!-- Current macro dashboard -->
+                <!-- Current snapshot stats -->
                 <div class="fred-card mb-4">
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-semibold">Current U.S. Economic Conditions</h3>
-                        <span class="text-xs opacity-60" id="fredLastUpdated">Loading...</span>
+                        <h3 class="font-semibold">Current U.S. Economic Snapshot</h3>
+                        <span class="text-xs opacity-60" id="fredLastUpdated">Loading…</span>
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div class="fred-indicator">
                             <div class="text-xs opacity-60 mb-1">Unemployment Rate</div>
                             <div class="text-2xl font-bold fred-loading" id="fredUnemp">—</div>
-                            <div class="text-xs opacity-70" id="fredUnempChange">loading...</div>
-                        </div>
-                        <div class="fred-indicator">
-                            <div class="text-xs opacity-60 mb-1">GDP Growth (YoY)</div>
-                            <div class="text-2xl font-bold fred-loading" id="fredGdp">—</div>
-                            <div class="text-xs opacity-70" id="fredGdpChange">loading...</div>
+                            <div class="text-xs opacity-70" id="fredUnempChange">loading…</div>
                         </div>
                         <div class="fred-indicator">
                             <div class="text-xs opacity-60 mb-1">CPI Inflation (YoY)</div>
                             <div class="text-2xl font-bold fred-loading" id="fredCpi">—</div>
-                            <div class="text-xs opacity-70" id="fredCpiChange">loading...</div>
+                            <div class="text-xs opacity-70" id="fredCpiChange">loading…</div>
+                        </div>
+                        <div class="fred-indicator">
+                            <div class="text-xs opacity-60 mb-1">10Y–2Y Yield Spread</div>
+                            <div class="text-2xl font-bold fred-loading" id="fredYieldCurve">—</div>
+                            <div class="text-xs opacity-70" id="fredYieldSign">loading…</div>
                         </div>
                         <div class="fred-indicator">
                             <div class="text-xs opacity-60 mb-1">Fed Funds Rate</div>
                             <div class="text-2xl font-bold fred-loading" id="fredFedFunds">—</div>
-                            <div class="text-xs opacity-70" id="fredFedFundsChange">loading...</div>
+                            <div class="text-xs opacity-70" id="fredFedFundsChange">loading…</div>
                         </div>
                     </div>
-                    <!-- Leading indicator signals -->
-                    <h4 class="text-sm font-semibold opacity-80 mb-2">Leading Indicator Signals (vs. historical average)</h4>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="fredLeadingIndicators">
-                        <div class="fred-indicator fred-loading">
-                            <div class="text-xs opacity-60">Yield Curve</div>
-                            <div class="font-bold" id="fredYieldCurve">—</div>
+                </div>
+
+                <!-- 5-year charts -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+                    <h3 class="font-semibold text-gray-800 mb-1">Last 5 Years of Data</h3>
+                    <p class="text-xs text-gray-500 mb-3">These are the same indicators you used to analyze historical scenarios — now shown for today's economy.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h5 class="text-xs font-semibold text-gray-600 mb-1">Unemployment Rate (%)</h5>
+                            <div class="h-36 bg-gray-50 rounded p-2 border"><canvas id="fredUnempChart"></canvas></div>
                         </div>
-                        <div class="fred-indicator fred-loading">
-                            <div class="text-xs opacity-60">Building Permits</div>
-                            <div class="font-bold" id="fredPermits">—</div>
+                        <div>
+                            <h5 class="text-xs font-semibold text-gray-600 mb-1">CPI Inflation — YoY (%)</h5>
+                            <div class="h-36 bg-gray-50 rounded p-2 border"><canvas id="fredCpiChart"></canvas></div>
                         </div>
-                        <div class="fred-indicator fred-loading">
-                            <div class="text-xs opacity-60">Initial Claims</div>
-                            <div class="font-bold" id="fredClaims">—</div>
+                        <div>
+                            <h5 class="text-xs font-semibold text-gray-600 mb-1">10Y–2Y Yield Spread (%) <span class="font-normal text-gray-400">— shaded = inverted</span></h5>
+                            <div class="h-36 bg-gray-50 rounded p-2 border"><canvas id="fredYieldChart"></canvas></div>
                         </div>
-                        <div class="fred-indicator fred-loading">
-                            <div class="text-xs opacity-60">S&amp;P 500 (1yr)</div>
-                            <div class="font-bold" id="fredSP500">—</div>
+                        <div>
+                            <h5 class="text-xs font-semibold text-gray-600 mb-1">Building Permits — YoY (%)</h5>
+                            <div class="h-36 bg-gray-50 rounded p-2 border"><canvas id="fredPermitsChart"></canvas></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Your weighted index applied to today -->
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <h3 class="font-semibold text-blue-800 mb-2">Your Weighted Index — Applied to Today</h3>
+                    <h3 class="font-semibold text-blue-800 mb-1">Your Weighted Index — Applied to Today</h3>
                     <p class="text-sm text-gray-600 mb-3">
-                        Using the weights you set in Step 2, here's what your custom indicator says about recession risk right now.
-                        Note: live Z-scores are estimated relative to 1985–2019 historical averages.
+                        Using the weights you set in Step 2. Live Z-scores are estimated vs. 1985–2019 historical averages.
+                        Indicators without live data (ISM, PMI, CLI, Consumer Confidence) are treated as neutral (0).
                     </p>
-                    <div class="flex items-center gap-4">
-                        <div class="text-center">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <div class="text-center min-w-[64px]">
                             <div class="text-3xl font-bold" id="fredMyIndex">—</div>
-                            <div class="text-xs text-gray-500">Your Index Score</div>
+                            <div class="text-xs text-gray-500">Index Score</div>
                         </div>
-                        <div class="flex-1">
+                        <div class="flex-1 min-w-[160px]">
                             <div class="h-4 bg-gray-200 rounded-full overflow-hidden">
-                                <div id="fredIndexBar" class="h-full rounded-full transition-all" style="width:50%; background:#6b7280;"></div>
+                                <div id="fredIndexBar" class="h-full rounded-full transition-all duration-500" style="width:50%; background:#6b7280;"></div>
                             </div>
                             <div class="flex justify-between text-xs text-gray-400 mt-1">
-                                <span>Strong signal (−2)</span>
+                                <span>Recession signal (−2)</span>
                                 <span>Neutral (0)</span>
                                 <span>Expansion (+2)</span>
                             </div>
                         </div>
-                        <div class="text-center px-4 py-2 rounded-lg font-bold text-sm" id="fredRiskBadge" style="background:#e5e7eb;">
+                        <div class="text-center px-4 py-2 rounded-lg font-bold text-sm" id="fredRiskBadge" style="background:#e5e7eb; color:#374151;">
                             —
                         </div>
                     </div>
+                    <!-- Breakdown of which indicators contributed -->
+                    <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="fredIndexBreakdown"></div>
                 </div>
 
                 <!-- Discussion questions -->
@@ -1896,11 +1902,14 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
         // ============================================
         // STEP 5: FRED LIVE DATA
         // ============================================
+        // Chart refs for step 5
+        let fredUnempChart = null, fredCpiChart = null, fredYieldChart = null, fredPermitsChart = null;
+
         async function loadFredData() {
             if (fredDataLoaded) { applyWeightsToFred(); return; }
 
-            // Fetch via CORS proxy (same pattern as real-time-data.html)
-            async function fetchSeries(seriesId, units = 'lin', limit = 15, retryCount = 0) {
+            // Fetch via CORS proxy — same pattern as real-time-data.html
+            async function fetchSeries(seriesId, units = 'lin', limit = 65, retryCount = 0) {
                 try {
                     const url = new URL(`${FRED_BASE}/series/observations`);
                     url.searchParams.set('series_id', seriesId);
@@ -1909,7 +1918,6 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
                     url.searchParams.set('sort_order', 'desc');
                     url.searchParams.set('limit', limit);
                     if (units !== 'lin') url.searchParams.set('units', units);
-
                     const requestUrl = window.CORS_CONFIG.wrapUrl(url.toString());
                     const res = await fetch(requestUrl);
                     if (!res.ok) {
@@ -1917,158 +1925,210 @@ After your predictions, briefly explain your reasoning for 2-3 scenarios you fou
                         return [];
                     }
                     const d = await res.json();
-                    return d.observations || [];
+                    return (d.observations || []).reverse(); // oldest-first for charting
                 } catch (e) {
                     if (retryCount < 2) { window.CORS_CONFIG.rotateProxy(); return fetchSeries(seriesId, units, limit, retryCount + 1); }
                     return [];
                 }
             }
 
-            // Fetch key series in parallel — use more history for YoY comparisons
-            const [unempObs, gdpObs, cpiObs, fedObs, t10Obs, t2Obs, permitsObs, claimsObs, sp500Obs] = await Promise.all([
-                fetchSeries('UNRATE', 'lin', 15),
-                fetchSeries('A191RL1Q225SBEA', 'lin', 8),  // Real GDP QoQ annualized
-                fetchSeries('CPIAUCSL', 'pc1', 15),        // CPI YoY %
-                fetchSeries('FEDFUNDS', 'lin', 10),
-                fetchSeries('DGS10', 'lin', 15),
-                fetchSeries('DGS2', 'lin', 15),
-                fetchSeries('PERMIT', 'pc1', 15),          // Building permits YoY%
-                fetchSeries('IC4WSA', 'lin', 15),          // 4-week MA initial claims
-                fetchSeries('SP500', 'lin', 60)            // Need ~52 weeks for 1yr change
+            // Helper: last valid value from oldest-first array
+            function latest(obs) {
+                for (let i = obs.length - 1; i >= 0; i--) {
+                    if (obs[i].value !== '.' && obs[i].value !== '') return parseFloat(obs[i].value);
+                }
+                return null;
+            }
+            // N periods back from latest valid
+            function nBack(obs, n) {
+                const valid = obs.filter(o => o.value !== '.' && o.value !== '');
+                const idx = valid.length - 1 - n;
+                return idx >= 0 ? parseFloat(valid[idx].value) : null;
+            }
+            function obsToChart(obs) {
+                const valid = obs.filter(o => o.value !== '.' && o.value !== '');
+                return {
+                    labels: valid.map(o => o.date),
+                    values: valid.map(o => parseFloat(o.value))
+                };
+            }
+
+            // Fetch 65 months (~5.5 years) for charts; quarterly GDP needs fewer
+            const [unempObs, cpiObs, t10Obs, t2Obs, permitsObs, fedObs, claimsObs] = await Promise.all([
+                fetchSeries('UNRATE', 'lin', 65),
+                fetchSeries('CPIAUCSL', 'pc1', 65),   // CPI YoY %
+                fetchSeries('DGS10', 'lin', 65),
+                fetchSeries('DGS2', 'lin', 65),
+                fetchSeries('PERMIT', 'pc1', 65),      // Building permits YoY %
+                fetchSeries('FEDFUNDS', 'lin', 65),
+                fetchSeries('IC4WSA', 'lin', 65),      // 4-wk MA initial claims
             ]);
 
-            function latest(obs) {
-                const valid = obs.filter(o => o.value !== '.' && o.value !== '' && o.value !== null);
-                return valid.length > 0 ? parseFloat(valid[0].value) : null;
-            }
-            // Safe prev — returns null if not enough observations
-            function prev(obs, n) {
-                const valid = obs.filter(o => o.value !== '.' && o.value !== '' && o.value !== null);
-                return valid.length > n ? parseFloat(valid[n].value) : null;
-            }
+            // Compute yield spread series
+            const yieldObs = t10Obs.map((obs, i) => {
+                const t2 = t2Obs[i];
+                if (!t2 || obs.value === '.' || t2.value === '.') return { date: obs.date, value: '.' };
+                return { date: obs.date, value: String((parseFloat(obs.value) - parseFloat(t2.value)).toFixed(3)) };
+            });
 
+            // Latest values for snapshot
             const unempNow = latest(unempObs);
-            const unempPrev = prev(unempObs, 12);
-            const gdpNow = latest(gdpObs);
+            const unempPrev = nBack(unempObs, 12);
             const cpiNow = latest(cpiObs);
-            const cipiPrev = prev(cpiObs, 12);
+            const cpiPrev = nBack(cpiObs, 12);
+            const yieldNow = latest(yieldObs);
             const fedNow = latest(fedObs);
-            const fedPrev = prev(fedObs, 6);
-            const t10Now = latest(t10Obs);
-            const t2Now = latest(t2Obs);
-            const yieldCurveNow = (t10Now && t2Now) ? (t10Now - t2Now) : null;
-            const permitsNow = latest(permitsObs);
+            const fedPrev = nBack(fedObs, 6);
             const claimsNow = latest(claimsObs);
-            const claimsPrev = prev(claimsObs, 12);
-            const sp500Now = latest(sp500Obs);
-            const sp500Prev = prev(sp500Obs, Math.min(52, sp500Obs.length - 1));
+            const claimsPrev = nBack(claimsObs, 52);
 
-            // Update UI
-            const fmt = (v, dec=1, suffix='') => v !== null ? v.toFixed(dec) + suffix : '—';
-            const chg = (v, p, suffix='') => {
+            const fmt = (v, dec=1, suf='') => v !== null && v !== undefined ? v.toFixed(dec) + suf : '—';
+            const chgStr = (v, p) => {
                 if (v === null || p === null) return '';
-                const d = v - p;
-                return (d >= 0 ? '▲' : '▼') + Math.abs(d).toFixed(1) + suffix;
+                const d = v - p; return (d >= 0 ? '▲' : '▼') + Math.abs(d).toFixed(1) + '%';
             };
 
-            document.getElementById('fredUnemp').textContent = fmt(unempNow, 1, '%');
-            document.getElementById('fredUnemp').classList.remove('fred-loading');
-            document.getElementById('fredUnempChange').textContent = unempPrev ? chg(unempNow, unempPrev, '% vs 1yr ago') : 'vs 1yr ago';
+            // Update snapshot tiles
+            const el = id => document.getElementById(id);
+            el('fredUnemp').textContent = fmt(unempNow, 1, '%');
+            el('fredUnemp').classList.remove('fred-loading');
+            el('fredUnempChange').textContent = unempPrev ? chgStr(unempNow, unempPrev) + ' vs 1yr ago' : 'latest';
 
-            document.getElementById('fredGdp').textContent = fmt(gdpNow, 1, '%');
-            document.getElementById('fredGdp').classList.remove('fred-loading');
-            document.getElementById('fredGdpChange').textContent = 'annualized qtrly';
+            el('fredCpi').textContent = fmt(cpiNow, 1, '%');
+            el('fredCpi').classList.remove('fred-loading');
+            el('fredCpiChange').textContent = cpiPrev ? chgStr(cpiNow, cpiPrev) + ' vs 1yr ago' : 'YoY';
 
-            document.getElementById('fredCpi').textContent = fmt(cpiNow, 1, '%');
-            document.getElementById('fredCpi').classList.remove('fred-loading');
-            document.getElementById('fredCpiChange').textContent = cipiPrev ? chg(cpiNow, cipiPrev, '% vs 1yr ago') : 'YoY';
+            el('fredYieldCurve').textContent = fmt(yieldNow, 2, '%');
+            el('fredYieldCurve').classList.remove('fred-loading');
+            el('fredYieldSign').textContent = yieldNow === null ? '' : yieldNow < 0 ? '🔴 Inverted' : yieldNow < 0.5 ? '🟡 Flat' : '🟢 Normal';
 
-            document.getElementById('fredFedFunds').textContent = fmt(fedNow, 2, '%');
-            document.getElementById('fredFedFunds').classList.remove('fred-loading');
-            document.getElementById('fredFedFundsChange').textContent = fedPrev ? chg(fedNow, fedPrev, '% vs 6mo ago') : '';
+            el('fredFedFunds').textContent = fmt(fedNow, 2, '%');
+            el('fredFedFunds').classList.remove('fred-loading');
+            el('fredFedFundsChange').textContent = fedPrev ? chgStr(fedNow, fedPrev) + ' vs 6mo ago' : '';
 
-            // Leading indicators - show actual value + rough signal
-            const yieldSign = yieldCurveNow !== null ? (yieldCurveNow < 0 ? '🔴 Inverted' : yieldCurveNow < 0.5 ? '🟡 Flat' : '🟢 Normal') : '';
-            document.getElementById('fredYieldCurve').textContent = yieldCurveNow !== null ? fmt(yieldCurveNow, 2, '% ' + yieldSign) : '—';
-            document.getElementById('fredYieldCurve').closest('.fred-indicator').classList.remove('fred-loading');
+            const latestDate = unempObs.filter(o => o.value !== '.').slice(-1)[0]?.date || '';
+            el('fredLastUpdated').textContent = latestDate ? `Data through ${latestDate} • FRED` : 'FRED';
 
-            const permSign = permitsNow !== null ? (permitsNow < -10 ? '🔴' : permitsNow < 0 ? '🟡' : '🟢') : '';
-            document.getElementById('fredPermits').textContent = permitsNow !== null ? fmt(permitsNow, 1, '% YoY ' + permSign) : '—';
-            document.getElementById('fredPermits').closest('.fred-indicator').classList.remove('fred-loading');
+            // Draw 5-year charts
+            function makeChart(canvasId, chartData, color, label, zeroLine = false, fillBelow = false) {
+                const existing = Chart.getChart(canvasId);
+                if (existing) existing.destroy();
+                const ctx = document.getElementById(canvasId)?.getContext('2d');
+                if (!ctx) return;
+                const annotations = {};
+                if (zeroLine) {
+                    annotations.zero = { type: 'line', yMin: 0, yMax: 0, borderColor: 'rgba(220,38,38,0.6)', borderWidth: 1.5, borderDash: [4, 3] };
+                }
+                return new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: [{
+                            data: chartData.values,
+                            borderColor: color,
+                            backgroundColor: fillBelow
+                                ? chartData.values.map(v => v < 0 ? 'rgba(220,38,38,0.15)' : 'rgba(59,130,246,0.08)')
+                                : 'transparent',
+                            borderWidth: 2,
+                            fill: fillBelow,
+                            pointRadius: 0,
+                            tension: 0.3,
+                            label
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            annotation: { annotations }
+                        },
+                        scales: {
+                            x: { ticks: { maxTicksLimit: 6, font: { size: 8 }, maxRotation: 0 } },
+                            y: { ticks: { font: { size: 8 } } }
+                        }
+                    }
+                });
+            }
 
-            const claimsSign = (claimsNow && claimsPrev) ? (claimsNow > claimsPrev * 1.1 ? '🔴' : claimsNow > claimsPrev * 1.02 ? '🟡' : '🟢') : '';
-            document.getElementById('fredClaims').textContent = claimsNow !== null ? (claimsNow/1000).toFixed(0) + 'K ' + claimsSign : '—';
-            document.getElementById('fredClaims').closest('.fred-indicator').classList.remove('fred-loading');
+            makeChart('fredUnempChart', obsToChart(unempObs), '#dc2626', 'Unemployment %');
+            makeChart('fredCpiChart', obsToChart(cpiObs), '#d97706', 'CPI YoY %', true);
+            makeChart('fredYieldChart', obsToChart(yieldObs), '#3b82f6', '10Y-2Y Spread', true, true);
+            makeChart('fredPermitsChart', obsToChart(permitsObs), '#10b981', 'Permits YoY %', true);
 
-            const sp500Change = (sp500Now && sp500Prev) ? ((sp500Now - sp500Prev) / sp500Prev * 100) : null;
-            const spSign = sp500Change !== null ? (sp500Change < -10 ? '🔴' : sp500Change < 0 ? '🟡' : '🟢') : '';
-            document.getElementById('fredSP500').textContent = sp500Change !== null ? fmt(sp500Change, 1, '% 1yr ' + spSign) : '—';
-            document.getElementById('fredSP500').closest('.fred-indicator').classList.remove('fred-loading');
+            // Store computed Z-score inputs for index calculation
+            // Z-scores estimated vs 1985–2019 historical mean/std (hard-coded approximations)
+            // ind.id → z-score
+            window.fredZScores = {
+                '10Y2Y_Yield':      yieldNow !== null ? (yieldNow - 1.20) / 1.10 : 0,       // mean≈1.2, std≈1.1
+                'Building_Permits': latest(permitsObs) !== null ? latest(permitsObs) / 14 : 0, // YoY% / ~14% std
+                'Initial_Claims':   claimsNow !== null ? -((claimsNow - 335000) / 85000) : 0, // inverted, mean≈335K
+                'SP500':            0,   // no live weekly data fetched — neutral
+                'US_CLI':           0,
+                'ISM_New_Orders':   0,
+                'Consumer_Confidence': 0,
+                'PMI':              0
+            };
+            window.fredZScoreLabels = {
+                '10Y2Y_Yield':      yieldNow !== null ? fmt(yieldNow, 2, '%') : null,
+                'Building_Permits': latest(permitsObs) !== null ? fmt(latest(permitsObs), 1, '% YoY') : null,
+                'Initial_Claims':   claimsNow !== null ? (claimsNow/1000).toFixed(0) + 'K' : null,
+                'SP500':            null, 'US_CLI': null, 'ISM_New_Orders': null, 'Consumer_Confidence': null, 'PMI': null
+            };
 
-            // Timestamp
-            const dateStr = unempObs[0]?.date || 'recent';
-            document.getElementById('fredLastUpdated').textContent = `Data as of ${dateStr} • FRED`;
-
-            // Store raw values for index calculation
-            window.fredRawValues = { yieldCurveNow, permitsNow, claimsNow, sp500Now, unempNow, cpiNow };
             fredDataLoaded = true;
-
             applyWeightsToFred();
         }
 
         function applyWeightsToFred() {
-            if (!window.fredRawValues) return;
-            const { yieldCurveNow, permitsNow, claimsNow, sp500Now } = window.fredRawValues;
-
-            // Rough Z-score estimates based on 1985-2019 historical mean/std
-            // These are approximations for educational purposes
-            const zScoreApprox = {
-                '10Y2Y_Yield': yieldCurveNow !== null ? (yieldCurveNow - 1.2) / 1.1 : null,
-                'Building Permits': permitsNow !== null ? permitsNow / 15 : null, // YoY% normalized
-                '4-Week MA Initial Unemployment Claims': claimsNow !== null ? -(claimsNow - 340000) / 80000 : null, // inverted
-                'SP500': sp500Now !== null ? sp500Now / 25 : null, // 1yr% normalized
-                // Others not available live - set to 0 (neutral)
-                'US_CLI': 0, 'ISM_New_Orders': 0, 'Consumer_Confidence': 0, 'PMI': 0
-            };
+            if (!window.fredZScores) return;
+            const zScores = window.fredZScores;
+            const zLabels = window.fredZScoreLabels || {};
 
             let totalW = 0, indexScore = 0;
+            const breakdown = [];
             indicators.forEach(ind => {
                 const w = weights[ind.id] || 0;
                 if (w > 0) {
-                    const z = zScoreApprox[ind.id];
-                    if (z !== null && z !== undefined) {
-                        indexScore += z * (w / 100);
-                        totalW += w;
-                    }
+                    const z = zScores[ind.id] ?? 0; // default neutral if missing
+                    indexScore += z * (w / 100);
+                    totalW += w;
+                    breakdown.push({ id: ind.id, name: indicatorInfo[ind.id].name, w, z, raw: zLabels[ind.id] });
                 }
             });
 
             const score = totalW > 0 ? indexScore : null;
-            document.getElementById('fredMyIndex').textContent = score !== null ? score.toFixed(2) : '—';
 
-            // Bar: map score from -2 to +2 → 0 to 100%
+            const el = id => document.getElementById(id);
+            el('fredMyIndex').textContent = score !== null ? score.toFixed(2) : '—';
+
             const pct = score !== null ? Math.min(100, Math.max(0, ((score + 2) / 4) * 100)) : 50;
             const barColor = score === null ? '#6b7280' : score < -0.75 ? '#ef4444' : score < -0.25 ? '#f59e0b' : '#10b981';
-            document.getElementById('fredIndexBar').style.width = pct + '%';
-            document.getElementById('fredIndexBar').style.background = barColor;
+            el('fredIndexBar').style.width = pct + '%';
+            el('fredIndexBar').style.background = barColor;
 
-            const badge = document.getElementById('fredRiskBadge');
+            const badge = el('fredRiskBadge');
             if (score === null) {
-                badge.textContent = 'Set weights first';
-                badge.style.background = '#e5e7eb';
-                badge.style.color = '#374151';
+                badge.textContent = 'Set weights in Step 2'; badge.style.background = '#e5e7eb'; badge.style.color = '#374151';
             } else if (score < -0.75) {
-                badge.textContent = 'Elevated Risk';
-                badge.style.background = '#fef2f2';
-                badge.style.color = '#991b1b';
+                badge.textContent = '🔴 Elevated Risk'; badge.style.background = '#fef2f2'; badge.style.color = '#991b1b';
             } else if (score < -0.25) {
-                badge.textContent = 'Moderate Risk';
-                badge.style.background = '#fffbeb';
-                badge.style.color = '#92400e';
+                badge.textContent = '🟡 Moderate Risk'; badge.style.background = '#fffbeb'; badge.style.color = '#92400e';
             } else {
-                badge.textContent = 'Low Risk Signal';
-                badge.style.background = '#f0fdf4';
-                badge.style.color = '#166534';
+                badge.textContent = '🟢 Low Risk Signal'; badge.style.background = '#f0fdf4'; badge.style.color = '#166534';
+            }
+
+            // Show per-indicator breakdown
+            const breakEl = el('fredIndexBreakdown');
+            if (breakEl && breakdown.length > 0) {
+                breakEl.innerHTML = breakdown.map(b => {
+                    const zColor = b.z < -0.5 ? '#dc2626' : b.z > 0.5 ? '#16a34a' : '#6b7280';
+                    const dataStr = b.raw ? `<span class="opacity-60">${b.raw}</span>` : '<span class="opacity-40">no live data</span>';
+                    return `<div class="bg-white rounded p-1.5 border text-center">
+                        <div class="font-medium truncate" title="${b.name}">${b.name.split('(')[0].trim().substring(0,14)}</div>
+                        <div style="color:${zColor}" class="font-bold">z=${b.z.toFixed(2)}</div>
+                        <div class="text-gray-400">${dataStr} • ${b.w}%</div>
+                    </div>`;
+                }).join('');
             }
         }
     </script>
