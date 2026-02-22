@@ -2947,10 +2947,10 @@
         borderRadius: 4,
         padding: { top: 3, bottom: 3, left: 7, right: 7 },
         font: { size: 10, weight: 'bold' },
-        // position:'start' anchors the LEFT edge of the label box at xValue+xAdjust,
-        // so the label starts ~16 px into the margin with room to breathe.
+        // position:'start' anchors the LEFT edge of the label box at xValue+xAdjust.
+        // 60px clears the y2 axis title (~40px wide) with room to breathe.
         position: 'start',
-        xAdjust: 16,
+        xAdjust: 60,
         yAdjust: 0,
         textAlign: 'left',
       };
@@ -3289,7 +3289,7 @@
           animation: { duration: 400 },
           layout: {
             // Reserve right margin so labels can live outside the plot area
-            padding: { right: showLastObs ? 140 : 10 },
+            padding: { right: showLastObs ? 180 : 10 },
           },
           scales,
           plugins: {
