@@ -656,12 +656,6 @@
                   class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500">
               </div>
             </div>
-            <!-- Right padding -->
-            <div class="mt-2 flex items-center gap-3">
-              <label class="text-xs text-slate-400 whitespace-nowrap">Right padding</label>
-              <input id="exp-x-pad" type="range" min="0" max="36" value="6" step="1" class="flex-1 accent-blue-600">
-              <span id="exp-x-pad-label" class="text-xs font-mono text-slate-500 w-12 text-right">6 mo</span>
-            </div>
           </div>
 
           <!-- Toggles row -->
@@ -2876,17 +2870,26 @@
   }
 
   // ── Last-observation label annotations ──────────────────────────────────────
-  function buildLastObsAnnotations(datasets) {
+  // Labels live OUTSIDE the plot area in the right margin (layout.padding.right).
+  // A horizontal line runs from the last data point to the right axis wall,
+  // then the label sits just past it. clip:false lets annotations draw there.
+  function buildLastObsAnnotations(datasets, axisMax) {
     const out = {};
 
-    datasets.forEach((ds, i) => {
-      if (!ds.data || !ds.data.length) return;
+    // Collect valid last points
+    const entries = datasets.map((ds, i) => {
+      if (!ds.data || !ds.data.length) return null;
       const last = [...ds.data].reverse().find(p => p && Number.isFinite(p.y));
-      if (!last) return;
+      if (!last) return null;
+      return { ds, i, last, axis: ds.yAxisID || 'y1', color: ds.borderColor || '#334155' };
+    }).filter(Boolean);
 
-      const color = ds.borderColor || '#334155';
+    // Sort by y-value descending so label order on the right margin matches
+    // the visual order of lines (top series → top label)
+    entries.sort((a, b) => b.last.y - a.last.y);
+
+    entries.forEach(({ ds, i, last, axis, color }, rankIdx) => {
       const value = last.y;
-      const axis  = ds.yAxisID || 'y1';
 
       // Format value
       const fmt = Math.abs(value) >= 10000
@@ -2895,20 +2898,12 @@
           ? value.toLocaleString(undefined, { maximumFractionDigits: 1 })
           : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
-      // Format date
+      // Date string
       const dateStr = last.x instanceof Date
         ? last.x.toLocaleDateString(undefined, { year: 'numeric', month: 'short' })
         : '';
 
-      // Place the label 2 months to the right of the last point in data-space
-      // This means it always sits clearly inside the padding zone, not pixel-fighting
-      const labelX = new Date(last.x);
-      labelX.setMonth(labelX.getMonth() + 2);
-
-      // Stagger vertically per series so they don't collide
-      const yAdjust = i * 20;
-
-      // Dot at the actual last data point
+      // Dot at actual last data point
       out[`lastDot_${i}`] = {
         type: 'point',
         xValue: last.x,
@@ -2921,38 +2916,41 @@
         radius: 5,
       };
 
-      // Horizontal tick line from dot to label
+      // Horizontal line from last data point to the right axis wall (axisMax)
       out[`lastLine_${i}`] = {
         type: 'line',
         xMin: last.x,
-        xMax: labelX,
+        xMax: axisMax,
         yMin: last.y,
         yMax: last.y,
         yScaleID: axis,
         xScaleID: 'x',
         borderColor: color,
-        borderWidth: 1.5,
-        borderDash: [3, 2],
+        borderWidth: 1,
+        borderDash: [4, 3],
       };
 
-      // Label bubble positioned at labelX, same y as the point
+      // Label sits OUTSIDE the plot area — at xValue = axisMax, pushed right
+      // by xAdjust pixels into the layout.padding.right margin zone.
+      // clip:false (set on annotations plugin) allows this.
       out[`lastLabel_${i}`] = {
         type: 'label',
-        xValue: labelX,
+        xValue: axisMax,
         yValue: last.y,
         yScaleID: axis,
         xScaleID: 'x',
-        content: [fmt, dateStr].filter(Boolean),
+        content: [`${fmt}`, dateStr].filter(Boolean),
         color: '#fff',
         backgroundColor: color,
         borderRadius: 4,
-        padding: { top: 3, bottom: 3, left: 6, right: 6 },
+        padding: { top: 3, bottom: 3, left: 7, right: 7 },
         font: { size: 10, weight: 'bold' },
-        xAdjust: 0,
-        yAdjust,
-        textAlign: 'center',
+        xAdjust: 8,       // push into the right margin
+        yAdjust: 0,
+        textAlign: 'left',
       };
     });
+
     return out;
   }
 
@@ -3241,10 +3239,8 @@
         titleEl.classList.add('hidden');
       }
 
-      // Right padding: extend x-axis max by N months beyond last data point
-      const xPadMonths = parseInt($('exp-x-pad').value) || 0;
+      // x-axis max: labels live in the right margin (layout.padding.right), so no extra x padding needed
       expPaddedMaxDate = new Date(expOriginalMaxDate);
-      expPaddedMaxDate.setMonth(expPaddedMaxDate.getMonth() + xPadMonths);
       const paddedMax = expPaddedMaxDate;
 
       const scales = {
@@ -3286,6 +3282,10 @@
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
           animation: { duration: 400 },
+          layout: {
+            // Reserve right margin so labels can live outside the plot area
+            padding: { right: showLastObs ? 140 : 10 },
+          },
           scales,
           plugins: {
             legend: {
@@ -3307,9 +3307,10 @@
               }
             },
             annotation: {
+              clip: false,   // allow labels to draw outside the plot area into the margin
               annotations: {
                 ...recessionAnnotations,
-                ...(showLastObs ? buildLastObsAnnotations(datasets) : {}),
+                ...(showLastObs ? buildLastObsAnnotations(datasets, paddedMax) : {}),
               }
             },
             zoom: {
@@ -3428,21 +3429,6 @@
         }
         expChart.update();
       });
-    });
-
-    // Right-padding slider — live label update + instant chart update (no re-fetch)
-    const xPadSlider = $('exp-x-pad');
-    const xPadLabel  = $('exp-x-pad-label');
-    xPadSlider.addEventListener('input', () => {
-      const v = parseInt(xPadSlider.value);
-      xPadLabel.textContent = v === 0 ? 'none' : `${v} mo`;
-      // Update chart x-axis max live if chart already rendered
-      if (expChart && expOriginalMaxDate) {
-        expPaddedMaxDate = new Date(expOriginalMaxDate);
-        expPaddedMaxDate.setMonth(expPaddedMaxDate.getMonth() + v);
-        expChart.options.scales.x.max = expPaddedMaxDate;
-        expChart.update('none');
-      }
     });
 
     // Set today as default end date
