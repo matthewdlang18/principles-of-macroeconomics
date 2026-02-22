@@ -676,6 +676,10 @@
               <input id="exp-legend-toggle" type="checkbox" checked class="h-3.5 w-3.5 accent-blue-600">
               <span class="text-xs text-slate-600">Show legend</span>
             </label>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input id="exp-last-obs-toggle" type="checkbox" checked class="h-3.5 w-3.5 accent-blue-600">
+              <span class="text-xs text-slate-600">Label last value</span>
+            </label>
           </div>
 
           <!-- Legend position -->
@@ -2808,6 +2812,55 @@
     return out;
   }
 
+  // ── Last-observation label annotations ──────────────────────────────────────
+  function buildLastObsAnnotations(datasets) {
+    const out = {};
+    datasets.forEach((ds, i) => {
+      if (!ds.data || !ds.data.length) return;
+      // Find last non-null point
+      const last = [...ds.data].reverse().find(p => p && Number.isFinite(p.y));
+      if (!last) return;
+
+      const color = ds.borderColor || '#334155';
+      const value = last.y;
+      const fmt = Math.abs(value) >= 1000
+        ? value.toLocaleString(undefined, { maximumFractionDigits: 1 })
+        : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+      // Dot at last point
+      out[`lastDot_${i}`] = {
+        type: 'point',
+        xValue: last.x,
+        yValue: last.y,
+        yScaleID: ds.yAxisID || 'y1',
+        xScaleID: 'x',
+        backgroundColor: color,
+        borderColor: '#fff',
+        borderWidth: 2,
+        radius: 5,
+      };
+
+      // Label bubble
+      out[`lastLabel_${i}`] = {
+        type: 'label',
+        xValue: last.x,
+        yValue: last.y,
+        yScaleID: ds.yAxisID || 'y1',
+        xScaleID: 'x',
+        content: fmt,
+        color: '#fff',
+        backgroundColor: color,
+        borderRadius: 4,
+        padding: { top: 3, bottom: 3, left: 5, right: 5 },
+        font: { size: 11, weight: 'bold' },
+        xAdjust: 6,
+        yAdjust: -14,
+        position: 'start',
+      };
+    });
+    return out;
+  }
+
   // ── Series card management ───────────────────────────────────────────────────
   function addSeriesCard(opts = {}) {
     if (expSeriesCards.length >= MAX_SERIES) {
@@ -2968,6 +3021,7 @@
       // Build Chart.js datasets
       const showGrid      = $('exp-grid-toggle').checked;
       const showLegend    = $('exp-legend-toggle').checked;
+      const showLastObs   = $('exp-last-obs-toggle').checked;
       const legendPos     = $('exp-legend-position').value;
       const logScale      = $('exp-log-toggle').checked;
       const chartTitle    = $('exp-chart-title').value.trim();
@@ -3078,7 +3132,12 @@
                 }
               }
             },
-            annotation: { annotations: recessionAnnotations },
+            annotation: {
+              annotations: {
+                ...recessionAnnotations,
+                ...(showLastObs ? buildLastObsAnnotations(datasets) : {}),
+              }
+            },
             zoom: {
               limits: {
                 x: { min: 'original', max: 'original' },
@@ -3168,7 +3227,7 @@
     $('exp-add-series-btn2').addEventListener('click', () => addSeriesCard());
 
     // Live-update toggles (no re-fetch needed for these)
-    ['exp-recession-toggle','exp-log-toggle','exp-grid-toggle','exp-legend-toggle'].forEach(id => {
+    ['exp-recession-toggle','exp-log-toggle','exp-grid-toggle','exp-legend-toggle','exp-last-obs-toggle'].forEach(id => {
       $(id).addEventListener('change', () => { if (expChart) renderExplorer(); });
     });
 
