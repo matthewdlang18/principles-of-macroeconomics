@@ -2650,14 +2650,26 @@
     { id: 'BAA10Y',     label: 'Credit Spread' },
   ];
 
-  // NBER recession periods — fallback if FRED fetch fails (post-1953 only)
+  // Full NBER recession list (hardcoded fallback + pre-1953 coverage).
+  // Sources: NBER Business Cycle Dating Committee historical dates.
   const NBER_RECESSIONS = [
-    ['1953-07-01','1954-05-01'],['1957-08-01','1958-04-01'],
-    ['1960-04-01','1961-02-01'],['1969-12-01','1970-11-01'],
-    ['1973-11-01','1975-03-01'],['1980-01-01','1980-07-01'],
-    ['1981-07-01','1982-11-01'],['1990-07-01','1991-03-01'],
-    ['2001-03-01','2001-11-01'],['2007-12-01','2009-06-01'],
-    ['2020-02-01','2020-04-01'],
+    ['1857-06-01','1858-12-01'],['1860-10-01','1861-06-01'],
+    ['1865-04-01','1867-12-01'],['1869-06-01','1870-12-01'],
+    ['1873-10-01','1879-03-01'],['1882-03-01','1885-05-01'],
+    ['1887-03-01','1888-04-01'],['1890-07-01','1891-05-01'],
+    ['1893-01-01','1894-06-01'],['1895-12-01','1897-06-01'],
+    ['1899-06-01','1900-12-01'],['1902-09-01','1904-08-01'],
+    ['1906-05-01','1908-06-01'],['1910-01-01','1912-01-01'],
+    ['1913-01-01','1914-12-01'],['1918-08-01','1919-03-01'],
+    ['1920-01-01','1921-07-01'],['1923-05-01','1924-07-01'],
+    ['1926-10-01','1927-11-01'],['1929-08-01','1933-03-01'],
+    ['1937-05-01','1938-06-01'],['1945-02-01','1945-10-01'],
+    ['1948-11-01','1949-10-01'],['1953-07-01','1954-05-01'],
+    ['1957-08-01','1958-04-01'],['1960-04-01','1961-02-01'],
+    ['1969-12-01','1970-11-01'],['1973-11-01','1975-03-01'],
+    ['1980-01-01','1980-07-01'],['1981-07-01','1982-11-01'],
+    ['1990-07-01','1991-03-01'],['2001-03-01','2001-11-01'],
+    ['2007-12-01','2009-06-01'],['2020-02-01','2020-04-01'],
   ];
 
   // ── State ───────────────────────────────────────────────────────────────────
@@ -2821,11 +2833,14 @@
     return results;
   }
 
-  // NBER systematic dating starts Jan 1953 — anything before is unreliable
-  const RECESSION_CUTOFF = new Date('1953-01-01');
+  // Pre-1953 NBER dates as Date pairs (always used; FRED USREC doesn't cover these)
+  const PRE1953_RECESSIONS = NBER_RECESSIONS
+    .filter(([s]) => s < '1953-01-01')
+    .map(([s, e]) => [new Date(s), new Date(e)]);
 
   async function fetchRecessions() {
     try {
+      // FRED USREC is reliable from 1953 onward
       const json = await fredGet({
         series_id: 'USREC',
         observation_start: '1953-01-01',
@@ -2835,16 +2850,17 @@
       const obs = (json.observations || [])
         .filter(o => o.value !== '.')
         .map(o => ({ d: new Date(o.date), v: +o.value }));
-      const periods = [];
+      const post1953 = [];
       let start = null;
       obs.forEach(({ d, v }) => {
         if (v === 1 && !start) start = d;
-        else if (v === 0 && start) { periods.push([start, d]); start = null; }
+        else if (v === 0 && start) { post1953.push([start, d]); start = null; }
       });
-      if (start) periods.push([start, new Date()]);
-      // Extra safety: drop anything starting before cutoff
-      return periods.filter(([s]) => s >= RECESSION_CUTOFF);
+      if (start) post1953.push([start, new Date()]);
+      // Merge pre-1953 hardcoded + post-1953 from FRED, sorted chronologically
+      return [...PRE1953_RECESSIONS, ...post1953].sort((a, b) => a[0] - b[0]);
     } catch {
+      // Full fallback: entire hardcoded list
       return NBER_RECESSIONS.map(([s, e]) => [new Date(s), new Date(e)]);
     }
   }
@@ -2871,8 +2887,9 @@
 
   // ── Last-observation label annotations ──────────────────────────────────────
   // Labels live OUTSIDE the plot area in the right margin (layout.padding.right).
-  // A horizontal line runs from the last data point to the right axis wall,
-  // then the label sits just past it. clip:false lets annotations draw there.
+  // Each label uses the annotation plugin's built-in callout to draw a line
+  // back to the last data point — no separate line annotation needed.
+  // clip:false on the annotation plugin lets labels render in the margin.
   function buildLastObsAnnotations(datasets, axisMax) {
     const out = {};
 
@@ -2884,11 +2901,10 @@
       return { ds, i, last, axis: ds.yAxisID || 'y1', color: ds.borderColor || '#334155' };
     }).filter(Boolean);
 
-    // Sort by y-value descending so label order on the right margin matches
-    // the visual order of lines (top series → top label)
+    // Sort by y-value descending so label order in the margin matches line order
     entries.sort((a, b) => b.last.y - a.last.y);
 
-    entries.forEach(({ ds, i, last, axis, color }, rankIdx) => {
+    entries.forEach(({ ds, i, last, axis, color }) => {
       const value = last.y;
 
       // Format value
@@ -2916,43 +2932,38 @@
         radius: 5,
       };
 
-      // Dashed line from last data point → right axis wall only.
-      // The label floats separately in the margin, so leave a gap between
-      // the line tip and the label box.
-      out[`lastLine_${i}`] = {
-        type: 'line',
-        xMin: last.x,
-        xMax: axisMax,
-        yMin: last.y,
-        yMax: last.y,
-        yScaleID: axis,
-        xScaleID: 'x',
-        borderColor: color,
-        borderWidth: 1.5,
-        borderDash: [4, 3],
-      };
-
-      // Label floats in the right margin: anchor at axisMax then push it
-      // well into the margin with xAdjust so there's clear space after the line.
-      // The label's left edge ends up ~16 px past the plot area wall.
+      // Label floats in the right margin with a built-in callout line connecting
+      // back to the last data point on the chart.
+      // - xValue/yValue: anchor in data space (right axis wall)
+      // - xAdjust: pushes label left-edge well past the y2 axis title
+      // - callout.enabled: draws the connecting line automatically
+      // - callout.position: 'left' means the line attaches to the left side of the label
       out[`lastLabel_${i}`] = {
         type: 'label',
         xValue: axisMax,
         yValue: last.y,
         yScaleID: axis,
         xScaleID: 'x',
-        content: [`${fmt}`, dateStr].filter(Boolean),
+        content: [fmt, dateStr].filter(Boolean),
         color: '#fff',
         backgroundColor: color,
         borderRadius: 4,
         padding: { top: 3, bottom: 3, left: 7, right: 7 },
         font: { size: 10, weight: 'bold' },
-        // position:'start' anchors the LEFT edge of the label box at xValue+xAdjust.
-        // 60px clears the y2 axis title (~40px wide) with room to breathe.
-        position: 'start',
+        position: 'start',   // left-edge of label box anchors at xValue+xAdjust
         xAdjust: 60,
         yAdjust: 0,
         textAlign: 'left',
+        callout: {
+          enabled: true,
+          // Line goes from the label's left side back toward the data point.
+          // The plugin draws it to the nearest border of the label box.
+          borderColor: color,
+          borderWidth: 1.5,
+          borderDash: [4, 3],
+          // margin: gap between callout line tip and label box edge
+          margin: 4,
+        },
       };
     });
 
