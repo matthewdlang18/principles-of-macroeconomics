@@ -776,7 +776,18 @@
           <button class="exp-remove-btn text-slate-300 hover:text-red-500 text-lg leading-none ml-auto">×</button>
         </div>
 
-        <!-- FRED ID + search -->
+        <!-- Keyword search -->
+        <div class="relative">
+          <label class="block text-xs text-slate-400 mb-1">Search FRED</label>
+          <div class="flex gap-2">
+            <input type="text" class="exp-search-input flex-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. federal deficit, unemployment…">
+            <button class="exp-search-btn rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-100 whitespace-nowrap">Search</button>
+          </div>
+          <!-- Search results dropdown -->
+          <div class="exp-search-results hidden absolute z-50 left-0 right-0 mt-1 rounded-xl border border-slate-200 bg-white shadow-lg max-h-56 overflow-y-auto text-xs"></div>
+        </div>
+
+        <!-- FRED ID + verify (fallback / direct entry) -->
         <div class="flex gap-2">
           <div class="flex-1">
             <label class="block text-xs text-slate-400 mb-1">FRED Series ID</label>
@@ -2601,9 +2612,10 @@
   'use strict';
 
   // ── Constants ──────────────────────────────────────────────────────────────
-  const FRED_KEY  = 'c1a69cc8450457303e5f04ffb3f68b97';
-  const FRED_OBS  = 'https://api.stlouisfed.org/fred/series/observations';
-  const FRED_INFO = 'https://api.stlouisfed.org/fred/series';
+  const FRED_KEY    = 'c1a69cc8450457303e5f04ffb3f68b97';
+  const FRED_OBS    = 'https://api.stlouisfed.org/fred/series/observations';
+  const FRED_INFO   = 'https://api.stlouisfed.org/fred/series';
+  const FRED_SEARCH = 'https://api.stlouisfed.org/fred/series/search';
   const CACHE_PFX = 'exp_cache_v1:';
   const CACHE_TTL = 60 * 60 * 1000; // 1 hour
   const MAX_SERIES = 6;
@@ -2774,6 +2786,38 @@
     return info;
   }
 
+  async function searchFredSeries(query, limit = 12) {
+    const ck = `search_${query.toLowerCase().trim()}_${limit}`;
+    const cached = cacheGet(ck);
+    if (cached) return cached;
+
+    const url = new URL(FRED_SEARCH);
+    url.searchParams.set('search_text', query);
+    url.searchParams.set('limit', limit);
+    url.searchParams.set('order_by', 'popularity');
+    url.searchParams.set('sort_order', 'desc');
+    url.searchParams.set('api_key', FRED_KEY);
+    url.searchParams.set('file_type', 'json');
+
+    const requestUrl = (window.CORS_CONFIG && typeof window.CORS_CONFIG.wrapUrl === 'function')
+      ? window.CORS_CONFIG.wrapUrl(url.toString())
+      : url.toString();
+
+    const res = await fetch(requestUrl);
+    if (!res.ok) throw new Error(`Search failed: ${res.status}`);
+    const json = await res.json();
+    const results = (json.seriess || []).map(s => ({
+      id: s.id,
+      title: s.title,
+      freq: s.frequency_short || s.frequency || '',
+      units: s.units_short || s.units || '',
+      updated: s.last_updated ? s.last_updated.slice(0, 10) : '',
+      popularity: s.popularity || 0,
+    }));
+    cacheSet(ck, results);
+    return results;
+  }
+
   async function fetchRecessions() {
     try {
       const json = await fredGet({
@@ -2891,6 +2935,79 @@
       idInput.value = idInput.value.toUpperCase();
       idInput.setSelectionRange(pos, pos);
     });
+
+    // ── Keyword search wiring ─────────────────────────────────────────────────
+    const searchInput   = $q('.exp-search-input', card);
+    const searchBtn     = $q('.exp-search-btn', card);
+    const searchResults = $q('.exp-search-results', card);
+    const infoDiv       = $q('.exp-series-info', card);
+
+    function fillFromResult(r) {
+      idInput.value = r.id;
+      $q('.exp-series-label', card).value = r.title;
+      // Auto-pick a sensible transform hint based on units string
+      const u = (r.units || '').toLowerCase();
+      const transformSel = $q('.exp-series-transform', card);
+      if (u.includes('percent') || u.includes('rate') || u.includes('%')) {
+        // leave as level — it's already a % series
+      }
+      searchResults.classList.add('hidden');
+      searchInput.value = '';
+      // Show confirm banner
+      infoDiv.className = 'exp-series-info rounded-lg px-2.5 py-2 text-xs leading-snug bg-emerald-50 border border-emerald-200 text-emerald-800';
+      infoDiv.innerHTML = `<span class="font-semibold">✓ ${r.id}</span> — ${r.title}<br><span class="text-emerald-600">${r.freq} · ${r.units} · updated ${r.updated}</span>`;
+      infoDiv.classList.remove('hidden');
+    }
+
+    function renderResults(results) {
+      if (!results.length) {
+        searchResults.innerHTML = '<div class="px-3 py-2 text-slate-400 italic">No results found.</div>';
+        searchResults.classList.remove('hidden');
+        return;
+      }
+      searchResults.innerHTML = results.map((r, i) =>
+        `<div class="exp-search-result-item flex flex-col px-3 py-2 cursor-pointer hover:bg-blue-50 ${i < results.length - 1 ? 'border-b border-slate-100' : ''}" data-idx="${i}">
+          <span class="font-mono font-semibold text-blue-700">${r.id}</span>
+          <span class="text-slate-700 leading-snug">${r.title}</span>
+          <span class="text-slate-400 mt-0.5">${r.freq}${r.units ? ' · ' + r.units : ''}${r.updated ? ' · ' + r.updated : ''}</span>
+        </div>`
+      ).join('');
+      searchResults.classList.remove('hidden');
+
+      // Store results for click handler
+      searchResults._results = results;
+      $qa('.exp-search-result-item', searchResults).forEach(el => {
+        el.addEventListener('mousedown', e => {
+          e.preventDefault(); // prevent blur firing first
+          const idx = parseInt(el.getAttribute('data-idx'));
+          fillFromResult(searchResults._results[idx]);
+        });
+      });
+    }
+
+    async function doSearch() {
+      const q = searchInput.value.trim();
+      if (!q) return;
+      searchBtn.textContent = '…';
+      searchBtn.disabled = true;
+      searchResults.innerHTML = '<div class="px-3 py-2 text-slate-400">Searching…</div>';
+      searchResults.classList.remove('hidden');
+      try {
+        const results = await searchFredSeries(q);
+        renderResults(results);
+      } catch {
+        searchResults.innerHTML = '<div class="px-3 py-2 text-amber-600">Search failed — check connection.</div>';
+      } finally {
+        searchBtn.textContent = 'Search';
+        searchBtn.disabled = false;
+      }
+    }
+
+    searchBtn.addEventListener('click', doSearch);
+    searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
+    // Hide dropdown when clicking away
+    searchInput.addEventListener('blur', () => { setTimeout(() => searchResults.classList.add('hidden'), 150); });
+    searchInput.addEventListener('focus', () => { if (searchResults._results && searchResults._results.length) searchResults.classList.remove('hidden'); });
 
     // Remove button
     $q('.exp-remove-btn', card).addEventListener('click', () => {
