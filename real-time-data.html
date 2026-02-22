@@ -2681,6 +2681,43 @@
   let expOriginalMinDate = null;  // stored after render for clean reset
   let expOriginalMaxDate = null;
   let expPaddedMaxDate   = null;  // expOriginalMaxDate + right padding
+  // Connector data written by buildLastObsAnnotations, read by expConnectorPlugin
+  let expLastObsConnectors = []; // [{ xVal, yVal, axis, labelPixelX, color }, ...]
+
+  // Custom plugin: draws dashed connector lines from last-obs dot → label box.
+  // Runs after the annotation plugin so it draws on top of everything.
+  const expConnectorPlugin = {
+    id: 'expConnector',
+    afterDraw(chart) {
+      if (!expLastObsConnectors.length) return;
+      const ctx = chart.ctx;
+      ctx.save();
+      expLastObsConnectors.forEach(({ xVal, yVal, axis, axisMax, xAdjust, color }) => {
+        const xScale = chart.scales['x'];
+        const yScale = chart.scales[axis] || chart.scales['y1'];
+        if (!xScale || !yScale) return;
+        // Dot position in canvas pixels
+        const dotPx = xScale.getPixelForValue(xVal instanceof Date ? xVal.getTime() : xVal);
+        const dotPy = yScale.getPixelForValue(yVal);
+        // Label left-edge pixel = pixel position of axisMax + xAdjust offset
+        const axisMaxPx = xScale.getPixelForValue(axisMax instanceof Date ? axisMax.getTime() : axisMax);
+        const labelLeftPx = axisMaxPx + xAdjust;
+        ctx.beginPath();
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.moveTo(dotPx, dotPy);
+        ctx.lineTo(labelLeftPx - 4, dotPy); // stop 4px before label left edge
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+      ctx.restore();
+    },
+  };
+  // Register once globally so it applies to this chart instance
+  if (!Chart.registry.plugins.get('expConnector')) {
+    Chart.register(expConnectorPlugin);
+  }
 
   // ── DOM helpers ─────────────────────────────────────────────────────────────
   const $ = id => document.getElementById(id);
@@ -2886,12 +2923,12 @@
   }
 
   // ── Last-observation label annotations ──────────────────────────────────────
-  // Labels live OUTSIDE the plot area in the right margin (layout.padding.right).
-  // Each label uses the annotation plugin's built-in callout to draw a line
-  // back to the last data point — no separate line annotation needed.
-  // clip:false on the annotation plugin lets labels render in the margin.
+  // Labels live in layout.padding.right margin (clip:false on annotation plugin).
+  // Connector lines are drawn by expConnectorPlugin (afterDraw) which has direct
+  // canvas pixel access — more reliable than the annotation callout API.
   function buildLastObsAnnotations(datasets, axisMax) {
     const out = {};
+    expLastObsConnectors = []; // reset for this render
 
     // Collect valid last points
     const entries = datasets.map((ds, i) => {
@@ -2932,12 +2969,11 @@
         radius: 5,
       };
 
-      // Label floats in the right margin with a built-in callout line connecting
-      // back to the last data point on the chart.
-      // - xValue/yValue: anchor in data space (right axis wall)
-      // - xAdjust: pushes label left-edge well past the y2 axis title
-      // - callout.enabled: draws the connecting line automatically
-      // - callout.position: 'left' means the line attaches to the left side of the label
+      // Label floats in the right margin.
+      // position:'start' + xAdjust:60 puts its LEFT edge 60px past the axis wall.
+      // expConnectorPlugin draws a dashed line from the dot to this left edge.
+      // We tell the plugin the label's left-edge pixel position after chart render
+      // by storing xValue=axisMax + xAdjust=60; the plugin resolves it in afterDraw.
       out[`lastLabel_${i}`] = {
         type: 'label',
         xValue: axisMax,
@@ -2950,21 +2986,16 @@
         borderRadius: 4,
         padding: { top: 3, bottom: 3, left: 7, right: 7 },
         font: { size: 10, weight: 'bold' },
-        position: 'start',   // left-edge of label box anchors at xValue+xAdjust
+        position: 'start',
         xAdjust: 60,
         yAdjust: 0,
         textAlign: 'left',
-        callout: {
-          enabled: true,
-          // Line goes from the label's left side back toward the data point.
-          // The plugin draws it to the nearest border of the label box.
-          borderColor: color,
-          borderWidth: 1.5,
-          borderDash: [4, 3],
-          // margin: gap between callout line tip and label box edge
-          margin: 4,
-        },
       };
+
+      // Store connector spec — plugin resolves pixel coords in afterDraw
+      // labelPixelX is computed as: xScale.getPixelForValue(axisMax) + 60
+      // We store the data-space anchor + xAdjust; plugin does the math.
+      expLastObsConnectors.push({ xVal: last.x, yVal: last.y, axis, axisMax, xAdjust: 60, color });
     });
 
     return out;
