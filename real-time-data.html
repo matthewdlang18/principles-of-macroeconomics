@@ -2916,7 +2916,9 @@
         radius: 5,
       };
 
-      // Horizontal line from last data point to the right axis wall (axisMax)
+      // Dashed line from last data point → right axis wall only.
+      // The label floats separately in the margin, so leave a gap between
+      // the line tip and the label box.
       out[`lastLine_${i}`] = {
         type: 'line',
         xMin: last.x,
@@ -2926,13 +2928,13 @@
         yScaleID: axis,
         xScaleID: 'x',
         borderColor: color,
-        borderWidth: 1,
+        borderWidth: 1.5,
         borderDash: [4, 3],
       };
 
-      // Label sits OUTSIDE the plot area — at xValue = axisMax, pushed right
-      // by xAdjust pixels into the layout.padding.right margin zone.
-      // clip:false (set on annotations plugin) allows this.
+      // Label floats in the right margin: anchor at axisMax then push it
+      // well into the margin with xAdjust so there's clear space after the line.
+      // The label's left edge ends up ~16 px past the plot area wall.
       out[`lastLabel_${i}`] = {
         type: 'label',
         xValue: axisMax,
@@ -2945,7 +2947,10 @@
         borderRadius: 4,
         padding: { top: 3, bottom: 3, left: 7, right: 7 },
         font: { size: 10, weight: 'bold' },
-        xAdjust: 8,       // push into the right margin
+        // position:'start' anchors the LEFT edge of the label box at xValue+xAdjust,
+        // so the label starts ~16 px into the margin with room to breathe.
+        position: 'start',
+        xAdjust: 16,
         yAdjust: 0,
         textAlign: 'left',
       };
