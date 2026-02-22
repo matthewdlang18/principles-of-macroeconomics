@@ -2650,12 +2650,14 @@
     { id: 'BAA10Y',     label: 'Credit Spread' },
   ];
 
-  // NBER recession periods (hardcoded for speed; also fetched live below)
+  // NBER recession periods — fallback if FRED fetch fails (post-1953 only)
   const NBER_RECESSIONS = [
-    ['1969-12-01','1970-11-01'],['1973-11-01','1975-03-01'],
-    ['1980-01-01','1980-07-01'],['1981-07-01','1982-11-01'],
-    ['1990-07-01','1991-03-01'],['2001-03-01','2001-11-01'],
-    ['2007-12-01','2009-06-01'],['2020-02-01','2020-04-01'],
+    ['1953-07-01','1954-05-01'],['1957-08-01','1958-04-01'],
+    ['1960-04-01','1961-02-01'],['1969-12-01','1970-11-01'],
+    ['1973-11-01','1975-03-01'],['1980-01-01','1980-07-01'],
+    ['1981-07-01','1982-11-01'],['1990-07-01','1991-03-01'],
+    ['2001-03-01','2001-11-01'],['2007-12-01','2009-06-01'],
+    ['2020-02-01','2020-04-01'],
   ];
 
   // ── State ───────────────────────────────────────────────────────────────────
@@ -2818,11 +2820,14 @@
     return results;
   }
 
+  // NBER systematic dating starts Jan 1953 — anything before is unreliable
+  const RECESSION_CUTOFF = new Date('1953-01-01');
+
   async function fetchRecessions() {
     try {
       const json = await fredGet({
         series_id: 'USREC',
-        observation_start: '1950-01-01',
+        observation_start: '1953-01-01',
         frequency: 'm',
         sort_order: 'asc',
       });
@@ -2836,19 +2841,26 @@
         else if (v === 0 && start) { periods.push([start, d]); start = null; }
       });
       if (start) periods.push([start, new Date()]);
-      return periods;
+      // Extra safety: drop anything starting before cutoff
+      return periods.filter(([s]) => s >= RECESSION_CUTOFF);
     } catch {
       return NBER_RECESSIONS.map(([s, e]) => [new Date(s), new Date(e)]);
     }
   }
 
   // ── Build recession annotations ──────────────────────────────────────────────
-  function buildRecessionAnnotations(periods) {
+  function buildRecessionAnnotations(periods, chartMinDate, chartMaxDate) {
     const out = {};
     periods.forEach(([s, e], i) => {
+      // Skip recession if entirely outside the chart's date range
+      if (chartMaxDate && s > chartMaxDate) return;
+      if (chartMinDate && e < chartMinDate) return;
+      // Clamp to chart range so boxes don't bleed outside data
+      const xMin = chartMinDate && s < chartMinDate ? chartMinDate : s;
+      const xMax = chartMaxDate && e > chartMaxDate ? chartMaxDate : e;
       out[`rec_${i}`] = {
         type: 'box',
-        xMin: s, xMax: e,
+        xMin, xMax,
         backgroundColor: 'rgba(156,163,175,0.15)',
         borderWidth: 0,
       };
@@ -2859,24 +2871,51 @@
   // ── Last-observation label annotations ──────────────────────────────────────
   function buildLastObsAnnotations(datasets) {
     const out = {};
+
+    // Collect all last-point y-values per axis to determine relative vertical position
+    const axisValues = { y1: [], y2: [] };
+    datasets.forEach(ds => {
+      const last = [...(ds.data || [])].reverse().find(p => p && Number.isFinite(p.y));
+      if (!last) return;
+      const axis = ds.yAxisID || 'y1';
+      axisValues[axis].push(last.y);
+    });
+
     datasets.forEach((ds, i) => {
       if (!ds.data || !ds.data.length) return;
-      // Find last non-null point
       const last = [...ds.data].reverse().find(p => p && Number.isFinite(p.y));
       if (!last) return;
 
       const color = ds.borderColor || '#334155';
       const value = last.y;
-      const fmt = Math.abs(value) >= 1000
-        ? value.toLocaleString(undefined, { maximumFractionDigits: 1 })
-        : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      const axis = ds.yAxisID || 'y1';
+
+      // Format value smartly
+      const fmt = Math.abs(value) >= 10000
+        ? value.toLocaleString(undefined, { maximumFractionDigits: 0 })
+        : Math.abs(value) >= 100
+          ? value.toLocaleString(undefined, { maximumFractionDigits: 1 })
+          : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+      // Format date
+      const dateStr = last.x instanceof Date
+        ? last.x.toLocaleDateString(undefined, { year: 'numeric', month: 'short' })
+        : '';
+
+      // Stagger labels vertically when multiple series are close together
+      // Offset each label by index so they don't stack on top of each other
+      const yStagger = i * -18;
+
+      // Always place label LEFT of the dot (last obs is rightmost — going right clips)
+      // Pull far enough left to clear the dot + some breathing room
+      const xAdjust = -12;
 
       // Dot at last point
       out[`lastDot_${i}`] = {
         type: 'point',
         xValue: last.x,
         yValue: last.y,
-        yScaleID: ds.yAxisID || 'y1',
+        yScaleID: axis,
         xScaleID: 'x',
         backgroundColor: color,
         borderColor: '#fff',
@@ -2884,22 +2923,29 @@
         radius: 5,
       };
 
-      // Label bubble
+      // Label bubble — anchored left of dot, staggered vertically
       out[`lastLabel_${i}`] = {
         type: 'label',
         xValue: last.x,
         yValue: last.y,
-        yScaleID: ds.yAxisID || 'y1',
+        yScaleID: axis,
         xScaleID: 'x',
-        content: fmt,
+        content: [`${fmt}`, dateStr].filter(Boolean),
         color: '#fff',
         backgroundColor: color,
         borderRadius: 4,
-        padding: { top: 3, bottom: 3, left: 5, right: 5 },
-        font: { size: 11, weight: 'bold' },
-        xAdjust: 6,
-        yAdjust: -14,
-        position: 'start',
+        padding: { top: 3, bottom: 3, left: 6, right: 6 },
+        font: { size: 10, weight: 'bold' },
+        xAdjust,
+        yAdjust: yStagger - 14,
+        textAlign: 'right',
+        callout: {
+          enabled: true,
+          position: 'bottom',
+          borderColor: color,
+          borderWidth: 1,
+          margin: 2,
+        },
       };
     });
     return out;
@@ -3126,11 +3172,16 @@
         configs.map(c => fetchObs(c.id, c.transform, startISO, endISO).catch(() => []))
       );
 
-      // Optionally fetch recessions
+      // Compute actual data date range now — needed for recession clamping AND scale
+      const allDates = seriesData.flat().map(p => p.x).filter(Boolean);
+      expOriginalMinDate = allDates.length ? new Date(Math.min(...allDates)) : new Date(startISO);
+      expOriginalMaxDate = allDates.length ? new Date(Math.max(...allDates)) : new Date(endISO);
+
+      // Optionally fetch recessions — clamp boxes to chart window
       let recPeriods = [];
       if ($('exp-recession-toggle').checked) {
         recPeriods = await fetchRecessions();
-        recessionAnnotations = buildRecessionAnnotations(recPeriods);
+        recessionAnnotations = buildRecessionAnnotations(recPeriods, expOriginalMinDate, expOriginalMaxDate);
       } else {
         recessionAnnotations = {};
       }
@@ -3184,11 +3235,6 @@
       } else {
         titleEl.classList.add('hidden');
       }
-
-      // Compute actual data date range for zoom reset
-      const allDates = seriesData.flat().map(p => p.x).filter(Boolean);
-      expOriginalMinDate = allDates.length ? new Date(Math.min(...allDates)) : new Date(startISO);
-      expOriginalMaxDate = allDates.length ? new Date(Math.max(...allDates)) : new Date(endISO);
 
       const scales = {
         x: {
