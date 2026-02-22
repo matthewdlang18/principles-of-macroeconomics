@@ -2879,15 +2879,6 @@
   function buildLastObsAnnotations(datasets) {
     const out = {};
 
-    // Collect all last-point y-values per axis to determine relative vertical position
-    const axisValues = { y1: [], y2: [] };
-    datasets.forEach(ds => {
-      const last = [...(ds.data || [])].reverse().find(p => p && Number.isFinite(p.y));
-      if (!last) return;
-      const axis = ds.yAxisID || 'y1';
-      axisValues[axis].push(last.y);
-    });
-
     datasets.forEach((ds, i) => {
       if (!ds.data || !ds.data.length) return;
       const last = [...ds.data].reverse().find(p => p && Number.isFinite(p.y));
@@ -2895,9 +2886,9 @@
 
       const color = ds.borderColor || '#334155';
       const value = last.y;
-      const axis = ds.yAxisID || 'y1';
+      const axis  = ds.yAxisID || 'y1';
 
-      // Format value smartly
+      // Format value
       const fmt = Math.abs(value) >= 10000
         ? value.toLocaleString(undefined, { maximumFractionDigits: 0 })
         : Math.abs(value) >= 100
@@ -2909,15 +2900,15 @@
         ? last.x.toLocaleDateString(undefined, { year: 'numeric', month: 'short' })
         : '';
 
-      // Stagger labels vertically when multiple series are close together
-      // Offset each label by index so they don't stack on top of each other
-      const yStagger = i * -18;
+      // Place the label 2 months to the right of the last point in data-space
+      // This means it always sits clearly inside the padding zone, not pixel-fighting
+      const labelX = new Date(last.x);
+      labelX.setMonth(labelX.getMonth() + 2);
 
-      // Always place label LEFT of the dot (last obs is rightmost — going right clips)
-      // Pull far enough left to clear the dot + some breathing room
-      const xAdjust = -12;
+      // Stagger vertically per series so they don't collide
+      const yAdjust = i * 20;
 
-      // Dot at last point
+      // Dot at the actual last data point
       out[`lastDot_${i}`] = {
         type: 'point',
         xValue: last.x,
@@ -2930,29 +2921,36 @@
         radius: 5,
       };
 
-      // Label bubble — anchored left of dot, staggered vertically
+      // Horizontal tick line from dot to label
+      out[`lastLine_${i}`] = {
+        type: 'line',
+        xMin: last.x,
+        xMax: labelX,
+        yMin: last.y,
+        yMax: last.y,
+        yScaleID: axis,
+        xScaleID: 'x',
+        borderColor: color,
+        borderWidth: 1.5,
+        borderDash: [3, 2],
+      };
+
+      // Label bubble positioned at labelX, same y as the point
       out[`lastLabel_${i}`] = {
         type: 'label',
-        xValue: last.x,
+        xValue: labelX,
         yValue: last.y,
         yScaleID: axis,
         xScaleID: 'x',
-        content: [`${fmt}`, dateStr].filter(Boolean),
+        content: [fmt, dateStr].filter(Boolean),
         color: '#fff',
         backgroundColor: color,
         borderRadius: 4,
         padding: { top: 3, bottom: 3, left: 6, right: 6 },
         font: { size: 10, weight: 'bold' },
-        xAdjust,
-        yAdjust: yStagger - 14,
-        textAlign: 'right',
-        callout: {
-          enabled: true,
-          position: 'bottom',
-          borderColor: color,
-          borderWidth: 1,
-          margin: 2,
-        },
+        xAdjust: 0,
+        yAdjust,
+        textAlign: 'center',
       };
     });
     return out;
