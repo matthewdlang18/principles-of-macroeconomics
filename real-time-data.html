@@ -678,6 +678,18 @@
             </label>
           </div>
 
+          <!-- Legend position -->
+          <div class="mt-3">
+            <label class="block text-xs font-medium text-slate-500 mb-1.5">Legend position</label>
+            <select id="exp-legend-position" class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="top">Top</option>
+              <option value="bottom">Bottom</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+              <option value="chartArea">Inside chart (top-left)</option>
+            </select>
+          </div>
+
           <!-- Chart title -->
           <div class="mt-4">
             <label class="block text-xs font-medium text-slate-500 mb-1.5">Chart title (optional)</label>
@@ -764,13 +776,14 @@
         <div class="flex gap-2">
           <div class="flex-1">
             <label class="block text-xs text-slate-400 mb-1">FRED Series ID</label>
-            <input type="text" class="exp-series-id w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-mono uppercase focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. UNRATE">
+            <input type="text" class="exp-series-id w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-mono uppercase focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. GDPC1">
           </div>
           <div class="pt-5">
-            <button class="exp-fetch-info-btn rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-100 whitespace-nowrap">Look up</button>
+            <button class="exp-fetch-info-btn rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-100 whitespace-nowrap">✓ Verify</button>
           </div>
         </div>
-        <div class="exp-series-info text-xs text-slate-400 italic hidden"></div>
+        <!-- Info / confirm banner -->
+        <div class="exp-series-info hidden rounded-lg px-2.5 py-2 text-xs leading-snug"></div>
 
         <!-- Label override -->
         <div>
@@ -2635,6 +2648,8 @@
   let expSeriesCards = [];    // array of card DOM nodes
   let expSeriesCounter = 0;
   let recessionAnnotations = {};
+  let expOriginalMinDate = null;  // stored after render for clean reset
+  let expOriginalMaxDate = null;
 
   // ── DOM helpers ─────────────────────────────────────────────────────────────
   const $ = id => document.getElementById(id);
@@ -2816,31 +2831,46 @@
     if (opts.label) $q('.exp-series-label', card).value = opts.label;
     if (opts.transform) $q('.exp-series-transform', card).value = opts.transform;
 
+    // Auto-uppercase series ID as user types
+    const idInput = $q('.exp-series-id', card);
+    idInput.addEventListener('input', () => {
+      const pos = idInput.selectionStart;
+      idInput.value = idInput.value.toUpperCase();
+      idInput.setSelectionRange(pos, pos);
+    });
+
     // Remove button
     $q('.exp-remove-btn', card).addEventListener('click', () => {
       card.remove();
       expSeriesCards = expSeriesCards.filter(c => c !== card);
     });
 
-    // Look-up button → fetch series title from FRED
+    // Verify button → fetch series title from FRED and show confirm banner
     $q('.exp-fetch-info-btn', card).addEventListener('click', async () => {
       const sid = $q('.exp-series-id', card).value.trim().toUpperCase();
       if (!sid) return;
       const infoDiv = $q('.exp-series-info', card);
+      infoDiv.className = 'exp-series-info rounded-lg px-2.5 py-2 text-xs leading-snug bg-slate-100 text-slate-500 italic';
       infoDiv.textContent = 'Looking up…';
       infoDiv.classList.remove('hidden');
       try {
         const info = await fetchSeriesInfo(sid);
         if (info) {
-          infoDiv.textContent = `${info.title} · ${info.frequency_short} · last updated ${info.last_updated ? info.last_updated.slice(0,10) : '?'}`;
+          const freq = info.frequency_short || info.frequency || '?';
+          const units = info.units_short || info.units || '';
+          const updated = info.last_updated ? info.last_updated.slice(0,10) : '?';
+          infoDiv.className = 'exp-series-info rounded-lg px-2.5 py-2 text-xs leading-snug bg-emerald-50 border border-emerald-200 text-emerald-800';
+          infoDiv.innerHTML = `<span class="font-semibold">✓ ${sid}</span> — ${info.title}<br><span class="text-emerald-600">${freq} · ${units} · updated ${updated}</span>`;
           if (!$q('.exp-series-label', card).value) {
             $q('.exp-series-label', card).value = info.title;
           }
         } else {
-          infoDiv.textContent = 'Series not found.';
+          infoDiv.className = 'exp-series-info rounded-lg px-2.5 py-2 text-xs leading-snug bg-red-50 border border-red-200 text-red-700';
+          infoDiv.textContent = '✗ Series not found. Check the ID at fred.stlouisfed.org';
         }
       } catch {
-        infoDiv.textContent = 'Lookup failed (network error).';
+        infoDiv.className = 'exp-series-info rounded-lg px-2.5 py-2 text-xs leading-snug bg-amber-50 border border-amber-200 text-amber-700';
+        infoDiv.textContent = '⚠ Lookup failed (network). The series may still work — try Update Chart.';
       }
     });
 
@@ -2936,12 +2966,13 @@
       }
 
       // Build Chart.js datasets
-      const showGrid   = $('exp-grid-toggle').checked;
-      const showLegend = $('exp-legend-toggle').checked;
-      const logScale   = $('exp-log-toggle').checked;
-      const chartTitle = $('exp-chart-title').value.trim();
-      const y1Label    = $('exp-y1-label').value.trim();
-      const y2Label    = $('exp-y2-label').value.trim();
+      const showGrid      = $('exp-grid-toggle').checked;
+      const showLegend    = $('exp-legend-toggle').checked;
+      const legendPos     = $('exp-legend-position').value;
+      const logScale      = $('exp-log-toggle').checked;
+      const chartTitle    = $('exp-chart-title').value.trim();
+      const y1Label       = $('exp-y1-label').value.trim();
+      const y2Label       = $('exp-y2-label').value.trim();
 
       const datasets = configs.map((c, i) => {
         const pts = seriesData[i];
@@ -2960,7 +2991,7 @@
             ? fillRgba
             : 'transparent',
           borderWidth: c.width,
-          borderDash: dashPattern(c.dash),
+          segment: { borderDash: () => dashPattern(c.dash) },
           pointRadius: c.pointSize,
           pointHoverRadius: Math.max(c.pointSize, 4),
           yAxisID: c.axis === 'y2' ? 'y2' : 'y1',
@@ -2983,9 +3014,16 @@
         titleEl.classList.add('hidden');
       }
 
+      // Compute actual data date range for zoom reset
+      const allDates = seriesData.flat().map(p => p.x).filter(Boolean);
+      expOriginalMinDate = allDates.length ? new Date(Math.min(...allDates)) : new Date(startISO);
+      expOriginalMaxDate = allDates.length ? new Date(Math.max(...allDates)) : new Date(endISO);
+
       const scales = {
         x: {
           type: 'time',
+          min: expOriginalMinDate,
+          max: expOriginalMaxDate,
           time: { tooltipFormat: 'MMM yyyy', displayFormats: { month: 'MMM yyyy', year: 'yyyy' } },
           grid: { display: showGrid, color: 'rgba(148,163,184,0.15)' },
           ticks: { maxTicksLimit: 12, color: '#64748b', font: { size: 11 } },
@@ -3010,6 +3048,9 @@
         } : {}),
       };
 
+      // Legend alignment for chartArea position
+      const legendAlign = legendPos === 'chartArea' ? 'start' : 'center';
+
       const config = {
         data: { datasets },
         options: {
@@ -3021,6 +3062,8 @@
           plugins: {
             legend: {
               display: showLegend,
+              position: legendPos === 'chartArea' ? 'top' : legendPos,
+              align: legendAlign,
               labels: { color: '#334155', font: { size: 12 }, usePointStyle: true, boxWidth: 20 },
             },
             tooltip: {
@@ -3037,6 +3080,9 @@
             },
             annotation: { annotations: recessionAnnotations },
             zoom: {
+              limits: {
+                x: { min: 'original', max: 'original' },
+              },
               zoom: {
                 wheel: { enabled: true },
                 pinch: { enabled: true },
@@ -3055,7 +3101,12 @@
       expChart = new Chart($('exp-chart'), config);
 
       const count = seriesData.reduce((s, pts) => s + pts.length, 0);
-      setStatus(`Loaded ${seriesData.length} series · ${count.toLocaleString()} data points`);
+      const emptyCount = seriesData.filter(pts => pts.length === 0).length;
+      if (emptyCount > 0) {
+        setStatus(`⚠ ${emptyCount} series returned no data — check the FRED ID and transform. ${count.toLocaleString()} points loaded.`);
+      } else {
+        setStatus(`✓ ${seriesData.length} series · ${count.toLocaleString()} data points`);
+      }
 
     } catch (err) {
       setStatus(`Error: ${err.message}`);
@@ -3070,7 +3121,14 @@
   };
   window.expResetZoom = function() {
     if (!expChart) return;
-    expChart.resetZoom();
+    // Restore to the exact data range, not Chart.js internal "original" (which can drift)
+    if (expOriginalMinDate && expOriginalMaxDate) {
+      expChart.options.scales.x.min = expOriginalMinDate;
+      expChart.options.scales.x.max = expOriginalMaxDate;
+      expChart.update('none');
+    } else {
+      expChart.resetZoom();
+    }
   };
 
   // ── Export PNG ───────────────────────────────────────────────────────────────
@@ -3112,6 +3170,15 @@
     // Live-update toggles (no re-fetch needed for these)
     ['exp-recession-toggle','exp-log-toggle','exp-grid-toggle','exp-legend-toggle'].forEach(id => {
       $(id).addEventListener('change', () => { if (expChart) renderExplorer(); });
+    });
+
+    // Legend position live-update (no re-fetch)
+    $('exp-legend-position').addEventListener('change', () => {
+      if (!expChart) return;
+      const pos = $('exp-legend-position').value;
+      expChart.options.plugins.legend.position = pos === 'chartArea' ? 'top' : pos;
+      expChart.options.plugins.legend.align = pos === 'chartArea' ? 'start' : 'center';
+      expChart.update();
     });
     ['exp-y1-label','exp-y2-label','exp-chart-title'].forEach(id => {
       $(id).addEventListener('input', () => {
