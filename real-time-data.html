@@ -656,6 +656,12 @@
                   class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500">
               </div>
             </div>
+            <!-- Right padding -->
+            <div class="mt-2 flex items-center gap-3">
+              <label class="text-xs text-slate-400 whitespace-nowrap">Right padding</label>
+              <input id="exp-x-pad" type="range" min="0" max="36" value="6" step="1" class="flex-1 accent-blue-600">
+              <span id="exp-x-pad-label" class="text-xs font-mono text-slate-500 w-12 text-right">6 mo</span>
+            </div>
           </div>
 
           <!-- Toggles row -->
@@ -2668,6 +2674,7 @@
   let recessionAnnotations = {};
   let expOriginalMinDate = null;  // stored after render for clean reset
   let expOriginalMaxDate = null;
+  let expPaddedMaxDate   = null;  // expOriginalMaxDate + right padding
 
   // ── DOM helpers ─────────────────────────────────────────────────────────────
   const $ = id => document.getElementById(id);
@@ -3236,11 +3243,17 @@
         titleEl.classList.add('hidden');
       }
 
+      // Right padding: extend x-axis max by N months beyond last data point
+      const xPadMonths = parseInt($('exp-x-pad').value) || 0;
+      expPaddedMaxDate = new Date(expOriginalMaxDate);
+      expPaddedMaxDate.setMonth(expPaddedMaxDate.getMonth() + xPadMonths);
+      const paddedMax = expPaddedMaxDate;
+
       const scales = {
         x: {
           type: 'time',
           min: expOriginalMinDate,
-          max: expOriginalMaxDate,
+          max: paddedMax,
           time: { tooltipFormat: 'MMM yyyy', displayFormats: { month: 'MMM yyyy', year: 'yyyy' } },
           grid: { display: showGrid, color: 'rgba(148,163,184,0.15)' },
           ticks: { maxTicksLimit: 12, color: '#64748b', font: { size: 11 } },
@@ -3343,10 +3356,10 @@
   };
   window.expResetZoom = function() {
     if (!expChart) return;
-    // Restore to the exact data range, not Chart.js internal "original" (which can drift)
-    if (expOriginalMinDate && expOriginalMaxDate) {
+    // Restore to the exact data range + padding, not Chart.js internal "original" (which can drift)
+    if (expOriginalMinDate && expPaddedMaxDate) {
       expChart.options.scales.x.min = expOriginalMinDate;
-      expChart.options.scales.x.max = expOriginalMaxDate;
+      expChart.options.scales.x.max = expPaddedMaxDate;
       expChart.update('none');
     } else {
       expChart.resetZoom();
@@ -3417,6 +3430,21 @@
         }
         expChart.update();
       });
+    });
+
+    // Right-padding slider — live label update + instant chart update (no re-fetch)
+    const xPadSlider = $('exp-x-pad');
+    const xPadLabel  = $('exp-x-pad-label');
+    xPadSlider.addEventListener('input', () => {
+      const v = parseInt(xPadSlider.value);
+      xPadLabel.textContent = v === 0 ? 'none' : `${v} mo`;
+      // Update chart x-axis max live if chart already rendered
+      if (expChart && expOriginalMaxDate) {
+        expPaddedMaxDate = new Date(expOriginalMaxDate);
+        expPaddedMaxDate.setMonth(expPaddedMaxDate.getMonth() + v);
+        expChart.options.scales.x.max = expPaddedMaxDate;
+        expChart.update('none');
+      }
     });
 
     // Set today as default end date
