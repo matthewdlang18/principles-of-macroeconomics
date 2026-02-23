@@ -612,6 +612,10 @@
             class="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">
             + Add Series
           </button>
+          <button id="exp-add-derived-btn"
+            class="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 transition-colors">
+            ƒ Derived
+          </button>
           <button id="exp-export-btn"
             class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
             ↓ Export PNG
@@ -728,6 +732,12 @@
           <button id="exp-add-series-btn2"
             class="mt-3 w-full rounded-lg border border-dashed border-slate-300 py-2 text-sm text-slate-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
             + Add another series
+          </button>
+          <!-- Derived series cards injected here -->
+          <div id="exp-derived-list" class="space-y-3 mt-3"></div>
+          <button id="exp-add-derived-btn2"
+            class="mt-2 w-full rounded-lg border border-dashed border-violet-300 py-2 text-sm text-violet-500 hover:border-violet-500 hover:text-violet-700 transition-colors hidden">
+            ƒ Add another derived series
           </button>
         </div>
 
@@ -864,6 +874,72 @@
           <input type="checkbox" class="exp-series-fill h-3.5 w-3.5 accent-blue-600">
           <span class="text-xs text-slate-500">Fill area under line</span>
         </label>
+      </div>
+    </template>
+
+    <!-- Derived series template -->
+    <template id="exp-derived-template">
+      <div class="exp-derived-card rounded-xl border border-violet-200 bg-violet-50 p-3 space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-xs font-bold text-violet-400">ƒ Derived</span>
+          <button class="exp-derived-remove-btn text-slate-300 hover:text-red-500 text-lg leading-none ml-auto">×</button>
+        </div>
+
+        <!-- Operation row -->
+        <div class="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Series A</label>
+            <select class="exp-derived-a w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-500">
+              <option value="">— pick series —</option>
+            </select>
+          </div>
+          <div class="pb-1">
+            <select class="exp-derived-op rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-500">
+              <option value="div">÷</option>
+              <option value="mul">×</option>
+              <option value="add">+</option>
+              <option value="sub">−</option>
+              <option value="sub100">× 100 then −</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Series B</label>
+            <select class="exp-derived-b w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-500">
+              <option value="">— pick series —</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Scale factor + label row -->
+        <div class="grid grid-cols-[auto_1fr] gap-2 items-end">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">× scale</label>
+            <input type="number" class="exp-derived-scale w-20 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-500" value="1" step="any">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Legend label</label>
+            <input type="text" class="exp-derived-label w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-500" placeholder="e.g. Interest / GDP (%)">
+          </div>
+        </div>
+
+        <!-- Appearance -->
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Color</label>
+            <input type="color" class="exp-derived-color h-8 w-full rounded border border-slate-200 cursor-pointer p-0.5" value="#7c3aed">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Axis</label>
+            <select class="exp-derived-axis w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-500">
+              <option value="y1">Left (Y1)</option>
+              <option value="y2">Right (Y2)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Width</label>
+            <input type="range" class="exp-derived-width w-full mt-1.5" min="1" max="6" value="2">
+          </div>
+        </div>
       </div>
     </template>
 
@@ -2677,6 +2753,7 @@
   let expChartType = 'line';
   let expSeriesCards = [];    // array of card DOM nodes
   let expSeriesCounter = 0;
+  let expDerivedCards = [];   // array of derived-series card DOM nodes
   let recessionAnnotations = {};
   let expOriginalMinDate = null;  // stored after render for clean reset
   let expOriginalMaxDate = null;
@@ -3109,6 +3186,7 @@
     $q('.exp-remove-btn', card).addEventListener('click', () => {
       card.remove();
       expSeriesCards = expSeriesCards.filter(c => c !== card);
+      populateDerivedSelects();
     });
 
     // Verify button → fetch series title from FRED and show confirm banner
@@ -3142,6 +3220,8 @@
 
     $('exp-series-list').appendChild(frag);
     expSeriesCards.push(card);
+    // Keep derived-series dropdowns in sync whenever a new series card is added
+    populateDerivedSelects();
   }
 
   // ── Quick-add chips ──────────────────────────────────────────────────────────
@@ -3167,6 +3247,61 @@
       });
       container.appendChild(btn);
     });
+  }
+
+  // ── Derived series card management ──────────────────────────────────────────
+  function populateDerivedSelects() {
+    // Rebuild A/B dropdowns in every derived card to reflect current series cards
+    const options = expSeriesCards.map((card, i) => {
+      const id    = $q('.exp-series-id', card).value.trim().toUpperCase() || `S${i+1}`;
+      const label = $q('.exp-series-label', card).value.trim() || id;
+      return { i, label: `S${i+1}: ${label || id}` };
+    });
+    expDerivedCards.forEach(card => {
+      ['exp-derived-a', 'exp-derived-b'].forEach(cls => {
+        const sel = $q('.' + cls, card);
+        const prev = sel.value;
+        sel.innerHTML = '<option value="">— pick series —</option>' +
+          options.map(o => `<option value="${o.i}">${o.label}</option>`).join('');
+        if (prev !== '') sel.value = prev; // restore selection if still valid
+      });
+    });
+    // Show/hide the "add another derived" button
+    const btn2 = $('exp-add-derived-btn2');
+    if (btn2) btn2.classList.toggle('hidden', expDerivedCards.length === 0);
+  }
+
+  function addDerivedCard() {
+    const tpl  = $('exp-derived-template');
+    const frag = tpl.content.cloneNode(true);
+    const card = frag.querySelector('.exp-derived-card');
+
+    // Default color cycles through a violet/orange/teal palette
+    const derivedPalette = ['#7c3aed','#ea580c','#0d9488','#db2777','#ca8a04'];
+    $q('.exp-derived-color', card).value = derivedPalette[expDerivedCards.length % derivedPalette.length];
+
+    $q('.exp-derived-remove-btn', card).addEventListener('click', () => {
+      card.remove();
+      expDerivedCards = expDerivedCards.filter(c => c !== card);
+      populateDerivedSelects();
+    });
+
+    $('exp-derived-list').appendChild(card);
+    expDerivedCards.push(card);
+    populateDerivedSelects();
+  }
+
+  function cardToDerivedConfig(card) {
+    return {
+      aIdx:  parseInt($q('.exp-derived-a', card).value),
+      bIdx:  parseInt($q('.exp-derived-b', card).value),
+      op:    $q('.exp-derived-op', card).value,
+      scale: parseFloat($q('.exp-derived-scale', card).value) || 1,
+      label: $q('.exp-derived-label', card).value.trim(),
+      color: $q('.exp-derived-color', card).value,
+      axis:  $q('.exp-derived-axis', card).value,
+      width: parseInt($q('.exp-derived-width', card).value) || 2,
+    };
   }
 
   // ── Dash patterns ────────────────────────────────────────────────────────────
@@ -3274,8 +3409,73 @@
         return ds;
       });
 
+      // ── Build derived series datasets ────────────────────────────────────────
+      const derivedConfigs = expDerivedCards.map(c => cardToDerivedConfig(c))
+        .filter(d => !isNaN(d.aIdx) && !isNaN(d.bIdx) && d.aIdx !== d.bIdx);
+
+      derivedConfigs.forEach(d => {
+        const ptsA = seriesData[d.aIdx] || [];
+        const ptsB = seriesData[d.bIdx] || [];
+        if (!ptsA.length || !ptsB.length) return;
+
+        // Index series B by timestamp for fast lookup
+        const bMap = new Map(ptsB.map(p => [p.x.getTime(), p.y]));
+
+        const derivedPts = ptsA.reduce((acc, p) => {
+          const bVal = bMap.get(p.x.getTime());
+          if (bVal == null || !Number.isFinite(bVal) || !Number.isFinite(p.y)) return acc;
+          let val;
+          switch (d.op) {
+            case 'div':    val = bVal === 0 ? null : (p.y / bVal) * d.scale; break;
+            case 'mul':    val = p.y * bVal * d.scale; break;
+            case 'add':    val = (p.y + bVal) * d.scale; break;
+            case 'sub':    val = (p.y - bVal) * d.scale; break;
+            case 'sub100': val = (p.y * 100 - bVal) * d.scale; break;
+            default:       val = null;
+          }
+          if (val != null && Number.isFinite(val)) acc.push({ x: p.x, y: val });
+          return acc;
+        }, []);
+
+        if (!derivedPts.length) return;
+
+        // Update global date range to include derived series
+        const dDates = derivedPts.map(p => p.x);
+        const dMin = new Date(Math.min(...dDates));
+        const dMax = new Date(Math.max(...dDates));
+        if (dMin < expOriginalMinDate) expOriginalMinDate = dMin;
+        if (dMax > expOriginalMaxDate) expOriginalMaxDate = dMax;
+
+        const rgba = hexToRgba(d.color, 1);
+        const fillRgba = hexToRgba(d.color, 0.15);
+        const chartType = expChartType === 'area' ? 'line' : expChartType;
+        const autoLabel = d.label || (() => {
+          const aId = configs[d.aIdx]?.label || configs[d.aIdx]?.id || `S${d.aIdx+1}`;
+          const bId = configs[d.bIdx]?.label || configs[d.bIdx]?.id || `S${d.bIdx+1}`;
+          const opStr = { div:'÷', mul:'×', add:'+', sub:'−', sub100:'×100−' }[d.op] || d.op;
+          return `${aId} ${opStr} ${bId}${d.scale !== 1 ? ` ×${d.scale}` : ''}`;
+        })();
+
+        datasets.push({
+          type: chartType,
+          label: autoLabel,
+          data: derivedPts,
+          borderColor: rgba,
+          backgroundColor: expChartType === 'area' ? fillRgba : 'transparent',
+          borderWidth: d.width,
+          borderDash: [6, 3],
+          segment: { borderDash: () => [6, 3] },
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          yAxisID: d.axis === 'y2' ? 'y2' : 'y1',
+          fill: expChartType === 'area' ? 'origin' : false,
+          tension: 0.3,
+          spanGaps: true,
+        });
+      });
+
       // Determine if y2 is needed
-      const needY2 = configs.some(c => c.axis === 'y2');
+      const needY2 = configs.some(c => c.axis === 'y2') || derivedConfigs.some(d => d.axis === 'y2');
 
       // Title display
       const titleEl = $('exp-chart-title-display');
@@ -3447,6 +3647,8 @@
     $('exp-export-btn').addEventListener('click', exportPNG);
     $('exp-add-series-btn').addEventListener('click', () => addSeriesCard());
     $('exp-add-series-btn2').addEventListener('click', () => addSeriesCard());
+    $('exp-add-derived-btn').addEventListener('click', () => addDerivedCard());
+    $('exp-add-derived-btn2').addEventListener('click', () => addDerivedCard());
 
     // Live-update toggles (no re-fetch needed for these)
     ['exp-recession-toggle','exp-log-toggle','exp-grid-toggle','exp-legend-toggle','exp-last-obs-toggle'].forEach(id => {
