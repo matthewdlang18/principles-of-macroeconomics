@@ -869,11 +869,17 @@
           </div>
         </div>
 
-        <!-- Fill toggle -->
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-          <input type="checkbox" class="exp-series-fill h-3.5 w-3.5 accent-blue-600">
-          <span class="text-xs text-slate-500">Fill area under line</span>
-        </label>
+        <!-- Fill + Hide row -->
+        <div class="flex items-center gap-4">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" class="exp-series-fill h-3.5 w-3.5 accent-blue-600">
+            <span class="text-xs text-slate-500">Fill area under line</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer select-none ml-auto">
+            <input type="checkbox" class="exp-series-hidden h-3.5 w-3.5 accent-slate-400">
+            <span class="text-xs text-slate-400">Hide from chart</span>
+          </label>
+        </div>
       </div>
     </template>
 
@@ -3323,7 +3329,8 @@
     const pointSize = parseInt($q('.exp-series-point-size', card).value);
     const opacity   = parseInt($q('.exp-series-opacity', card).value) / 100;
     const fill      = $q('.exp-series-fill', card).checked;
-    return { id, label, color, axis, transform, dash, width, pointSize, opacity, fill };
+    const hidden    = $q('.exp-series-hidden', card).checked;
+    return { id, label, color, axis, transform, dash, width, pointSize, opacity, fill, hidden };
   }
 
   // ── hex → rgba ───────────────────────────────────────────────────────────────
@@ -3340,7 +3347,7 @@
       .map(c => cardToDatasetConfig(c))
       .filter(c => c.id);
 
-    if (!configs.length) { setStatus('Add at least one series.'); return; }
+    if (!configs.length && !expDerivedCards.length) { setStatus('Add at least one series.'); return; }
 
     const startISO = $('exp-date-start').value
       ? $('exp-date-start').value + '-01'
@@ -3381,7 +3388,8 @@
       const y1Label       = $('exp-y1-label').value.trim();
       const y2Label       = $('exp-y2-label').value.trim();
 
-      const datasets = configs.map((c, i) => {
+      const datasets = configs.reduce((acc, c, i) => {
+        if (c.hidden) return acc; // fetched for derived use but not plotted
         const pts = seriesData[i];
         const rgba = hexToRgba(c.color, c.opacity);
         const fillRgba = hexToRgba(c.color, 0.15);
@@ -3389,7 +3397,7 @@
         let type = expChartType;
         if (type === 'area') type = 'line';
 
-        const ds = {
+        acc.push({
           type,
           label: c.label || c.id,
           data: pts,
@@ -3405,9 +3413,9 @@
           fill: (expChartType === 'area' || c.fill) ? 'origin' : false,
           tension: 0.3,
           spanGaps: true,
-        };
-        return ds;
-      });
+        });
+        return acc;
+      }, []);
 
       // ── Build derived series datasets ────────────────────────────────────────
       const derivedConfigs = expDerivedCards.map(c => cardToDerivedConfig(c))
