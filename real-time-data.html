@@ -2765,39 +2765,123 @@
   let expOriginalMaxDate = null;
   let expPaddedMaxDate   = null;  // expOriginalMaxDate + right padding
   // Connector data written by buildLastObsAnnotations, read by expConnectorPlugin
-  let expLastObsConnectors = []; // [{ xVal, yVal, axis, labelPixelX, color }, ...]
+  let expLastObsConnectors = []; // populated by buildLastObsAnnotations
 
-  // Custom plugin: draws dashed connector lines from last-obs dot → label box.
-  // Runs after the annotation plugin so it draws on top of everything.
+  // ── Last-obs canvas plugin ────────────────────────────────────────────────
+  // Draws label boxes + connector lines entirely on canvas in afterDraw so we
+  // can run pixel-space collision resolution and guarantee no label overlap.
   const expConnectorPlugin = {
     id: 'expConnector',
     afterDraw(chart) {
       if (!expLastObsConnectors.length) return;
       const ctx = chart.ctx;
+      const xScale = chart.scales['x'];
+      if (!xScale) return;
+
+      const LABEL_H      = 32;  // approx box height (2 lines × font + padding)
+      const LABEL_W      = 110; // approx box width (generous fixed width)
+      const MIN_GAP      = 4;   // min px gap between adjacent label boxes
+      const X_ADJUST     = 60;  // px from axis right wall to label left edge
+      const axisRightPx  = xScale.getPixelForValue(
+        expLastObsConnectors[0].axisMax instanceof Date
+          ? expLastObsConnectors[0].axisMax.getTime()
+          : expLastObsConnectors[0].axisMax
+      );
+      const labelLeftPx  = axisRightPx + X_ADJUST;
+
+      // Resolve pixel Y for each connector's dot
+      const items = expLastObsConnectors.map(conn => {
+        const yScale = chart.scales[conn.axis] || chart.scales['y1'];
+        const dotPx  = xScale.getPixelForValue(
+          conn.xVal instanceof Date ? conn.xVal.getTime() : conn.xVal);
+        const dotPy  = yScale ? yScale.getPixelForValue(conn.yVal) : 0;
+        return { ...conn, dotPx, dotPy, labelY: dotPy }; // labelY will be nudged
+      });
+
+      // Sort by natural dot position top→bottom for collision pass
+      items.sort((a, b) => a.dotPy - b.dotPy);
+
+      // ── Collision resolution: push labels apart (iterative, top-down) ──────
+      const ITERS = 10;
+      for (let iter = 0; iter < ITERS; iter++) {
+        let moved = false;
+        for (let i = 1; i < items.length; i++) {
+          const prev = items[i - 1];
+          const curr = items[i];
+          const overlap = (prev.labelY + LABEL_H / 2 + MIN_GAP) - (curr.labelY - LABEL_H / 2);
+          if (overlap > 0) {
+            // Push them apart symmetrically
+            prev.labelY -= overlap / 2;
+            curr.labelY += overlap / 2;
+            moved = true;
+          }
+        }
+        if (!moved) break;
+      }
+
+      // Clamp all labels inside canvas vertical bounds
+      const canvasH = chart.height;
+      items.forEach(it => {
+        it.labelY = Math.max(LABEL_H / 2 + 2, Math.min(canvasH - LABEL_H / 2 - 2, it.labelY));
+      });
+
+      // ── Draw each item ───────────────────────────────────────────────────────
       ctx.save();
-      expLastObsConnectors.forEach(({ xVal, yVal, axis, axisMax, xAdjust, color }) => {
-        const xScale = chart.scales['x'];
-        const yScale = chart.scales[axis] || chart.scales['y1'];
-        if (!xScale || !yScale) return;
-        // Dot position in canvas pixels
-        const dotPx = xScale.getPixelForValue(xVal instanceof Date ? xVal.getTime() : xVal);
-        const dotPy = yScale.getPixelForValue(yVal);
-        // Label left-edge pixel = pixel position of axisMax + xAdjust offset
-        const axisMaxPx = xScale.getPixelForValue(axisMax instanceof Date ? axisMax.getTime() : axisMax);
-        const labelLeftPx = axisMaxPx + xAdjust;
+      items.forEach(({ dotPx, dotPy, labelY, color, lines }) => {
+        const lx = labelLeftPx;
+        const ly = labelY;
+
+        // Connector line: from dot → left edge of label box
         ctx.beginPath();
         ctx.setLineDash([4, 3]);
         ctx.strokeStyle = color;
         ctx.lineWidth = 1.5;
         ctx.moveTo(dotPx, dotPy);
-        ctx.lineTo(labelLeftPx - 4, dotPy); // stop 4px before label left edge
+        // Elbow: horizontal to label x, then vertical if labelY differs from dotPy
+        ctx.lineTo(lx - 4, dotPy);
+        if (Math.abs(ly - dotPy) > 2) {
+          ctx.lineTo(lx - 4, ly);
+        }
         ctx.stroke();
         ctx.setLineDash([]);
+
+        // Label box (manual rounded rect for cross-browser safety)
+        const pad = { x: 7, y: 3 };
+        const boxX = lx;
+        const boxY = ly - LABEL_H / 2;
+        const r = 4;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(boxX + r, boxY);
+        ctx.lineTo(boxX + LABEL_W - r, boxY);
+        ctx.arcTo(boxX + LABEL_W, boxY, boxX + LABEL_W, boxY + r, r);
+        ctx.lineTo(boxX + LABEL_W, boxY + LABEL_H - r);
+        ctx.arcTo(boxX + LABEL_W, boxY + LABEL_H, boxX + LABEL_W - r, boxY + LABEL_H, r);
+        ctx.lineTo(boxX + r, boxY + LABEL_H);
+        ctx.arcTo(boxX, boxY + LABEL_H, boxX, boxY + LABEL_H - r, r);
+        ctx.lineTo(boxX, boxY + r);
+        ctx.arcTo(boxX, boxY, boxX + r, boxY, r);
+        ctx.closePath();
+        ctx.fill();
+
+        // Label text
+        ctx.fillStyle = '#fff';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'left';
+        if (lines.length === 2) {
+          ctx.font = 'bold 10px system-ui, sans-serif';
+          ctx.fillText(lines[0], boxX + pad.x, ly - 7, LABEL_W - pad.x * 2);
+          ctx.font = '9px system-ui, sans-serif';
+          ctx.fillText(lines[1], boxX + pad.x, ly + 7, LABEL_W - pad.x * 2);
+        } else {
+          ctx.font = 'bold 10px system-ui, sans-serif';
+          ctx.fillText(lines[0] || '', boxX + pad.x, ly, LABEL_W - pad.x * 2);
+        }
       });
       ctx.restore();
     },
   };
-  // Register once globally so it applies to this chart instance
+  // Register once globally
   if (!Chart.registry.plugins.get('expConnector')) {
     Chart.register(expConnectorPlugin);
   }
@@ -3006,9 +3090,9 @@
   }
 
   // ── Last-observation label annotations ──────────────────────────────────────
-  // Labels live in layout.padding.right margin (clip:false on annotation plugin).
-  // Connector lines are drawn by expConnectorPlugin (afterDraw) which has direct
-  // canvas pixel access — more reliable than the annotation callout API.
+  // Labels and connector lines are drawn entirely by expConnectorPlugin in
+  // afterDraw — giving us full pixel-space control for collision resolution.
+  // This function only emits dot annotations + populates expLastObsConnectors.
   function buildLastObsAnnotations(datasets, axisMax) {
     const out = {};
     expLastObsConnectors = []; // reset for this render
@@ -3021,10 +3105,7 @@
       return { ds, i, last, axis: ds.yAxisID || 'y1', color: ds.borderColor || '#334155' };
     }).filter(Boolean);
 
-    // Sort by y-value descending so label order in the margin matches line order
-    entries.sort((a, b) => b.last.y - a.last.y);
-
-    entries.forEach(({ ds, i, last, axis, color }) => {
+    entries.forEach(({ i, last, axis, color }) => {
       const value = last.y;
 
       // Format value
@@ -3039,7 +3120,7 @@
         ? last.x.toLocaleDateString(undefined, { year: 'numeric', month: 'short' })
         : '';
 
-      // Dot at actual last data point
+      // Dot annotation at last data point (still uses annotation plugin)
       out[`lastDot_${i}`] = {
         type: 'point',
         xValue: last.x,
@@ -3052,33 +3133,16 @@
         radius: 5,
       };
 
-      // Label floats in the right margin.
-      // position:'start' + xAdjust:60 puts its LEFT edge 60px past the axis wall.
-      // expConnectorPlugin draws a dashed line from the dot to this left edge.
-      // We tell the plugin the label's left-edge pixel position after chart render
-      // by storing xValue=axisMax + xAdjust=60; the plugin resolves it in afterDraw.
-      out[`lastLabel_${i}`] = {
-        type: 'label',
-        xValue: axisMax,
-        yValue: last.y,
-        yScaleID: axis,
-        xScaleID: 'x',
-        content: [fmt, dateStr].filter(Boolean),
-        color: '#fff',
-        backgroundColor: color,
-        borderRadius: 4,
-        padding: { top: 3, bottom: 3, left: 7, right: 7 },
-        font: { size: 10, weight: 'bold' },
-        position: 'start',
-        xAdjust: 60,
-        yAdjust: 0,
-        textAlign: 'left',
-      };
-
-      // Store connector spec — plugin resolves pixel coords in afterDraw
-      // labelPixelX is computed as: xScale.getPixelForValue(axisMax) + 60
-      // We store the data-space anchor + xAdjust; plugin does the math.
-      expLastObsConnectors.push({ xVal: last.x, yVal: last.y, axis, axisMax, xAdjust: 60, color });
+      // Pass data to plugin — it draws label box + connector in afterDraw
+      // with collision resolution applied before rendering
+      expLastObsConnectors.push({
+        xVal: last.x,
+        yVal: last.y,
+        axis,
+        axisMax,
+        color,
+        lines: [fmt, dateStr].filter(Boolean),
+      });
     });
 
     return out;
