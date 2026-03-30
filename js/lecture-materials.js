@@ -30,52 +30,47 @@ const lectureConfig = {
         },
         {
             week: 3,
-            monday: null, // MLK Day - no class
-            wednesday: {
+            monday: {
                 slides: 'lecture_slides/Lecture5_updated.pdf',
                 notes: 'lecture_notes/Lecture5notes_updated.pdf'
+            },
+            wednesday: {
+                slides: 'lecture_slides/Lecture6_updated.pdf',
+                notes: 'lecture_notes/Lecture6notes_updated.pdf'
             }
         },
         {
             week: 4,
             monday: {
-                slides: 'lecture_slides/Lecture6_updated.pdf',
-                notes: 'lecture_notes/Lecture6notes_updated.pdf'
-            },
-            wednesday: {
                 slides: 'lecture_slides/Lecture7_updated.pdf',
                 notes: 'lecture_notes/Lecture7notes_updated.pdf'
-            }
-        },
-        {
-            week: 5,
-            monday: null, // Midterm - no class
+            },
             wednesday: {
                 slides: 'lecture_slides/Lecture8_updated.pdf',
                 notes: 'lecture_notes/Lecture8notes_updated.pdf'
             }
         },
         {
-            week: 6,
-            monday: {
+            week: 5,
+            monday: null, // Midterm Exam
+            wednesday: {
                 slides: 'lecture_slides/Lecture9_updated.pdf',
                 notes: 'lecture_notes/Lecture9notes_updated.pdf'
-            },
-            wednesday: {
-                slides: 'lecture_slides/Lecture10_updated.pdf',
-                notes: 'lecture_notes/Lecture10notes_updated.pdf'
             }
         },
         {
-            week: 7,
-            monday: null, // Presidents' Day - no class
+            week: 6,
+            monday: {
+                slides: 'lecture_slides/Lecture10_updated.pdf',
+                notes: 'lecture_notes/Lecture10notes_updated.pdf'
+            },
             wednesday: {
                 slides: 'lecture_slides/Lecture11_updated.pdf',
                 notes: 'lecture_notes/Lecture11notes_updated.pdf'
             }
         },
         {
-            week: 8,
+            week: 7,
             monday: {
                 slides: 'lecture_slides/Lecture12_updated.pdf',
                 notes: 'lecture_notes/Lecture12notes_updated.pdf'
@@ -86,7 +81,7 @@ const lectureConfig = {
             }
         },
         {
-            week: 9,
+            week: 8,
             monday: {
                 slides: 'lecture_slides/Lecture14_updated.pdf',
                 notes: 'lecture_notes/Lecture14notes_updated.pdf'
@@ -97,14 +92,22 @@ const lectureConfig = {
             }
         },
         {
-            week: 10,
-            monday: {
+            week: 9,
+            monday: null, // Memorial Day - no class
+            wednesday: {
                 slides: 'lecture_slides/Lecture16_updated.pdf',
                 notes: 'lecture_notes/Lecture16notes_updated.pdf'
-            },
-            wednesday: {
+            }
+        },
+        {
+            week: 10,
+            monday: {
                 slides: 'lecture_slides/Lecture17_updated.pdf',
                 notes: 'lecture_notes/Lecture17notes_updated.pdf'
+            },
+            wednesday: {
+                slides: 'lecture_slides/Lecture18_updated.pdf',
+                notes: 'lecture_notes/Lecture18notes_updated.pdf'
             }
         }
     ]
@@ -179,4 +182,3 @@ if (document.readyState === 'loading') {
 } else {
     updateAllLectureMaterials();
 }
-    updateAllLectureMaterials();
