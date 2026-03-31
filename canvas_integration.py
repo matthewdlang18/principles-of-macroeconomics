@@ -626,9 +626,10 @@ def main():
         print("\n==== SYNC COMPLETED SUCCESSFULLY ====")
         print(f"Time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         print("\n==== ERROR DURING SYNC ====")
         print(f"Error occurred: {e}")
+        raise SystemExit(1)
 
 if __name__ == "__main__":
     main()
