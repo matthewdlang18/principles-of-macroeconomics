@@ -282,6 +282,29 @@
             </div>
 
             <div id="aiStatus" class="mt-4 p-3 rounded-md hidden"></div>
+
+            <!-- AI Column Mapping (appears after AI upload if columns don't auto-match) -->
+            <div id="aiColumnMappingSection" class="mt-6 pt-6 border-t hidden">
+                <h3 class="text-lg font-bold mb-3 text-blue-800">AI Column Mapping</h3>
+                <p class="mb-4 text-gray-700">Select which columns in the AI file contain the state and value data:</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">State Column:</label>
+                        <select id="aiStateColumn" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Select column...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Value Column:</label>
+                        <select id="aiValueColumn" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Select column...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="applyAIMapping" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Apply AI Mapping</button>
+            </div>
         </div>
 
         <!-- Map and Data View Section -->

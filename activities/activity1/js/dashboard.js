@@ -143,24 +143,16 @@ function showColumnSelection(data) {
         }
     }
 
-    // Check if Excel preview table exists before trying to update it
+    // Excel preview table is optional — only render if the element exists.
     const previewTable = document.getElementById('excelPreview');
-    if (!previewTable) {
-        console.error('Excel preview table element not found');
-        return;
-    }
+    if (!previewTable) return;
 
-    // Generate Excel preview
     let previewHTML = '<thead><tr>';
-
-    // Add headers
     columns.forEach(column => {
         previewHTML += `<th>${column}</th>`;
     });
-
     previewHTML += '</tr></thead><tbody>';
 
-    // Add rows (limit to first 5)
     const previewRows = Math.min(data.length, 5);
     for (let i = 0; i < previewRows; i++) {
         previewHTML += '<tr>';
@@ -172,6 +164,49 @@ function showColumnSelection(data) {
 
     previewHTML += '</tbody>';
     previewTable.innerHTML = previewHTML;
+}
+
+// Populate the AI column mapping dropdowns from a parsed AI file and try to auto-pick.
+// Returns true if both columns were auto-resolved, false otherwise.
+function populateAIColumnSelection(data) {
+    const section = document.getElementById('aiColumnMappingSection');
+    const stateSelect = document.getElementById('aiStateColumn');
+    const valueSelect = document.getElementById('aiValueColumn');
+    if (!section || !stateSelect || !valueSelect || !data || data.length === 0) return false;
+
+    const columns = Object.keys(data[0]);
+
+    stateSelect.innerHTML = '<option value="">Select column...</option>';
+    valueSelect.innerHTML = '<option value="">Select column...</option>';
+    columns.forEach(column => {
+        stateSelect.innerHTML += `<option value="${column}">${column}</option>`;
+        valueSelect.innerHTML += `<option value="${column}">${column}</option>`;
+    });
+
+    // Prefer reusing the student mapping if those columns also exist in the AI file.
+    let stateGuess = columns.includes(columnMapping.state) ? columnMapping.state : '';
+    let valueGuess = columns.includes(columnMapping.value) ? columnMapping.value : '';
+
+    // Otherwise fall back to common name heuristics, including AI-flavored ones.
+    if (!stateGuess) {
+        const stateCandidates = ['State', 'state', 'STATE', 'StateName', 'state_name'];
+        for (const col of stateCandidates) {
+            if (columns.includes(col)) { stateGuess = col; break; }
+        }
+    }
+    if (!valueGuess) {
+        const valueCandidates = [
+            'FinalValue', 'AIValue', 'AI_Value', 'AIScore', 'AI_Score',
+            'Value', 'value', 'Score', 'Total', 'Final'
+        ];
+        for (const col of valueCandidates) {
+            if (columns.includes(col)) { valueGuess = col; break; }
+        }
+    }
+
+    stateSelect.value = stateGuess;
+    valueSelect.value = valueGuess;
+    return Boolean(stateGuess && valueGuess);
 }
 
 // Process data using the selected columns
@@ -509,18 +544,27 @@ async function initDashboard() {
                     rawAIExcelData = parsedData;
                     showAIStatus(`AI Excel file loaded successfully: ${parsedData.length} rows found.`, 'success');
 
-                    // Since AI data is likely to have the same column structure as student data,
-                    // we can use the same column mapping
-                    aiColumnMapping = {...columnMapping};
+                    // Populate the AI column mapping UI from the AI file's actual columns
+                    // and try to auto-resolve both state and value columns.
+                    const aiSection = document.getElementById('aiColumnMappingSection');
+                    const autoResolved = populateAIColumnSelection(parsedData);
+                    aiSection.classList.remove('hidden');
 
-                    // Process AI data immediately
-                    processAIData();
-
-                    // Enable AI view button
-                    document.getElementById('aiViewBtn').disabled = false;
-
-                    // Switch to AI view
-                    setActiveView('ai');
+                    if (autoResolved) {
+                        aiColumnMapping = {
+                            state: document.getElementById('aiStateColumn').value,
+                            value: document.getElementById('aiValueColumn').value
+                        };
+                        processAIData();
+                        document.getElementById('aiViewBtn').disabled = false;
+                        setActiveView('ai');
+                    } else {
+                        showAIStatus(
+                            'AI file loaded, but the columns could not be matched automatically. ' +
+                            'Please choose the State and Value columns below, then click "Apply AI Mapping".',
+                            'info'
+                        );
+                    }
                 } else {
                     showAIStatus('Error parsing the AI Excel file or no data found.', 'error');
                 }
@@ -531,6 +575,21 @@ async function initDashboard() {
             };
 
             reader.readAsArrayBuffer(file);
+        });
+
+        // Apply AI mapping button — process AI data using the user's chosen columns
+        document.getElementById('applyAIMapping').addEventListener('click', function() {
+            aiColumnMapping.state = document.getElementById('aiStateColumn').value;
+            aiColumnMapping.value = document.getElementById('aiValueColumn').value;
+
+            if (!aiColumnMapping.state || !aiColumnMapping.value) {
+                showAIStatus('Please select both state and value columns for the AI data.', 'error');
+                return;
+            }
+
+            processAIData();
+            document.getElementById('aiViewBtn').disabled = false;
+            setActiveView('ai');
         });
 
         // Add event listener for apply mapping button
