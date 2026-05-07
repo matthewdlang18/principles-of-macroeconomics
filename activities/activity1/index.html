@@ -24,7 +24,7 @@
           <a href="../index.html" class="nav-link">← Back to Activities</a>
         </div>
         <h1 class="activity-title">Discussion Activity 1: Housing Market Analysis</h1>
-        <p class="activity-date">January 13-16, 2026 (Week 2)</p>
+        <p class="activity-date">April 7-10, 2026 (Week 2)</p>
       </div>
     </div>
   </div>
@@ -239,158 +239,167 @@
                     </ul>
                 </div>
                 
-                <div class="space-y-6">
+                <div>
                     <!-- Median Sale Price -->
-                    <div class="bg-white p-4 border rounded-lg">
-                        <h3 class="text-lg font-medium mb-3">Median Sale Price</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
-                            <!-- Metric Input -->
-                            <div class="md:col-span-1">
-                                <div class="border p-3 rounded-lg bg-blue-50">
-                                    <p class="text-xs mb-1">Balanced: 3-5% growth/year</p>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="block text-xs font-medium mb-1">Weight:</label>
-                                            <input type="number" class="weight-input w-full text-center border rounded p-1 text-sm" data-metric="price" min="0" max="100" step="1" value="25">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium mb-1">Value:</label>
-                                            <input type="number" class="value-input w-full text-center border rounded p-1 text-sm" data-metric="price" min="1" max="100" step="1" value="50">
-                                        </div>
-                                    </div>
-                                    <div class="mt-1">
-                                        <p class="text-xs">Weighted Value: <span class="font-medium weighted-value" data-metric="price">10.00</span></p>
-                                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-header">
+                            <div class="metric-card-header-left">
+                                <h3 class="metric-card-title">Median Sale Price</h3>
+                                <span class="balance-pill blue">Balanced: 3–5% growth/year</span>
+                            </div>
+                        </div>
+                        <div class="metric-card-body">
+                            <div class="input-panel input-panel-blue">
+                                <div class="input-grid">
+                                    <label class="input-field">
+                                        <span class="input-label">Weight</span>
+                                        <input type="number" class="weight-input" data-metric="price" min="0" max="100" step="1" value="25">
+                                    </label>
+                                    <label class="input-field">
+                                        <span class="input-label">Value</span>
+                                        <input type="number" class="value-input" data-metric="price" min="1" max="100" step="1" value="50">
+                                    </label>
+                                </div>
+                                <div class="weighted-value-row">
+                                    <span class="wv-label">Weighted Value</span>
+                                    <span class="wv-amount weighted-value" data-metric="price">12.50</span>
                                 </div>
                             </div>
-                            <!-- Chart -->
-                            <div class="chart-container relative md:col-span-3" style="height: 250px;">
-                                <button class="expand-chart absolute top-0 right-0 p-1 text-gray-600 hover:text-gray-800" data-chart="price">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
-                                    </svg>
-                                </button>
-                                <canvas id="priceChart"></canvas>
-                                <div class="mt-2 text-xs text-gray-600">
-                                    <p><span class="font-medium">Current Value:</span> $<span id="price-value">350,000</span></p>
-                                    <p><span class="font-medium">Annual Growth:</span> <span id="price-growth">5.2%</span> (Balanced: 3-5%)</p>
+                            <div class="chart-area">
+                                <div class="chart-container" style="height: 240px;">
+                                    <button class="expand-chart" data-chart="price" title="Expand chart" aria-label="Expand chart">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
+                                        </svg>
+                                    </button>
+                                    <canvas id="priceChart"></canvas>
+                                </div>
+                                <div class="kpi-row">
+                                    <div class="kpi"><span class="kpi-label">Current</span><span class="kpi-value">$<span id="price-value">350,000</span></span></div>
+                                    <div class="kpi"><span class="kpi-label">Annual Growth</span><span class="kpi-value"><span id="price-growth">5.2%</span></span></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Months' Supply -->
-                    <div class="bg-white p-4 border rounded-lg">
-                        <h3 class="text-lg font-medium mb-3">Months' Supply</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
-                            <!-- Metric Input -->
-                            <div class="md:col-span-1">
-                                <div class="border p-3 rounded-lg bg-green-50">
-                                    <p class="text-xs mb-1">Balanced: 4-6 months</p>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="block text-xs font-medium mb-1">Weight:</label>
-                                            <input type="number" class="weight-input w-full text-center border rounded p-1 text-sm" data-metric="supply" min="0" max="100" step="1" value="25">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium mb-1">Value:</label>
-                                            <input type="number" class="value-input w-full text-center border rounded p-1 text-sm" data-metric="supply" min="1" max="100" step="1" value="50">
-                                        </div>
-                                    </div>
-                                    <div class="mt-1">
-                                        <p class="text-xs">Weighted Value: <span class="font-medium weighted-value" data-metric="supply">10.00</span></p>
-                                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-header">
+                            <div class="metric-card-header-left">
+                                <h3 class="metric-card-title">Months' Supply</h3>
+                                <span class="balance-pill green">Balanced: 4–6 months</span>
+                            </div>
+                        </div>
+                        <div class="metric-card-body">
+                            <div class="input-panel input-panel-green">
+                                <div class="input-grid">
+                                    <label class="input-field">
+                                        <span class="input-label">Weight</span>
+                                        <input type="number" class="weight-input" data-metric="supply" min="0" max="100" step="1" value="25">
+                                    </label>
+                                    <label class="input-field">
+                                        <span class="input-label">Value</span>
+                                        <input type="number" class="value-input" data-metric="supply" min="1" max="100" step="1" value="50">
+                                    </label>
+                                </div>
+                                <div class="weighted-value-row">
+                                    <span class="wv-label">Weighted Value</span>
+                                    <span class="wv-amount weighted-value" data-metric="supply">12.50</span>
                                 </div>
                             </div>
-                            <!-- Chart -->
-                            <div class="chart-container relative md:col-span-3" style="height: 250px;">
-                                <button class="expand-chart absolute top-0 right-0 p-1 text-gray-600 hover:text-gray-800" data-chart="supply">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
-                                    </svg>
-                                </button>
-                                <canvas id="supplyChart"></canvas>
-                                <div class="mt-2 text-xs text-gray-600">
-                                    <p><span class="font-medium">Current:</span> <span id="supply-value">2.1</span> months</p>
-                                    <p><span class="font-medium">Balanced:</span> 4-6 months</p>
+                            <div class="chart-area">
+                                <div class="chart-container" style="height: 240px;">
+                                    <button class="expand-chart" data-chart="supply" title="Expand chart" aria-label="Expand chart">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
+                                        </svg>
+                                    </button>
+                                    <canvas id="supplyChart"></canvas>
+                                </div>
+                                <div class="kpi-row">
+                                    <div class="kpi"><span class="kpi-label">Current</span><span class="kpi-value"><span id="supply-value">2.1</span><span class="kpi-sub">months</span></span></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Days on Market -->
-                    <div class="bg-white p-4 border rounded-lg">
-                        <h3 class="text-lg font-medium mb-3">Days on Market</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
-                            <!-- Metric Input -->
-                            <div class="md:col-span-1">
-                                <div class="border p-3 rounded-lg bg-yellow-50">
-                                    <p class="text-xs mb-1">Balanced: 30-60 days</p>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="block text-xs font-medium mb-1">Weight:</label>
-                                            <input type="number" class="weight-input w-full text-center border rounded p-1 text-sm" data-metric="days" min="0" max="100" step="1" value="25">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium mb-1">Value:</label>
-                                            <input type="number" class="value-input w-full text-center border rounded p-1 text-sm" data-metric="days" min="1" max="100" step="1" value="50">
-                                        </div>
-                                    </div>
-                                    <div class="mt-1">
-                                        <p class="text-xs">Weighted Value: <span class="font-medium weighted-value" data-metric="days">10.00</span></p>
-                                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-header">
+                            <div class="metric-card-header-left">
+                                <h3 class="metric-card-title">Days on Market</h3>
+                                <span class="balance-pill yellow">Balanced: 30–60 days</span>
+                            </div>
+                        </div>
+                        <div class="metric-card-body">
+                            <div class="input-panel input-panel-yellow">
+                                <div class="input-grid">
+                                    <label class="input-field">
+                                        <span class="input-label">Weight</span>
+                                        <input type="number" class="weight-input" data-metric="days" min="0" max="100" step="1" value="25">
+                                    </label>
+                                    <label class="input-field">
+                                        <span class="input-label">Value</span>
+                                        <input type="number" class="value-input" data-metric="days" min="1" max="100" step="1" value="50">
+                                    </label>
+                                </div>
+                                <div class="weighted-value-row">
+                                    <span class="wv-label">Weighted Value</span>
+                                    <span class="wv-amount weighted-value" data-metric="days">12.50</span>
                                 </div>
                             </div>
-                            <!-- Chart -->
-                            <div class="chart-container relative md:col-span-3" style="height: 250px;">
-                                <button class="expand-chart absolute top-0 right-0 p-1 text-gray-600 hover:text-gray-800" data-chart="days">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
-                                    </svg>
-                                </button>
-                                <canvas id="daysChart"></canvas>
-                                <div class="mt-2 text-xs text-gray-600">
-                                    <p><span class="font-medium">Current:</span> <span id="days-value">15</span> days</p>
-                                    <p><span class="font-medium">Balanced:</span> 30-60 days</p>
+                            <div class="chart-area">
+                                <div class="chart-container" style="height: 240px;">
+                                    <button class="expand-chart" data-chart="days" title="Expand chart" aria-label="Expand chart">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
+                                        </svg>
+                                    </button>
+                                    <canvas id="daysChart"></canvas>
+                                </div>
+                                <div class="kpi-row">
+                                    <div class="kpi"><span class="kpi-label">Current</span><span class="kpi-value"><span id="days-value">15</span><span class="kpi-sub">days</span></span></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Sale-to-List -->
-                    <div class="bg-white p-4 border rounded-lg">
-                        <h3 class="text-lg font-medium mb-3">Sale-to-List Ratio</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
-                            <!-- Metric Input -->
-                            <div class="md:col-span-1">
-                                <div class="border p-3 rounded-lg bg-purple-50">
-                                    <p class="text-xs mb-1">Balanced: 98-102%</p>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="block text-xs font-medium mb-1">Weight:</label>
-                                            <input type="number" class="weight-input w-full text-center border rounded p-1 text-sm" data-metric="saleToList" min="0" max="100" step="1" value="25">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium mb-1">Value:</label>
-                                            <input type="number" class="value-input w-full text-center border rounded p-1 text-sm" data-metric="saleToList" min="1" max="100" step="1" value="50">
-                                        </div>
-                                    </div>
-                                    <div class="mt-1">
-                                        <p class="text-xs">Weighted Value: <span class="font-medium weighted-value" data-metric="saleToList">10.00</span></p>
-                                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-header">
+                            <div class="metric-card-header-left">
+                                <h3 class="metric-card-title">Sale-to-List Ratio</h3>
+                                <span class="balance-pill purple">Balanced: 98–102%</span>
+                            </div>
+                        </div>
+                        <div class="metric-card-body">
+                            <div class="input-panel input-panel-purple">
+                                <div class="input-grid">
+                                    <label class="input-field">
+                                        <span class="input-label">Weight</span>
+                                        <input type="number" class="weight-input" data-metric="saleToList" min="0" max="100" step="1" value="25">
+                                    </label>
+                                    <label class="input-field">
+                                        <span class="input-label">Value</span>
+                                        <input type="number" class="value-input" data-metric="saleToList" min="1" max="100" step="1" value="50">
+                                    </label>
+                                </div>
+                                <div class="weighted-value-row">
+                                    <span class="wv-label">Weighted Value</span>
+                                    <span class="wv-amount weighted-value" data-metric="saleToList">12.50</span>
                                 </div>
                             </div>
-                            <!-- Chart -->
-                            <div class="chart-container relative md:col-span-3" style="height: 250px;">
-                                <button class="expand-chart absolute top-0 right-0 p-1 text-gray-600 hover:text-gray-800" data-chart="saleToList">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
-                                    </svg>
-                                </button>
-                                <canvas id="saleToListChart"></canvas>
-                                <div class="mt-2 text-xs text-gray-600">
-                                    <p><span class="font-medium">Current:</span> <span id="sale-to-list-value">101.5%</span></p>
-                                    <p><span class="font-medium">Balanced:</span> 98-102%</p>
+                            <div class="chart-area">
+                                <div class="chart-container" style="height: 240px;">
+                                    <button class="expand-chart" data-chart="saleToList" title="Expand chart" aria-label="Expand chart">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M3 8V4m0 0h4M3 4l4 4m-4-4l4-4m11 4v4m0-4h-4m4 4l-4-4m4-4l-4 4M3 16v-4m0 4h4m-4 0l4-4m11 4v-4m0 4h-4m4 0l-4-4" />
+                                        </svg>
+                                    </button>
+                                    <canvas id="saleToListChart"></canvas>
+                                </div>
+                                <div class="kpi-row">
+                                    <div class="kpi"><span class="kpi-label">Current</span><span class="kpi-value"><span id="sale-to-list-value">101.5%</span></span></div>
                                 </div>
                             </div>
                         </div>
