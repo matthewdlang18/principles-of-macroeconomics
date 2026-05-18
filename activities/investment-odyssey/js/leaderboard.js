@@ -197,7 +197,7 @@ async function loadTASections() {
 
             // Fallback: Add hardcoded TA names
             console.log('Using fallback hardcoded TA names');
-            const knownTAs = ['Akshay', 'Simran', 'Camilla', 'Hui Yann', 'Lars', 'Luorao', 'susangrover'];
+            const knownTAs = ['Xinran Bai', 'James Bolyard', 'Yuxin Cai', 'Zachary Hayward', 'Mengqi Li', 'Yuancheng Li', 'Steve Lin', 'Zi Wang'];
 
             knownTAs.forEach(ta => {
                 const option = document.createElement('option');
@@ -211,7 +211,7 @@ async function loadTASections() {
 
         // Fallback: Add hardcoded TA names
         console.log('Using fallback hardcoded TA names after error');
-        const knownTAs = ['Akshay', 'Simran', 'Camilla', 'Hui Yann', 'Lars', 'Luorao', 'susangrover'];
+        const knownTAs = ['Xinran Bai', 'James Bolyard', 'Yuxin Cai', 'Zachary Hayward', 'Mengqi Li', 'Yuancheng Li', 'Steve Lin', 'Zi Wang'];
 
         knownTAs.forEach(ta => {
             const option = document.createElement('option');
@@ -532,7 +532,7 @@ function processClassGames(data) {
 // Create sample class games for fallback
 function createSampleClassGames() {
     // Create sample class games
-    const knownTAs = ['Akshay', 'Simran', 'Camilla', 'Hui Yann', 'Lars', 'Luorao'];
+    const knownTAs = ['Xinran Bai', 'James Bolyard', 'Yuxin Cai', 'Zachary Hayward', 'Mengqi Li', 'Yuancheng Li', 'Steve Lin', 'Zi Wang'];
     const sampleGames = [];
 
     // Create a few sample games with different dates

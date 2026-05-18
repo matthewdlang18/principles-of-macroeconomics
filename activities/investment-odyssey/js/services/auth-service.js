@@ -178,7 +178,7 @@ class AuthService extends BaseService {
       }
 
       // Check if this is a known TA name
-      const knownTAs = ['Akshay', 'Simran', 'Camilla', 'Hui Yann', 'Lars', 'Luorao', 'susangrover'];
+      const knownTAs = ['Xinran Bai', 'James Bolyard', 'Yuxin Cai', 'Zachary Hayward', 'Mengqi Li', 'Yuancheng Li', 'Steve Lin', 'Zi Wang'];
       const isKnownTA = knownTAs.includes(name);
 
       // Query for TA with matching name

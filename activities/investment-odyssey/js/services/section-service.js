@@ -313,25 +313,26 @@ class SectionService extends BaseService {
         taMap[ta.name] = ta.id;
       });
 
-      // Default TA sections
+      // Spring 2026 TA sections (kept in sync with spring2026-reset.sql).
       const defaultSections = [
-        { ta: 'Akshay', day: 'Tuesday', time: '5:00pm-5:50pm', location: 'Phelps, 1425' },
-        { ta: 'Simran', day: 'Tuesday', time: '5:00pm-5:50pm', location: 'Girvetz, 2128' },
-        { ta: 'Camilla', day: 'Tuesday', time: '5:00pm-5:50pm', location: 'Phelps, 1508' },
-        { ta: 'Hui Yann', day: 'Tuesday', time: '5:00pm-5:50pm', location: 'Building 387, 1015' },
-        { ta: 'Akshay', day: 'Tuesday', time: '6:00pm-6:50pm', location: 'Phelps, 1508' },
-        { ta: 'Lars', day: 'Wednesday', time: '6:00pm-6:50pm', location: 'Phelps, 1425' },
-        { ta: 'Luorao', day: 'Wednesday', time: '6:00pm-6:50pm', location: 'South Hall, 1430' },
-        { ta: 'Simran', day: 'Wednesday', time: '6:00pm-6:50pm', location: 'Ellison, 2626' },
-        { ta: 'Camilla', day: 'Wednesday', time: '6:00pm-6:50pm', location: 'Girvetz, 2128' },
-        { ta: 'Hui Yann', day: 'Wednesday', time: '7:00pm-7:50pm', location: 'North Hall, 1109' },
-        { ta: 'Luorao', day: 'Thursday', time: '6:00pm-6:50pm', location: 'Phelps, 2524' },
-        { ta: 'Akshay', day: 'Thursday', time: '6:00pm-6:50pm', location: 'Phelps, 1425' },
-        { ta: 'Simran', day: 'Friday', time: '12:00pm-12:50pm', location: 'Arts, 1349' },
-        { ta: 'Camilla', day: 'Friday', time: '12:00pm-12:50pm', location: 'Phelps, 1425' },
-        { ta: 'Hui Yann', day: 'Friday', time: '12:00pm-12:50pm', location: 'South Hall, 1430' },
-        { ta: 'Lars', day: 'Friday', time: '12:00pm-12:50pm', location: 'Ellison, 2626' },
-        { ta: 'susangrover', day: 'Tuesday', time: '12:30pm-1:45pm', location: 'Psych, 1902' }
+        { ta: 'Yuancheng Li',    day: 'Tuesday',   time: '5:00pm-5:50pm',   location: 'Phelps 1425' },
+        { ta: 'Xinran Bai',      day: 'Tuesday',   time: '5:00pm-5:50pm',   location: 'Girvetz 2128' },
+        { ta: 'Steve Lin',       day: 'Tuesday',   time: '5:00pm-5:50pm',   location: 'Phelps 1508' },
+        { ta: 'James Bolyard',   day: 'Tuesday',   time: '5:00pm-5:50pm',   location: 'North Hall 1109' },
+        { ta: 'James Bolyard',   day: 'Tuesday',   time: '6:00pm-6:50pm',   location: 'North Hall 1109' },
+        { ta: 'Xinran Bai',      day: 'Wednesday', time: '6:00pm-6:50pm',   location: 'Arts 1349' },
+        { ta: 'Yuancheng Li',    day: 'Wednesday', time: '6:00pm-6:50pm',   location: 'Phelps 1425' },
+        { ta: 'Yuxin Cai',       day: 'Wednesday', time: '6:00pm-6:50pm',   location: 'South Hall 1430' },
+        { ta: 'Mengqi Li',       day: 'Wednesday', time: '6:00pm-6:50pm',   location: 'Girvetz 2128' },
+        { ta: 'Yuxin Cai',       day: 'Wednesday', time: '7:00pm-7:50pm',   location: 'North Hall 1109' },
+        { ta: 'Mengqi Li',       day: 'Thursday',  time: '6:00pm-6:50pm',   location: 'Phelps 1508' },
+        { ta: 'Zachary Hayward', day: 'Thursday',  time: '6:00pm-6:50pm',   location: 'North Hall 1109' },
+        { ta: 'Zi Wang',         day: 'Friday',    time: '9:00am-9:50am',   location: 'Phelps 1508' },
+        { ta: 'Yuxin Cai',       day: 'Friday',    time: '10:00am-10:50am', location: 'Phelps 1508' },
+        { ta: 'Steve Lin',       day: 'Friday',    time: '12:00pm-12:50pm', location: 'South Hall 1430' },
+        { ta: 'Mengqi Li',       day: 'Friday',    time: '12:00pm-12:50pm', location: 'Ellison 2626' },
+        { ta: 'Zachary Hayward', day: 'Friday',    time: '12:00pm-12:50pm', location: 'Girvetz 2128' },
+        { ta: 'Zi Wang',         day: 'Friday',    time: '12:00pm-12:50pm', location: 'Phelps 1508' }
       ];
 
       const createdSections = [];

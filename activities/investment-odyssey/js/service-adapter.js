@@ -191,41 +191,10 @@
                             }
                         }
 
-                        // If we still don't have a valid day, fall back to TA name and time pattern
-                        if (dayAbbr === 'U') {
-                            const taName = section.profiles?.name || '';
-                            const timeSlot = section.time || '';
-
-                            // Specific assignments based on the data we see in the screenshot
-                            if (taName === 'Camilla' && timeSlot.includes('12:00pm-12:50pm')) {
-                                dayAbbr = 'M';
-                                fullDay = 'Monday';
-                                dayOrder = 1;
-                            } else if (taName === 'Simran' && timeSlot.includes('12:00pm-12:50pm')) {
-                                dayAbbr = 'T';
-                                fullDay = 'Tuesday';
-                                dayOrder = 2;
-                            } else if (taName === 'Lars' && timeSlot.includes('12:00pm-12:50pm')) {
-                                dayAbbr = 'W';
-                                fullDay = 'Wednesday';
-                                dayOrder = 3;
-                            } else if (taName === 'Hui Yann' && timeSlot.includes('12:00pm-12:50pm')) {
-                                dayAbbr = 'R';
-                                fullDay = 'Thursday';
-                                dayOrder = 4;
-                            } else if (timeSlot.includes('5:00pm-5:50pm')) {
-                                // For the 5pm sections
-                                if (taName === 'Akshay') {
-                                    dayAbbr = 'M';
-                                    fullDay = 'Monday';
-                                    dayOrder = 1;
-                                } else if (taName === 'Simran') {
-                                    dayAbbr = 'T';
-                                    fullDay = 'Tuesday';
-                                    dayOrder = 2;
-                                }
-                            }
-                        }
+                        // If we still don't have a valid day after all the lookups
+                        // above, leave it as 'U'/'Unknown'. The Spring 2026 sections
+                        // table stores a proper `day` value, so this fallback should
+                        // never trigger in practice.
 
                         // Log the mapping for debugging
                         console.log(`Section ${section.id}: Original day "${section.day}" mapped to "${dayAbbr}" (${fullDay}) with order ${dayOrder}`);
@@ -289,14 +258,26 @@
                     return { success: true, data: formattedSections };
                 }
 
-                // Fallback to default sections
+                // Fallback (Supabase unavailable): Spring 2026 sections.
                 const defaultSections = [
-                    { id: '1', day: 'M', fullDay: 'Monday', dayOrder: 1, time: '10:00-11:30', location: 'Room 101', ta: 'Akshay' },
-                    { id: '2', day: 'T', fullDay: 'Tuesday', dayOrder: 2, time: '13:00-14:30', location: 'Room 102', ta: 'Simran' },
-                    { id: '3', day: 'W', fullDay: 'Wednesday', dayOrder: 3, time: '15:00-16:30', location: 'Room 103', ta: 'Camilla' },
-                    { id: '4', day: 'R', fullDay: 'Thursday', dayOrder: 4, time: '10:00-11:30', location: 'Room 104', ta: 'Hui Yann' },
-                    { id: '5', day: 'F', fullDay: 'Friday', dayOrder: 5, time: '13:00-14:30', location: 'Room 105', ta: 'Lars' },
-                    { id: '857058b2-6161-415f-b725-dc9e2df71cad', day: 'T', fullDay: 'Tuesday', dayOrder: 2, time: '12:30pm-1:45pm', location: 'Psych 1902', ta: 'susangrover' }
+                    { id: '13532', day: 'T', fullDay: 'Tuesday',   dayOrder: 2, time: '5:00pm-5:50pm',   location: 'Phelps 1425',     ta: 'Yuancheng Li' },
+                    { id: '13540', day: 'T', fullDay: 'Tuesday',   dayOrder: 2, time: '5:00pm-5:50pm',   location: 'Girvetz 2128',    ta: 'Xinran Bai' },
+                    { id: '13557', day: 'T', fullDay: 'Tuesday',   dayOrder: 2, time: '5:00pm-5:50pm',   location: 'Phelps 1508',     ta: 'Steve Lin' },
+                    { id: '13565', day: 'T', fullDay: 'Tuesday',   dayOrder: 2, time: '5:00pm-5:50pm',   location: 'North Hall 1109', ta: 'James Bolyard' },
+                    { id: '13672', day: 'T', fullDay: 'Tuesday',   dayOrder: 2, time: '6:00pm-6:50pm',   location: 'North Hall 1109', ta: 'James Bolyard' },
+                    { id: '13573', day: 'W', fullDay: 'Wednesday', dayOrder: 3, time: '6:00pm-6:50pm',   location: 'Arts 1349',       ta: 'Xinran Bai' },
+                    { id: '13581', day: 'W', fullDay: 'Wednesday', dayOrder: 3, time: '6:00pm-6:50pm',   location: 'Phelps 1425',     ta: 'Yuancheng Li' },
+                    { id: '13599', day: 'W', fullDay: 'Wednesday', dayOrder: 3, time: '6:00pm-6:50pm',   location: 'South Hall 1430', ta: 'Yuxin Cai' },
+                    { id: '13607', day: 'W', fullDay: 'Wednesday', dayOrder: 3, time: '6:00pm-6:50pm',   location: 'Girvetz 2128',    ta: 'Mengqi Li' },
+                    { id: '13680', day: 'W', fullDay: 'Wednesday', dayOrder: 3, time: '7:00pm-7:50pm',   location: 'North Hall 1109', ta: 'Yuxin Cai' },
+                    { id: '13615', day: 'R', fullDay: 'Thursday',  dayOrder: 4, time: '6:00pm-6:50pm',   location: 'Phelps 1508',     ta: 'Mengqi Li' },
+                    { id: '13623', day: 'R', fullDay: 'Thursday',  dayOrder: 4, time: '6:00pm-6:50pm',   location: 'North Hall 1109', ta: 'Zachary Hayward' },
+                    { id: '57539', day: 'F', fullDay: 'Friday',    dayOrder: 5, time: '9:00am-9:50am',   location: 'Phelps 1508',     ta: 'Zi Wang' },
+                    { id: '57521', day: 'F', fullDay: 'Friday',    dayOrder: 5, time: '10:00am-10:50am', location: 'Phelps 1508',     ta: 'Yuxin Cai' },
+                    { id: '13631', day: 'F', fullDay: 'Friday',    dayOrder: 5, time: '12:00pm-12:50pm', location: 'South Hall 1430', ta: 'Steve Lin' },
+                    { id: '13649', day: 'F', fullDay: 'Friday',    dayOrder: 5, time: '12:00pm-12:50pm', location: 'Ellison 2626',    ta: 'Mengqi Li' },
+                    { id: '13656', day: 'F', fullDay: 'Friday',    dayOrder: 5, time: '12:00pm-12:50pm', location: 'Girvetz 2128',    ta: 'Zachary Hayward' },
+                    { id: '13664', day: 'F', fullDay: 'Friday',    dayOrder: 5, time: '12:00pm-12:50pm', location: 'Phelps 1508',     ta: 'Zi Wang' }
                 ];
                 console.log('Using default sections:', defaultSections);
                 return { success: true, data: defaultSections };
@@ -532,24 +513,6 @@
                 return { success: false, error: 'TA name is required' };
             }
 
-            // Special case for susangrover - return hardcoded section
-            if (taName === 'susangrover') {
-                console.log('Using hardcoded section for susangrover');
-                // Create a section that matches what's in the database
-                const hardcodedSections = [
-                    {
-                        id: '857058b2-6161-415f-b725-dc9e2df71cad',
-                        day: 'Tuesday',
-                        fullDay: 'Tuesday',
-                        dayOrder: 2,
-                        time: '12:30pm-1:45pm',
-                        location: 'Psych 1902',
-                        ta_id: '5e5305da-d2a5-4291-9a9c-f42c7d9b0a2c'
-                    }
-                ];
-                return { success: true, data: hardcodedSections };
-            }
-
             // Try to use Supabase
             if (this._supabaseAvailable) {
                 console.log('Getting sections for TA:', taName);
@@ -753,13 +716,6 @@
                 { id: '2', day: 'T', time: '13:00-14:30', location: 'Room 102', ta_id: taId },
                 { id: '3', day: 'W', time: '15:00-16:30', location: 'Room 103', ta_id: taId }
             ];
-
-            // Special case for susangrover
-            if (taId === '5e5305da-d2a5-4291-9a9c-f42c7d9b0a2c') {
-                defaultSections = [
-                    { id: '857058b2-6161-415f-b725-dc9e2df71cad', day: 'Tuesday', time: '12:30pm-1:45pm', location: 'Psych 1902', ta_id: taId }
-                ];
-            }
             console.log('Using default sections for TA ID:', taId);
             return { success: true, data: defaultSections };
         } catch (error) {

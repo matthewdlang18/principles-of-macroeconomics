@@ -171,11 +171,11 @@
                     // Create sample data for specific tables
                     if (table === 'sections') {
                         const sampleSections = [
-                            { id: '1', day: 'Monday', time: '10:00-11:30', location: 'Room 101', ta_id: '1', profiles: { name: 'Akshay' } },
-                            { id: '2', day: 'Tuesday', time: '13:00-14:30', location: 'Room 102', ta_id: '2', profiles: { name: 'Simran' } },
-                            { id: '3', day: 'Wednesday', time: '15:00-16:30', location: 'Room 103', ta_id: '3', profiles: { name: 'Camilla' } },
-                            { id: '4', day: 'Thursday', time: '10:00-11:30', location: 'Room 104', ta_id: '4', profiles: { name: 'Hui Yann' } },
-                            { id: '5', day: 'Friday', time: '13:00-14:30', location: 'Room 105', ta_id: '5', profiles: { name: 'Lars' } }
+                            { id: '13540', day: 'Tuesday',   time: '5:00pm-5:50pm',   location: 'Girvetz 2128',    ta_id: 'ta1', profiles: { name: 'Xinran Bai' } },
+                            { id: '13565', day: 'Tuesday',   time: '5:00pm-5:50pm',   location: 'North Hall 1109', ta_id: 'ta2', profiles: { name: 'James Bolyard' } },
+                            { id: '13599', day: 'Wednesday', time: '6:00pm-6:50pm',   location: 'South Hall 1430', ta_id: 'ta3', profiles: { name: 'Yuxin Cai' } },
+                            { id: '13623', day: 'Thursday',  time: '6:00pm-6:50pm',   location: 'North Hall 1109', ta_id: 'ta4', profiles: { name: 'Zachary Hayward' } },
+                            { id: '13631', day: 'Friday',    time: '12:00pm-12:50pm', location: 'South Hall 1430', ta_id: 'ta5', profiles: { name: 'Steve Lin' } }
                         ];
                         saveTableData(sampleSections);
                     } else if (table === 'leaderboard') {
@@ -217,18 +217,18 @@
                             },
                             {
                                 id: 'ta1',
-                                custom_id: 'ta1',
-                                name: 'Akshay',
-                                passcode: 'aksecon2',
+                                custom_id: 'xinranbai',
+                                name: 'Xinran Bai',
+                                passcode: 'baiecon2',
                                 role: 'ta',
                                 created_at: new Date().toISOString(),
                                 last_login: new Date().toISOString()
                             },
                             {
                                 id: 'ta2',
-                                custom_id: 'ta2',
-                                name: 'Simran',
-                                passcode: 'simecon2',
+                                custom_id: 'jamesbolyard',
+                                name: 'James Bolyard',
+                                passcode: 'bolyardecon2',
                                 role: 'ta',
                                 created_at: new Date().toISOString(),
                                 last_login: new Date().toISOString()
@@ -469,11 +469,11 @@
                         if (!localStorage.getItem(storageKey)) {
                             if (table === 'sections') {
                                 const sampleSections = [
-                                    { id: '1', day: 'Monday', time: '10:00-11:30', location: 'Room 101', ta_id: '1', profiles: { name: 'Akshay' } },
-                                    { id: '2', day: 'Tuesday', time: '13:00-14:30', location: 'Room 102', ta_id: '2', profiles: { name: 'Simran' } },
-                                    { id: '3', day: 'Wednesday', time: '15:00-16:30', location: 'Room 103', ta_id: '3', profiles: { name: 'Camilla' } },
-                                    { id: '4', day: 'Thursday', time: '10:00-11:30', location: 'Room 104', ta_id: '4', profiles: { name: 'Hui Yann' } },
-                                    { id: '5', day: 'Friday', time: '13:00-14:30', location: 'Room 105', ta_id: '5', profiles: { name: 'Lars' } }
+                                    { id: '13540', day: 'Tuesday',   time: '5:00pm-5:50pm',   location: 'Girvetz 2128',    ta_id: 'ta1', profiles: { name: 'Xinran Bai' } },
+                                    { id: '13565', day: 'Tuesday',   time: '5:00pm-5:50pm',   location: 'North Hall 1109', ta_id: 'ta2', profiles: { name: 'James Bolyard' } },
+                                    { id: '13599', day: 'Wednesday', time: '6:00pm-6:50pm',   location: 'South Hall 1430', ta_id: 'ta3', profiles: { name: 'Yuxin Cai' } },
+                                    { id: '13623', day: 'Thursday',  time: '6:00pm-6:50pm',   location: 'North Hall 1109', ta_id: 'ta4', profiles: { name: 'Zachary Hayward' } },
+                                    { id: '13631', day: 'Friday',    time: '12:00pm-12:50pm', location: 'South Hall 1430', ta_id: 'ta5', profiles: { name: 'Steve Lin' } }
                                 ];
                                 localStorage.setItem(storageKey, JSON.stringify(sampleSections));
                             } else if (table === 'leaderboard') {
@@ -514,18 +514,18 @@
                                     },
                                     {
                                         id: 'ta1',
-                                        custom_id: 'ta1',
-                                        name: 'Akshay',
-                                        passcode: 'aksecon2',
+                                        custom_id: 'xinranbai',
+                                        name: 'Xinran Bai',
+                                        passcode: 'baiecon2',
                                         role: 'ta',
                                         created_at: new Date().toISOString(),
                                         last_login: new Date().toISOString()
                                     },
                                     {
                                         id: 'ta2',
-                                        custom_id: 'ta2',
-                                        name: 'Simran',
-                                        passcode: 'simecon2',
+                                        custom_id: 'jamesbolyard',
+                                        name: 'James Bolyard',
+                                        passcode: 'bolyardecon2',
                                         role: 'ta',
                                         created_at: new Date().toISOString(),
                                         last_login: new Date().toISOString()

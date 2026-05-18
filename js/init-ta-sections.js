@@ -103,34 +103,38 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log('Error message:', taError.message);
     }
 
-    // TA data
+    // Spring 2026 TA data
     const tas = [
-        { name: 'Akshay', email: 'akshay@example.com' },
-        { name: 'Simran', email: 'simran@example.com' },
-        { name: 'Camilla', email: 'camilla@example.com' },
-        { name: 'Hui Yann', email: 'huiyann@example.com' },
-        { name: 'Lars', email: 'lars@example.com' },
-        { name: 'Luorao', email: 'luorao@example.com' }
+        { name: 'Xinran Bai',      email: 'xinranbai@example.com' },
+        { name: 'James Bolyard',   email: 'jamesbolyard@example.com' },
+        { name: 'Yuxin Cai',       email: 'yuxincai@example.com' },
+        { name: 'Zachary Hayward', email: 'zacharyhayward@example.com' },
+        { name: 'Mengqi Li',       email: 'mengqili@example.com' },
+        { name: 'Yuancheng Li',    email: 'yuanchengli@example.com' },
+        { name: 'Steve Lin',       email: 'stevelin@example.com' },
+        { name: 'Zi Wang',         email: 'ziwang@example.com' }
     ];
 
-    // Section data
+    // Spring 2026 section data (kept in sync with spring2026-reset.sql)
     const sections = [
-        { day: 'T', time: '5:00pm-5:50pm', location: 'Phelps, 1425', ta: 'Akshay' },
-        { day: 'T', time: '5:00pm-5:50pm', location: 'Girvetz, 2128', ta: 'Simran' },
-        { day: 'T', time: '5:00pm-5:50pm', location: 'Phelps, 1508', ta: 'Camilla' },
-        { day: 'T', time: '5:00pm-5:50pm', location: 'Building 387, 1015', ta: 'Hui Yann' },
-        { day: 'T', time: '6:00pm-6:50pm', location: 'Phelps, 1508', ta: 'Akshay' },
-        { day: 'W', time: '6:00pm-6:50pm', location: 'Phelps, 1425', ta: 'Lars' },
-        { day: 'W', time: '6:00pm-6:50pm', location: 'South Hall, 1430', ta: 'Luorao' },
-        { day: 'W', time: '6:00pm-6:50pm', location: 'Ellison, 2626', ta: 'Simran' },
-        { day: 'W', time: '6:00pm-6:50pm', location: 'Girvetz, 2128', ta: 'Camilla' },
-        { day: 'W', time: '7:00pm-7:50pm', location: 'North Hall, 1109', ta: 'Hui Yann' },
-        { day: 'R', time: '6:00pm-6:50pm', location: 'Phelps, 2524', ta: 'Luorao' },
-        { day: 'R', time: '6:00pm-6:50pm', location: 'Phelps, 1425', ta: 'Akshay' },
-        { day: 'F', time: '12:00pm-12:50pm', location: 'Arts, 1349', ta: 'Simran' },
-        { day: 'F', time: '12:00pm-12:50pm', location: 'Phelps, 1425', ta: 'Camilla' },
-        { day: 'F', time: '12:00pm-12:50pm', location: 'South Hall, 1430', ta: 'Hui Yann' },
-        { day: 'F', time: '12:00pm-12:50pm', location: 'Ellison, 2626', ta: 'Lars' }
+        { day: 'T', time: '5:00pm-5:50pm',   location: 'Phelps 1425',     ta: 'Yuancheng Li' },
+        { day: 'T', time: '5:00pm-5:50pm',   location: 'Girvetz 2128',    ta: 'Xinran Bai' },
+        { day: 'T', time: '5:00pm-5:50pm',   location: 'Phelps 1508',     ta: 'Steve Lin' },
+        { day: 'T', time: '5:00pm-5:50pm',   location: 'North Hall 1109', ta: 'James Bolyard' },
+        { day: 'T', time: '6:00pm-6:50pm',   location: 'North Hall 1109', ta: 'James Bolyard' },
+        { day: 'W', time: '6:00pm-6:50pm',   location: 'Arts 1349',       ta: 'Xinran Bai' },
+        { day: 'W', time: '6:00pm-6:50pm',   location: 'Phelps 1425',     ta: 'Yuancheng Li' },
+        { day: 'W', time: '6:00pm-6:50pm',   location: 'South Hall 1430', ta: 'Yuxin Cai' },
+        { day: 'W', time: '6:00pm-6:50pm',   location: 'Girvetz 2128',    ta: 'Mengqi Li' },
+        { day: 'W', time: '7:00pm-7:50pm',   location: 'North Hall 1109', ta: 'Yuxin Cai' },
+        { day: 'R', time: '6:00pm-6:50pm',   location: 'Phelps 1508',     ta: 'Mengqi Li' },
+        { day: 'R', time: '6:00pm-6:50pm',   location: 'North Hall 1109', ta: 'Zachary Hayward' },
+        { day: 'F', time: '9:00am-9:50am',   location: 'Phelps 1508',     ta: 'Zi Wang' },
+        { day: 'F', time: '10:00am-10:50am', location: 'Phelps 1508',     ta: 'Yuxin Cai' },
+        { day: 'F', time: '12:00pm-12:50pm', location: 'South Hall 1430', ta: 'Steve Lin' },
+        { day: 'F', time: '12:00pm-12:50pm', location: 'Ellison 2626',    ta: 'Mengqi Li' },
+        { day: 'F', time: '12:00pm-12:50pm', location: 'Girvetz 2128',    ta: 'Zachary Hayward' },
+        { day: 'F', time: '12:00pm-12:50pm', location: 'Phelps 1508',     ta: 'Zi Wang' }
     ];
 
     // Check if we should use fallback mode
